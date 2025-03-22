@@ -2,13 +2,16 @@
 
 Given a sentence (a string of characters), form a list of its constituent words.
 
-Based on the description from 'An Implementation of J' (https://www.jsoftware.com/ioj/iojSent.htm).
+Based on the description from 'An Implementation of J': https://www.jsoftware.com/ioj/iojSent.htm).
+
+See also: https://code.jsoftware.com/wiki/Vocabulary/Words#WordFormation
 
 The terse naming of states and character classes has been preserved for the sake of consistency
 with the original description.
 
 """
 
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Mapping
 
@@ -179,12 +182,27 @@ def get_character_class(char: str) -> CharacterClass:
     return CharacterClass.X
 
 
-def form_words(sentence: str) -> list[str]:
+@dataclass
+class Word:
+    value: str
+    is_numeric: bool
+    start: int
+    end: int
+
+
+EOS = "\n"
+
+
+def form_words(sentence: str) -> list[Word]:
+
+    # Append a EOS marker to ensure that the last word is emitted.
+    sentence += EOS
 
     i = j = 0
     current_state: State = State.S
 
-    words: list[str] = []
+    words: list[Word] = []
+    continue_numeric = False
 
     while i < len(sentence):
          
@@ -192,9 +210,26 @@ def form_words(sentence: str) -> list[str]:
         char_class = get_character_class(char)
         new_state, action = STATE_TRANSITION[(current_state, char_class)]
 
+        # A sequence of numbers separated by whitespace is treated as a single word in J.
+        # Set a flag so that this is handled when the current word needs to be emitted.
+        if words and words[-1].is_numeric and current_state == State.S and new_state == State.NINE:
+            continue_numeric = True
+
         if action == Action.I:
-            word = sentence[j:i]
-            words.append(word)
+
+            if continue_numeric:
+                prev_word = words.pop()
+                value = sentence[prev_word.start:i]
+                word = Word(value=value, is_numeric=True, start=prev_word.start, end=i)
+                words.append(word)
+                continue_numeric = False
+
+            else:
+                value = sentence[j:i]
+                is_numeric = current_state == State.NINE
+                word = Word(value=value, is_numeric=is_numeric, start=j, end=i)
+                words.append(word)
+
             j = i
 
         elif action == Action.N:
@@ -202,8 +237,5 @@ def form_words(sentence: str) -> list[str]:
 
         current_state = new_state
         i += 1
-
-    if (remainder := sentence[j:i]) and not remainder.isspace():
-        words.append(remainder)
 
     return words

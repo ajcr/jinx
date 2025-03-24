@@ -11,13 +11,13 @@ with the original description.
 
 """
 
-from dataclasses import dataclass
 from enum import StrEnum
 from typing import Mapping
 
+from vocabulary import Word
+
 
 class State(StrEnum):
-
     S = "space"
     X = "other"
     A = "alphanumeric"
@@ -30,7 +30,6 @@ class State(StrEnum):
 
 
 class CharacterClass(StrEnum):
-
     S = "space"
     X = "other"
     A = "letters excl. NB"
@@ -43,7 +42,6 @@ class CharacterClass(StrEnum):
 
 
 class Action(StrEnum):
-
     I = "emit, update"
     N = "no emit, update"
     X = "no action"
@@ -80,7 +78,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.A, CharacterClass.D): (State.X, Action.X),
     (State.A, CharacterClass.C): (State.X, Action.X),
     (State.A, CharacterClass.Q): (State.Q, Action.I),
-    #Action.N
+    # Action.N
     (State.N, CharacterClass.X): (State.X, Action.I),
     (State.N, CharacterClass.S): (State.S, Action.I),
     (State.N, CharacterClass.A): (State.A, Action.X),
@@ -154,7 +152,6 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
 
 
 def get_character_class(char: str) -> CharacterClass:
-
     if char.isspace():
         return CharacterClass.S
 
@@ -182,44 +179,41 @@ def get_character_class(char: str) -> CharacterClass:
     return CharacterClass.X
 
 
-@dataclass
-class Word:
-    value: str
-    is_numeric: bool
-    start: int
-    end: int
-
-
-EOS = "\n"
-
-
 def form_words(sentence: str) -> list[Word]:
+    if len(sentence) == 0:
+        return []
 
-    # Append a EOS marker to ensure that the last word is emitted.
-    sentence += EOS
+    # Append whitespace EOS marker to ensure that the final word is emitted.
+    # This has the side effect that comments and unterminated quotes will not
+    # be emitted, so we handle this later in the function.
+    sentence += "\n"
 
     i = j = 0
     current_state: State = State.S
 
     words: list[Word] = []
+
+    # A sequence of numbers separated by whitespace is treated as a single word in J.
+    # Set a flag to handle this when the current numeric word needs to be emitted.
     continue_numeric = False
 
     while i < len(sentence):
-         
         char = sentence[i]
         char_class = get_character_class(char)
         new_state, action = STATE_TRANSITION[(current_state, char_class)]
 
-        # A sequence of numbers separated by whitespace is treated as a single word in J.
-        # Set a flag so that this is handled when the current word needs to be emitted.
-        if words and words[-1].is_numeric and current_state == State.S and new_state == State.NINE:
+        if (
+            words
+            and words[-1].is_numeric
+            and current_state == State.S
+            and new_state == State.NINE
+        ):
             continue_numeric = True
 
         if action == Action.I:
-
             if continue_numeric:
                 prev_word = words.pop()
-                value = sentence[prev_word.start:i]
+                value = sentence[prev_word.start : i]
                 word = Word(value=value, is_numeric=True, start=prev_word.start, end=i)
                 words.append(word)
                 continue_numeric = False
@@ -237,5 +231,9 @@ def form_words(sentence: str) -> list[Word]:
 
         current_state = new_state
         i += 1
+
+    remaining_word = sentence[j : i - 1]  # i-1 to exclude EOS marker.
+    if remaining_word and not remaining_word.isspace():
+        words.append(Word(value=remaining_word, is_numeric=False, start=j, end=i - 1))
 
     return words

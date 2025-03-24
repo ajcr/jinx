@@ -1,24 +1,32 @@
+"""J Vocabulary.
 
-"""J Vocabulary
+Building blocks / parts of speech for the J language.
 
-The building blocks of the J language.
+The objects here are not tied to any implementation details needed for
+execution (e.g. a verb is not tied to the code that will execute it).
+
+The objects are just used to tag the words in the sentence so that they
+can be evaluated at run time according to the context they are used in.
+
+Resources:
+- https://code.jsoftware.com/wiki/Vocabulary/Nouns
+- https://code.jsoftware.com/wiki/Vocabulary/Words
+- https://code.jsoftware.com/wiki/Vocabulary/Glossary
 
 """
+
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, Literal, NamedTuple
+from typing import NamedTuple
 
 
 class Word(NamedTuple):
     "Sequence of characters that can be recognised as a part of the J language."
+
     value: str
     is_numeric: bool
     start: int
     end: int
-
-
-# https://code.jsoftware.com/wiki/Vocabulary/Nouns
-# https://code.jsoftware.com/wiki/Vocabulary/Words#Parts_Of_Speech
 
 
 class DataType(Enum):
@@ -39,48 +47,46 @@ class Array:
     data: list[int | float] | str
 
 
-NounT = Atom | Array
-RankT = Literal["-INF"] | int | Literal["+INF"]
-
-
 @dataclass
-class MonadicVerb:
-    rank: RankT
-    func: Callable[[Atom | Array, Atom | Array], Atom | Array]
-
-
-@dataclass
-class DyadicVerb:
-    left_rank: RankT
-    right_rank: RankT
-    func: Callable[[Atom | Array, Atom | Array], Atom | Array]
+class Verb:
+    spelling: str
+    name: str
 
 
 @dataclass
 class Adverb:
-    rank: RankT
-    func: Callable[[MonadicVerb], MonadicVerb] | Callable[[DyadicVerb], DyadicVerb]
+    spelling: str
+    name: str
 
 
 @dataclass
 class Conjunction:
-    left_rank: RankT
-    right_rank: RankT
-    func: Callable[[Atom | Array, Atom | Array], Atom | Array]
+    spelling: str
+    name: str
+
+
+@dataclass
+class Copula:
+    spelling: str
+    name: str
 
 
 @dataclass
 class Punctuation:
-    value: str
+    spelling: str
+    name: str
 
 
 @dataclass
 class Comment:
-    value: str
+    spelling: str
+
+
+@dataclass
+class Name:
+    spelling: str
 
 
 NounT = Atom | Array
-VerbT = MonadicVerb | DyadicVerb
 PunctuationT = Punctuation | Comment
-
-PartOfSpeechT = NounT | VerbT | Adverb | Conjunction | PunctuationT
+PartOfSpeechT = NounT | Verb | Adverb | Conjunction | PunctuationT | Copula | Name

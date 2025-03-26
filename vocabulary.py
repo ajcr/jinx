@@ -36,13 +36,18 @@ class DataType(Enum):
 
 
 @dataclass
-class Atom:
+class Noun:
+    pass
+
+
+@dataclass
+class Atom(Noun):
     data_type: DataType
     data: int | float | str
 
 
 @dataclass
-class Array:
+class Array(Noun):
     data_type: DataType
     data: list[int | float] | str
 
@@ -87,6 +92,5 @@ class Name:
     spelling: str
 
 
-NounT = Atom | Array
 PunctuationT = Punctuation | Comment
-PartOfSpeechT = NounT | Verb | Adverb | Conjunction | PunctuationT | Copula | Name
+PartOfSpeechT = Noun | Verb | Adverb | Conjunction | PunctuationT | Copula | Name

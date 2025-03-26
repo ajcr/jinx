@@ -7,41 +7,41 @@ Based on the description from 'An Implementation of J': https://www.jsoftware.co
 See also: https://code.jsoftware.com/wiki/Vocabulary/Words#WordFormation
 
 The terse naming of states and character classes has been preserved for the sake of consistency
-with the original description.
+with the original description (except '9' is now 'NUMERIC').
 
 """
 
-from enum import StrEnum
+from enum import Enum
 from typing import Mapping
 
 from vocabulary import Word
 
 
-class State(StrEnum):
+class State(Enum):
     S = "space"
     X = "other"
     A = "alphanumeric"
     N = "N"
     NB = "NB"
-    NINE = "numeric"
+    NUMERIC = "numeric"
     Q = "quote"
     QQ = "even quotes"
     Z = "trailing comment"
 
 
-class CharacterClass(StrEnum):
+class CharacterClass(Enum):
     S = "space"
     X = "other"
     A = "letters excl. NB"
     N = "N"
     B = "B"
-    NINE = "digits and _"
+    NUMERIC = "digits and _"
     D = "."
     C = ":"
     Q = "'"
 
 
-class Action(StrEnum):
+class Action(Enum):
     I = "emit, update"
     N = "no emit, update"
     X = "no action"
@@ -54,7 +54,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.S, CharacterClass.A): (State.A, Action.N),
     (State.S, CharacterClass.N): (State.N, Action.N),
     (State.S, CharacterClass.B): (State.A, Action.N),
-    (State.S, CharacterClass.NINE): (State.NINE, Action.N),
+    (State.S, CharacterClass.NUMERIC): (State.NUMERIC, Action.N),
     (State.S, CharacterClass.D): (State.X, Action.N),
     (State.S, CharacterClass.C): (State.X, Action.N),
     (State.S, CharacterClass.Q): (State.Q, Action.N),
@@ -64,7 +64,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.X, CharacterClass.A): (State.A, Action.I),
     (State.X, CharacterClass.N): (State.N, Action.I),
     (State.X, CharacterClass.B): (State.A, Action.I),
-    (State.X, CharacterClass.NINE): (State.NINE, Action.I),
+    (State.X, CharacterClass.NUMERIC): (State.NUMERIC, Action.I),
     (State.X, CharacterClass.D): (State.X, Action.X),
     (State.X, CharacterClass.C): (State.X, Action.X),
     (State.X, CharacterClass.Q): (State.Q, Action.I),
@@ -74,7 +74,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.A, CharacterClass.A): (State.A, Action.X),
     (State.A, CharacterClass.N): (State.A, Action.X),
     (State.A, CharacterClass.B): (State.A, Action.X),
-    (State.A, CharacterClass.NINE): (State.A, Action.X),
+    (State.A, CharacterClass.NUMERIC): (State.A, Action.X),
     (State.A, CharacterClass.D): (State.X, Action.X),
     (State.A, CharacterClass.C): (State.X, Action.X),
     (State.A, CharacterClass.Q): (State.Q, Action.I),
@@ -84,7 +84,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.N, CharacterClass.A): (State.A, Action.X),
     (State.N, CharacterClass.N): (State.A, Action.X),
     (State.N, CharacterClass.B): (State.NB, Action.X),
-    (State.N, CharacterClass.NINE): (State.A, Action.X),
+    (State.N, CharacterClass.NUMERIC): (State.A, Action.X),
     (State.N, CharacterClass.D): (State.X, Action.X),
     (State.N, CharacterClass.C): (State.X, Action.X),
     (State.N, CharacterClass.Q): (State.Q, Action.I),
@@ -94,7 +94,7 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.NB, CharacterClass.A): (State.A, Action.X),
     (State.NB, CharacterClass.N): (State.A, Action.X),
     (State.NB, CharacterClass.B): (State.A, Action.X),
-    (State.NB, CharacterClass.NINE): (State.A, Action.X),
+    (State.NB, CharacterClass.NUMERIC): (State.A, Action.X),
     (State.NB, CharacterClass.D): (State.Z, Action.X),
     (State.NB, CharacterClass.C): (State.X, Action.X),
     (State.NB, CharacterClass.Q): (State.Q, Action.I),
@@ -104,27 +104,27 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.Z, CharacterClass.A): (State.Z, Action.X),
     (State.Z, CharacterClass.N): (State.Z, Action.X),
     (State.Z, CharacterClass.B): (State.Z, Action.X),
-    (State.Z, CharacterClass.NINE): (State.Z, Action.X),
+    (State.Z, CharacterClass.NUMERIC): (State.Z, Action.X),
     (State.Z, CharacterClass.D): (State.X, Action.X),
     (State.Z, CharacterClass.C): (State.X, Action.X),
     (State.Z, CharacterClass.Q): (State.Z, Action.X),
     # "NINE"
-    (State.NINE, CharacterClass.X): (State.X, Action.I),
-    (State.NINE, CharacterClass.S): (State.S, Action.I),
-    (State.NINE, CharacterClass.A): (State.NINE, Action.X),
-    (State.NINE, CharacterClass.N): (State.NINE, Action.X),
-    (State.NINE, CharacterClass.B): (State.NINE, Action.X),
-    (State.NINE, CharacterClass.NINE): (State.NINE, Action.X),
-    (State.NINE, CharacterClass.D): (State.NINE, Action.X),
-    (State.NINE, CharacterClass.C): (State.X, Action.X),
-    (State.NINE, CharacterClass.Q): (State.Q, Action.I),
+    (State.NUMERIC, CharacterClass.X): (State.X, Action.I),
+    (State.NUMERIC, CharacterClass.S): (State.S, Action.I),
+    (State.NUMERIC, CharacterClass.A): (State.NUMERIC, Action.X),
+    (State.NUMERIC, CharacterClass.N): (State.NUMERIC, Action.X),
+    (State.NUMERIC, CharacterClass.B): (State.NUMERIC, Action.X),
+    (State.NUMERIC, CharacterClass.NUMERIC): (State.NUMERIC, Action.X),
+    (State.NUMERIC, CharacterClass.D): (State.NUMERIC, Action.X),
+    (State.NUMERIC, CharacterClass.C): (State.X, Action.X),
+    (State.NUMERIC, CharacterClass.Q): (State.Q, Action.I),
     # "Q"
     (State.Q, CharacterClass.X): (State.Q, Action.X),
     (State.Q, CharacterClass.S): (State.Q, Action.X),
     (State.Q, CharacterClass.A): (State.Q, Action.X),
     (State.Q, CharacterClass.N): (State.Q, Action.X),
     (State.Q, CharacterClass.B): (State.Q, Action.X),
-    (State.Q, CharacterClass.NINE): (State.Q, Action.X),
+    (State.Q, CharacterClass.NUMERIC): (State.Q, Action.X),
     (State.Q, CharacterClass.D): (State.Q, Action.X),
     (State.Q, CharacterClass.C): (State.Q, Action.X),
     (State.Q, CharacterClass.Q): (State.QQ, Action.X),
@@ -134,20 +134,10 @@ STATE_TRANSITION: Mapping[tuple[State, CharacterClass], tuple[State, Action]] = 
     (State.QQ, CharacterClass.A): (State.A, Action.I),
     (State.QQ, CharacterClass.N): (State.N, Action.I),
     (State.QQ, CharacterClass.B): (State.A, Action.I),
-    (State.QQ, CharacterClass.NINE): (State.NINE, Action.I),
+    (State.QQ, CharacterClass.NUMERIC): (State.NUMERIC, Action.I),
     (State.QQ, CharacterClass.D): (State.X, Action.I),
     (State.QQ, CharacterClass.C): (State.X, Action.I),
     (State.QQ, CharacterClass.Q): (State.Q, Action.X),
-    # "Z"
-    (State.Z, CharacterClass.X): (State.Z, Action.X),
-    (State.Z, CharacterClass.S): (State.Z, Action.X),
-    (State.Z, CharacterClass.A): (State.Z, Action.X),
-    (State.Z, CharacterClass.N): (State.Z, Action.X),
-    (State.Z, CharacterClass.B): (State.Z, Action.X),
-    (State.Z, CharacterClass.NINE): (State.Z, Action.X),
-    (State.Z, CharacterClass.D): (State.Z, Action.X),
-    (State.Z, CharacterClass.C): (State.Z, Action.X),
-    (State.Z, CharacterClass.Q): (State.Z, Action.X),
 }
 
 
@@ -165,7 +155,7 @@ def get_character_class(char: str) -> CharacterClass:
         return CharacterClass.A
 
     if char.isdigit() or char == "_":
-        return CharacterClass.NINE
+        return CharacterClass.NUMERIC
 
     if char == ".":
         return CharacterClass.D
@@ -206,7 +196,7 @@ def form_words(sentence: str) -> list[Word]:
             words
             and words[-1].is_numeric
             and current_state == State.S
-            and new_state == State.NINE
+            and new_state == State.NUMERIC
         ):
             continue_numeric = True
 
@@ -220,7 +210,7 @@ def form_words(sentence: str) -> list[Word]:
 
             else:
                 value = sentence[j:i]
-                is_numeric = current_state == State.NINE
+                is_numeric = current_state == State.NUMERIC
                 word = Word(value=value, is_numeric=is_numeric, start=j, end=i)
                 words.append(word)
 

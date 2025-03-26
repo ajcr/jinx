@@ -46,10 +46,11 @@ def parse_float(word: str) -> float | None:
         return float("inf")
     if word == "__":
         return float("-inf")
-    try:
-        return float(word)
-    except ValueError:
+    if not re.fullmatch(r"_?\d+\.\d*", word):
         return None
+    if word.startswith("_"):
+        return -float(word[1:])
+    return float(word)
 
 
 def spell_numeric(word: Word) -> Atom | Array:

@@ -35,6 +35,7 @@ def evaluate(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
 
     verb: Verb
     noun: Noun
+    noun_2: Noun
     adverb: Adverb
 
     while words:
@@ -85,7 +86,12 @@ def evaluate(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     Verb(),
                     Noun(),
                 ):
-                    raise NotImplementedError("dyad")
+                    _, noun, verb, noun_2 = fragment
+                    ensure_noun_implementation(noun)
+                    ensure_noun_implementation(noun_2)
+                    f = PRIMITIVE_MAP[verb.name][1]
+                    result = f(noun, noun_2)(noun.implementation, noun_2.implementation)
+                    fragment[1:] = [ndarray_or_scalar_to_noun(result)]
 
                 # 3. Adverb
                 case (

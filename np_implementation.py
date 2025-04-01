@@ -45,18 +45,39 @@ def minus_np_monad(y: Noun):
     return operator.neg
 
 
+def minus_np_dyad(x: Noun, y: Noun):
+    return np.subtract
+
+
 def add_np_monad(y: Noun):
     return operator.add
+
+
+def add_np_dyad(x: Noun, y: Noun):
+    return np.add
 
 
 def star_np_monad(y: Noun):
     return np.sign
 
 
+def star_np_dyad(x: Noun, y: Noun):
+    return np.multiply
+
+
+def percent_np_monad(y: Noun):
+    return np.reciprocal
+
+
+def percent_np_dyad(x: Noun, y: Noun):
+    return np.divide
+
+
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
     "EQ": (None, eq_np_dyad),
-    "MINUS": (minus_np_monad, None),
-    "ADD": (add_np_monad, None),
-    "STAR": (star_np_monad, None),
+    "MINUS": (minus_np_monad, minus_np_dyad),
+    "PLUS": (add_np_monad, add_np_dyad),
+    "STAR": (star_np_monad, star_np_dyad),
+    "PERCENT": (percent_np_monad, percent_np_dyad),
 }

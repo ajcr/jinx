@@ -61,11 +61,11 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Verb("-:", "MINUSCO"),
     Verb(
         "%",
-        "PRECENT",
+        "PERCENT",
         monad=Monad(name="Reciprocal", rank=0),
         dyad=Dyad(name="Divide", left_rank=0, right_rank=0),
     ),
-    Verb("%.", "PRECENTDOT"),
+    Verb("%.", "PERCENTDOT"),
     Verb("%:", "PERCENTCO"),
     Adverb("/", "SLASH"),
     Adverb("/.", "SLASHDOT"),

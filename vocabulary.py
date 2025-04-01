@@ -17,7 +17,7 @@ Resources:
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import NamedTuple
+from typing import Any, Callable, NamedTuple
 
 
 class Word(NamedTuple):
@@ -43,25 +43,46 @@ class Noun:
 @dataclass
 class Atom(Noun):
     data_type: DataType
-    data: int | float | str
+    data: int | float | str | None = None
+    implementation: Any = None
 
 
 @dataclass
 class Array(Noun):
     data_type: DataType
-    data: list[int | float] | str
+    data: list[int | float] | str | None = None
+    implementation: Any = None
+
+
+@dataclass
+class Monad:
+    name: str
+    rank: int
+    function: Callable[[Noun], Noun] | None = None
+
+
+@dataclass
+class Dyad:
+    name: str
+    left_rank: int
+    right_rank: int
+    function: Callable[[Noun, Noun], Noun] | None = None
 
 
 @dataclass
 class Verb:
     spelling: str
     name: str
+    monad: Monad | None = None
+    dyad: Dyad | None = None
 
 
 @dataclass
 class Adverb:
     spelling: str
     name: str
+    monad: Monad | None = None
+    dyad: Dyad | None = None
 
 
 @dataclass

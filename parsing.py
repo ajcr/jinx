@@ -19,11 +19,23 @@ from vocabulary import (
     Copula,
 )
 
+from np_implementation import PRIMITIVE_MAP, convert_noun_np, ndarray_or_scalar_to_noun
+
+
+def ensure_noun_implementation(noun: Noun) -> None:
+    if noun.implementation is None:
+        noun.implementation = convert_noun_np(noun)
+
 
 def evaluate(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
     """Evaluate the words in the sentence."""
 
     fragment = []
+    words = [None, *words]
+
+    verb: Verb
+    noun: Noun
+    adverb: Adverb
 
     while words:
         word = words.pop()
@@ -34,66 +46,93 @@ def evaluate(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
         elif isinstance(word, (Punctuation, Copula)):
             word = word.spelling
 
+        # TODO: If word is a Name, lookup the Verb/Noun it refers to and add that.
+
         fragment = [word, *fragment]
 
-        match fragment:
+        while True:
+            match fragment:
+                # 0. Monad
+                case [None | "=." | "=:" | "(", Verb(), Noun()] | [
+                    None | "=." | "=:" | "(",
+                    Verb(),
+                    Noun(),
+                    _,
+                ]:
+                    _, verb, noun = fragment
+                    ensure_noun_implementation(noun)
+                    f = PRIMITIVE_MAP[verb.name][0]
+                    result = f(noun)(noun.implementation)
+                    fragment[1:] = [ndarray_or_scalar_to_noun(result)]
 
-            # 0. Monad
-            case "=." | "=:" | "(", Verb(), Noun(), _:
-                pass
+                # 1. Monad
+                case (
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb(),
+                    Verb(),
+                    Noun(),
+                ):
+                    _, _, verb, noun = fragment
+                    ensure_noun_implementation(noun)
+                    f = PRIMITIVE_MAP[verb.name][0]
+                    result = f(noun)(noun.implementation)
+                    fragment[2:] = [ndarray_or_scalar_to_noun(result)]
 
-            # 1. Monad
-            case "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Verb(), Noun():
-                pass
+                # 2. Dyad
+                case (
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Noun(),
+                    Verb(),
+                    Noun(),
+                ):
+                    raise NotImplementedError("dyad")
 
-            # 2. Dyad
-            case "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Verb(), Noun():
-                pass
+                # 3. Adverb
+                case (
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb() | Noun(),
+                    Adverb(),
+                    _,
+                ):
+                    raise NotImplementedError("adverb")
 
-            # 3. Adverb
-            case (
-                "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                Verb() | Noun(),
-                Adverb(),
-                _,
-            ):
-                pass
+                # 4. Conjunction
+                case (
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb() | Noun(),
+                    Conjunction(),
+                    Verb() | Noun(),
+                ):
+                    raise NotImplementedError("conjunction")
 
-            # 4. Conjunction
-            case (
-                "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                Verb() | Noun(),
-                Conjunction(),
-                Verb() | Noun(),
-            ):
-                pass
+                # 5. Fork
+                case (
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb() | Noun(),
+                    Verb(),
+                    Verb(),
+                ):
+                    raise NotImplementedError("fork")
 
-            # 5. Fork
-            case (
-                "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                Verb() | Noun(),
-                Verb(),
-                Verb(),
-            ):
-                pass
+                # 6. Hook/Adverb
+                case (
+                    None | "=." | "=:" | "(",
+                    Conjunction() | Adverb() | Verb() | Noun(),
+                    Conjunction() | Adverb() | Verb() | Noun(),
+                    _,
+                ):
+                    raise NotImplementedError("hook/adverb")
 
-            # 6. Hook/Adverb
-            case (
-                "=." | "=:" | "(",
-                Conjunction() | Adverb() | Verb() | Noun(),
-                Conjunction() | Adverb() | Verb() | Noun(),
-                _,
-            ):
-                pass
+                # 7. Is
+                case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), _:
+                    raise NotImplementedError("copula")
 
-            # 7. Is
-            case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), _:
-                pass
+                # 8. Parentheses
+                case "(", Conjunction() | Adverb() | Verb() | Noun(), ")", _:
+                    raise NotImplementedError("parentheses")
 
-            # 8. Parentheses
-            case "(", Conjunction() | Adverb() | Verb() | Noun(), ")", _:
-                pass
-
-            # No default case.
+                # Non-executable fragment.
+                case _:
+                    break
 
     return fragment

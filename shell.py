@@ -2,7 +2,7 @@ import cmd
 
 from word_formation import form_words
 from word_spelling import spell_words
-from parsing import evaluate
+from word_evaluation import evaluate_words
 
 
 class Shell(cmd.Cmd):
@@ -14,7 +14,7 @@ class Shell(cmd.Cmd):
     def default(self, line):
         words = form_words(line)
         words = spell_words(words)
-        words = evaluate(words)
+        words = evaluate_words(words)
         print(words)
 
 

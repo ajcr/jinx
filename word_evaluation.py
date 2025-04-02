@@ -27,7 +27,9 @@ def ensure_noun_implementation(noun: Noun) -> None:
         noun.implementation = convert_noun_np(noun)
 
 
-def evaluate(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
+
+
+def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
     """Evaluate the words in the sentence."""
 
     fragment = []

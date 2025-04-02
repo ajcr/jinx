@@ -17,9 +17,17 @@ from vocabulary import (
     Name,
     Comment,
     Copula,
+    Atom,
+    Array,
 )
 
-from np_implementation import PRIMITIVE_MAP, convert_noun_np, ndarray_or_scalar_to_noun
+from np_implementation import (
+    PRIMITIVE_MAP,
+    convert_noun_np,
+    ndarray_or_scalar_to_noun,
+    array_to_string,
+    atom_to_string,
+)
 
 
 def ensure_noun_implementation(noun: Noun) -> None:
@@ -27,6 +35,21 @@ def ensure_noun_implementation(noun: Noun) -> None:
         noun.implementation = convert_noun_np(noun)
 
 
+def str_(word: Atom | Array | Verb) -> str:
+    """Print the word in a human-readable format."""
+    if isinstance(word, Atom):
+        return atom_to_string(word)
+    elif isinstance(word, Array):
+        return array_to_string(word)
+    elif isinstance(word, Verb):
+        return word.spelling
+    else:
+        raise NotImplementedError(f"Cannot print word of type {type(word)}")
+
+
+def print_words(words: list[PartOfSpeechT]) -> None:
+    """Print the words in a human-readable format."""
+    print(" ".join(str_(word) for word in words if word is not None))
 
 
 def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:

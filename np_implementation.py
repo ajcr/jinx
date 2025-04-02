@@ -30,6 +30,26 @@ def infer_data_type(data):
     raise NotImplementedError(f"Cannot handle NumPy dtype: {dtype}")
 
 
+def format_numeric(n):
+    if n < 0:
+        return f"_{-n}"
+    return str(n)
+
+
+def atom_to_string(atom: Atom) -> str:
+    np.set_printoptions(
+        infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
+    )
+    return str(atom.implementation)
+
+
+def array_to_string(array: Array) -> str:
+    np.set_printoptions(
+        infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
+    )
+    return str(array.implementation)
+
+
 def ndarray_or_scalar_to_noun(data) -> Noun:
     data_type = infer_data_type(data)
     if np.isscalar(data):

@@ -22,17 +22,11 @@ from vocabulary import (
 )
 
 from np_implementation import (
-    PRIMITIVE_MAP,
-    convert_noun_np,
-    ndarray_or_scalar_to_noun,
     array_to_string,
     atom_to_string,
+    apply_monad,
+    apply_dyad,
 )
-
-
-def ensure_noun_implementation(noun: Noun) -> None:
-    if noun.implementation is None:
-        noun.implementation = convert_noun_np(noun)
 
 
 def str_(word: Atom | Array | Verb) -> str:
@@ -86,10 +80,8 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     _,
                 ]:
                     _, verb, noun = fragment
-                    ensure_noun_implementation(noun)
-                    f = PRIMITIVE_MAP[verb.name][0]
-                    result = f(noun)(noun.implementation)
-                    fragment[1:] = [ndarray_or_scalar_to_noun(result)]
+                    result = apply_monad(verb, noun)
+                    fragment[1:] = [result]
 
                 # 1. Monad
                 case (
@@ -99,10 +91,8 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     Noun(),
                 ):
                     _, _, verb, noun = fragment
-                    ensure_noun_implementation(noun)
-                    f = PRIMITIVE_MAP[verb.name][0]
-                    result = f(noun)(noun.implementation)
-                    fragment[2:] = [ndarray_or_scalar_to_noun(result)]
+                    result = apply_monad(verb, noun)
+                    fragment[2:] = [result]
 
                 # 2. Dyad
                 case (
@@ -112,11 +102,8 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     Noun(),
                 ):
                     _, noun, verb, noun_2 = fragment
-                    ensure_noun_implementation(noun)
-                    ensure_noun_implementation(noun_2)
-                    f = PRIMITIVE_MAP[verb.name][1]
-                    result = f(noun, noun_2)(noun.implementation, noun_2.implementation)
-                    fragment[1:] = [ndarray_or_scalar_to_noun(result)]
+                    result = apply_dyad(verb, noun, noun_2)
+                    fragment[1:] = [result]
 
                 # 3. Adverb
                 case (

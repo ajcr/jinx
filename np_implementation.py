@@ -4,7 +4,7 @@ import operator
 
 import numpy as np
 
-from vocabulary import Noun, Atom, Array, DataType
+from vocabulary import Noun, Atom, Array, DataType, Verb
 
 
 DATATYPE_TO_NP_MAP = {
@@ -33,7 +33,7 @@ def infer_data_type(data):
 def format_numeric(n):
     if n < 0:
         return f"_{-n}"
-    return str(n)
+    return f" {n}"
 
 
 def atom_to_string(atom: Atom) -> str:
@@ -57,47 +57,62 @@ def ndarray_or_scalar_to_noun(data) -> Noun:
     return Array(data_type=data_type, implementation=data)
 
 
-def eq_np_dyad(x: Noun, y: Noun):
-    return np.equal
-
-
-def minus_np_monad(y: Noun):
-    return operator.neg
-
-
-def minus_np_dyad(x: Noun, y: Noun):
-    return np.subtract
-
-
-def add_np_monad(y: Noun):
-    return operator.add
-
-
-def add_np_dyad(x: Noun, y: Noun):
-    return np.add
-
-
-def star_np_monad(y: Noun):
-    return np.sign
-
-
-def star_np_dyad(x: Noun, y: Noun):
-    return np.multiply
-
-
-def percent_np_monad(y: Noun):
-    return np.reciprocal
-
-
-def percent_np_dyad(x: Noun, y: Noun):
-    return np.divide
-
-
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
-    "EQ": (None, eq_np_dyad),
-    "MINUS": (minus_np_monad, minus_np_dyad),
-    "PLUS": (add_np_monad, add_np_dyad),
-    "STAR": (star_np_monad, star_np_dyad),
-    "PERCENT": (percent_np_monad, percent_np_dyad),
+    "EQ": (None, np.equal),
+    "MINUS": (operator.neg, np.subtract),
+    "PLUS": (np.conj, np.add),
+    "STAR": (np.sign, np.multiply),
+    "PERCENT": (np.reciprocal, np.divide),
 }
+
+
+def ensure_noun_implementation(noun: Noun) -> None:
+    if noun.implementation is None:
+        noun.implementation = convert_noun_np(noun)
+
+
+def apply_monad(verb: Verb, noun: Noun) -> Noun:
+    ensure_noun_implementation(noun)
+
+    # TODO: update primitive map at startup time - ignore
+    # if the verb is not a primitive.
+    verb.monad.function = PRIMITIVE_MAP[verb.name][0]
+
+    if isinstance(noun, Atom):
+        return ndarray_or_scalar_to_noun(verb.monad.function(noun.implementation))
+
+    verb_rank = verb.monad.rank
+    noun_rank = noun.implementation.ndim
+
+    r = min(verb_rank, noun_rank)
+    arr = noun.implementation
+
+    if r == 0:
+        return ndarray_or_scalar_to_noun(verb.monad.function(arr))
+
+    # Verbs apply R-L, for non-commutative operations flip the axis
+    # that the verb is applied to.
+    if not verb.dyad.is_commutative:
+        arr = np.flip(arr, axis=(noun_rank - r))
+
+    try:
+        return verb.monad.function(arr, axis=(noun_rank - r))
+    except TypeError:
+        pass
+
+    result = np.apply_over_axes(verb.monad.function, (noun_rank - r), arr)
+    return ndarray_or_scalar_to_noun(result)
+
+
+def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
+    # For now, just apply the verb with no regard to its rank.
+
+    ensure_noun_implementation(noun_1)
+    ensure_noun_implementation(noun_2)
+
+    # TODO: update primitive map at startup time - ignore
+    # if the verb is not a primitive.
+    verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
+    result = verb.dyad.function(noun_1.implementation, noun_2.implementation)
+    return ndarray_or_scalar_to_noun(result)

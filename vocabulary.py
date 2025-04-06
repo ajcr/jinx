@@ -67,6 +67,7 @@ class Dyad:
     left_rank: int
     right_rank: int
     function: Callable[[Noun, Noun], Noun] | None = None
+    is_commutative: bool = True
 
 
 @dataclass

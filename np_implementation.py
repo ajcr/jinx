@@ -2,6 +2,7 @@
 
 import operator
 
+import numba
 import numpy as np
 
 from vocabulary import Noun, Atom, Array, DataType, Verb
@@ -62,6 +63,12 @@ def ndarray_or_scalar_to_noun(data) -> Noun:
     return Array(data_type=data_type, implementation=data)
 
 
+@numba.vectorize(["float64(int64)", "float64(float64)"])
+def percent_monad(y: np.ndarray | int | float) -> np.ndarray:
+    """% monad: returns the reciprocal of the array."""
+    return np.divide(1, y)
+
+
 def dollar_monad(arr: np.ndarray | int | float) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
     if np.isscalar(arr):
@@ -101,7 +108,7 @@ PRIMITIVE_MAP = {
     "MINUS": (operator.neg, np.subtract),
     "PLUS": (np.conj, np.add),
     "STAR": (np.sign, np.multiply),
-    "PERCENT": (np.reciprocal, np.divide),
+    "PERCENT": (percent_monad, np.divide),
     "DOLLAR": (dollar_monad, dollar_dyad),
 }
 

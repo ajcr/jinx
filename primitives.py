@@ -15,6 +15,8 @@ from vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
 # when the verb is evaluated in the context of a sentence. It also allows
 # different implementations of a verb to be chosen (pure Python, NumPy, etc.)
 
+INFINITY = float("inf")
+
 PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Verb("=", "EQ", dyad=Dyad(name="Equal", left_rank=0, right_rank=0)),
     Copula("=.", "EQDOT"),
@@ -70,6 +72,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Adverb("/", "SLASH"),
     Adverb("/.", "SLASHDOT"),
     Verb("/:", "SLASHCO"),
+    Verb(
+        "$",
+        "DOLLAR",
+        monad=Monad(name="Shape Of", rank=INFINITY),
+        dyad=Dyad(name="Shape", left_rank=1, right_rank=INFINITY),
+    ),
     Conjunction("@", "AT"),
     # More to be implemented...
 ]

@@ -20,7 +20,10 @@ def convert_noun_np(noun: Atom | Array) -> np.ndarray:
 
 
 def infer_data_type(data):
-    dtype = data.dtype
+    try:
+        dtype = data.dtype
+    except AttributeError:
+        dtype = type(data)
     if np.issubdtype(dtype, np.integer):
         return DataType.Integer
     if np.issubdtype(dtype, np.floating):
@@ -40,6 +43,7 @@ def atom_to_string(atom: Atom) -> str:
     np.set_printoptions(
         infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
     )
+    ensure_noun_implementation(atom)
     return str(atom.implementation)
 
 
@@ -47,6 +51,7 @@ def array_to_string(array: Array) -> str:
     np.set_printoptions(
         infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
     )
+    ensure_noun_implementation(array)
     return str(array.implementation)
 
 
@@ -57,6 +62,39 @@ def ndarray_or_scalar_to_noun(data) -> Noun:
     return Array(data_type=data_type, implementation=data)
 
 
+def dollar_monad(arr: np.ndarray | int | float) -> np.ndarray | None:
+    """$ monad: returns the shape of the array."""
+    if np.isscalar(arr):
+        return None
+    return np.array(arr.shape, dtype=np.int64)
+
+
+def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.ndarray:
+    """$ dyad: create an array with a particular shape.
+
+    Does not support custom fill values at the moment.
+    Does not support INFINITY as an atom of x.
+    """
+    if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
+        raise ValueError(f"Invalid shape: {x}")
+
+    if np.isscalar(x) or x.size == 1:
+        x_shape = (x,)
+    else:
+        x_shape = tuple(x)
+
+    if np.isscalar(y) or y.size == 1:
+        result = np.zeros(x_shape, dtype=x.dtype)
+        result[:] = y
+        return result
+
+    output_shape = x_shape + y.shape[1:]
+    data = y.ravel()
+    repeat, fill = divmod(np.prod(output_shape), data.size)
+    result = np.concatenate([np.tile(data, repeat), data[:fill]]).reshape(output_shape)
+    return result
+
+
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
     "EQ": (None, np.equal),
@@ -64,6 +102,7 @@ PRIMITIVE_MAP = {
     "PLUS": (np.conj, np.add),
     "STAR": (np.sign, np.multiply),
     "PERCENT": (np.reciprocal, np.divide),
+    "DOLLAR": (dollar_monad, dollar_dyad),
 }
 
 
@@ -88,7 +127,7 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
     r = min(verb_rank, noun_rank)
     arr = noun.implementation
 
-    if r == 0:
+    if r == 0 or noun_rank == 1:
         return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
     # Verbs apply R-L, for non-commutative operations flip the axis

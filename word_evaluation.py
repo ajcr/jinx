@@ -31,6 +31,8 @@ from np_implementation import (
 
 def str_(word: Atom | Array | Verb) -> str:
     """Print the word in a human-readable format."""
+    if isinstance(word, str):
+        return word
     if isinstance(word, Atom):
         return atom_to_string(word)
     elif isinstance(word, Array):
@@ -49,9 +51,10 @@ def print_words(words: list[PartOfSpeechT]) -> None:
 def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
     """Evaluate the words in the sentence."""
 
-    fragment = []
-    words = [None, *words]
+    if words[0] is not None:
+        words = [None, *words]
 
+    fragment = []
     verb: Verb
     noun: Noun
     noun_2: Noun
@@ -146,8 +149,14 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     raise NotImplementedError("copula")
 
                 # 8. Parentheses
-                case "(", Conjunction() | Adverb() | Verb() | Noun(), ")", _:
-                    raise NotImplementedError("parentheses")
+                case ["(", Conjunction() | Adverb() | Verb() | Noun(), ")"] | [
+                    "(",
+                    Conjunction() | Adverb() | Verb() | Noun(),
+                    ")",
+                    _,
+                ]:
+                    _, cavn, *_ = fragment
+                    fragment = [cavn]
 
                 # Non-executable fragment.
                 case _:

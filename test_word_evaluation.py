@@ -60,6 +60,15 @@ PLUS = PRIMITIVE_MAP["PLUS"]
             id="-(1)",
         ),
         pytest.param(
+            [LPAREN, MINUS, RPAREN, LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN],
+            [
+                Atom(
+                    data_type=DataType.Integer, data=None, implementation=np.int64(-1)
+                ),
+            ],
+            id="(-)(1)",
+        ),
+        pytest.param(
             [
                 Atom(data_type=DataType.Integer, data=1),
                 MINUS,

@@ -87,9 +87,9 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     [None | "=." | "=:" | "(", Verb(), Noun()]
 
                 ):
-                    start, verb, noun = fragment
+                    edge, verb, noun = fragment
                     result = apply_monad(verb, noun)
-                    if start == "(" and level > 0:
+                    if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]
 
@@ -100,9 +100,9 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     Verb(),
                     Noun(),
                 ):
-                    start, _, verb, noun = fragment
+                    edge, _, verb, noun = fragment
                     result = apply_monad(verb, noun)
-                    if start == "(" and level > 0:
+                    if edge == "(" and level > 0:
                         return result
                     fragment[2:] = [result]
 
@@ -113,9 +113,9 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     Verb(),
                     Noun(),
                 ):
-                    start, noun, verb, noun_2 = fragment
+                    edge, noun, verb, noun_2 = fragment
                     result = apply_dyad(verb, noun, noun_2)
-                    if start == "(" and level > 0:
+                    if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]
 

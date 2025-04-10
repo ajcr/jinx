@@ -73,15 +73,15 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
 
         fragment = [word, *fragment]
 
+        # fmt: off
         while True:
             match fragment:
                 # 0. Monad
-                case [None | "=." | "=:" | "(", Verb(), Noun()] | [
-                    None | "=." | "=:" | "(",
-                    Verb(),
-                    Noun(),
-                    _,
-                ]:
+                case (
+                    [None | "=." | "=:" | "(", Verb(), Noun(), _] |
+                    [None | "=." | "=:" | "(", Verb(), Noun()]
+
+                ):
                     _, verb, noun = fragment
                     result = apply_monad(verb, noun)
                     fragment[1:] = [result]
@@ -149,17 +149,17 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     raise NotImplementedError("copula")
 
                 # 8. Parentheses
-                case ["(", Conjunction() | Adverb() | Verb() | Noun(), ")"] | [
-                    "(",
-                    Conjunction() | Adverb() | Verb() | Noun(),
-                    ")",
-                    _,
-                ]:
+                case (
+                    ["(", Conjunction() | Adverb() | Verb() | Noun(), ")", _] |
+                    ["(", Conjunction() | Adverb() | Verb() | Noun(), ")"]
+                ):
                     _, cavn, *_ = fragment
                     fragment = [cavn]
 
                 # Non-executable fragment.
                 case _:
                     break
+
+        # fmt: on
 
     return fragment

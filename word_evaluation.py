@@ -29,8 +29,11 @@ from np_implementation import (
 )
 
 
+class EvaluationError(Exception):
+    pass
+
+
 def str_(word: Atom | Array | Verb) -> str:
-    """Print the word in a human-readable format."""
     if isinstance(word, str):
         return word
     if isinstance(word, Atom):
@@ -44,13 +47,10 @@ def str_(word: Atom | Array | Verb) -> str:
 
 
 def print_words(words: list[PartOfSpeechT]) -> None:
-    """Print the words in a human-readable format."""
     print(" ".join(str_(word) for word in words if word is not None))
 
 
-def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
-    """Evaluate the words in the sentence."""
-
+def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     if words[0] is not None:
         words = [None, *words]
 
@@ -71,7 +71,12 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
 
         # TODO: If word is a Name, lookup the Verb/Noun it refers to and add that.
 
-        fragment = [word, *fragment]
+        if word == ")":
+            result = evaluate_words(words, level=level + 1)
+            fragment = [result, *fragment]
+
+        else:
+            fragment = [word, *fragment]
 
         # fmt: off
         while True:
@@ -82,8 +87,10 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     [None | "=." | "=:" | "(", Verb(), Noun()]
 
                 ):
-                    _, verb, noun = fragment
+                    start, verb, noun = fragment
                     result = apply_monad(verb, noun)
+                    if start == "(" and level > 0:
+                        return result
                     fragment[1:] = [result]
 
                 # 1. Monad
@@ -93,8 +100,10 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     Verb(),
                     Noun(),
                 ):
-                    _, _, verb, noun = fragment
+                    start, _, verb, noun = fragment
                     result = apply_monad(verb, noun)
+                    if start == "(" and level > 0:
+                        return result
                     fragment[2:] = [result]
 
                 # 2. Dyad
@@ -104,8 +113,10 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     Verb(),
                     Noun(),
                 ):
-                    _, noun, verb, noun_2 = fragment
+                    start, noun, verb, noun_2 = fragment
                     result = apply_dyad(verb, noun, noun_2)
+                    if start == "(" and level > 0:
+                        return result
                     fragment[1:] = [result]
 
                 # 3. Adverb
@@ -149,12 +160,13 @@ def evaluate_words(words: list[PartOfSpeechT]) -> list[PartOfSpeechT]:
                     raise NotImplementedError("copula")
 
                 # 8. Parentheses
-                case (
-                    ["(", Conjunction() | Adverb() | Verb() | Noun(), ")", _] |
-                    ["(", Conjunction() | Adverb() | Verb() | Noun(), ")"]
-                ):
-                    _, cavn, *_ = fragment
-                    fragment = [cavn]
+                # Differs from the J source as it does not match ")" and instead checks
+                # the level to ensure that "(" is balanced.
+                case ["(", Conjunction() | Adverb() | Verb() | Noun()]:
+                    _, cavn = fragment
+                    if level > 0:
+                        return cavn
+                    raise EvaluationError("Unbalanced parentheses")
 
                 # Non-executable fragment.
                 case _:

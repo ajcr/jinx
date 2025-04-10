@@ -81,3 +81,6 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Conjunction("@", "AT"),
     # More to be implemented...
 ]
+
+
+PRIMITIVE_MAP = {primitive.name: primitive for primitive in PRIMITIVES}

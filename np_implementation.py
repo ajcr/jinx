@@ -1,4 +1,8 @@
-"""Implementation of Parts of Speech in NumPy."""
+"""Implementation of Parts of Speech in NumPy.
+
+numba.vectorize is used to create generalised ufuncs which
+support accumulation/reduction, broadcasting, etc.
+"""
 
 import operator
 
@@ -41,11 +45,13 @@ def format_numeric(n):
 
 
 def atom_to_string(atom: Atom) -> str:
-    np.set_printoptions(
-        infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
-    )
     ensure_noun_implementation(atom)
-    return str(atom.implementation)
+    n = atom.implementation
+    if np.isinf(n):
+        return "__" if n < 0 else "_"
+    if n < 0:
+        return f"_{-n}"
+    return str(n)
 
 
 def array_to_string(array: Array) -> str:
@@ -66,6 +72,7 @@ def ndarray_or_scalar_to_noun(data) -> Noun:
 @numba.vectorize(["float64(int64)", "float64(float64)"])
 def percent_monad(y: np.ndarray | int | float) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
+    # N.B. np.reciprocal does not support integer types.
     return np.divide(1, y)
 
 
@@ -134,20 +141,21 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
     r = min(verb_rank, noun_rank)
     arr = noun.implementation
 
-    if r == 0 or noun_rank == 1:
+    # If the verb rank is 0 it applies to each atom of the array.
+    # NumPy's unary ufuncs are typically designed to work this way.
+    if r == 0:
         return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
-    # Verbs apply R-L, for non-commutative operations flip the axis
-    # that the verb is applied to.
-    if not verb.dyad.is_commutative:
-        arr = np.flip(arr, axis=(noun_rank - r))
+    # Applying a verb of rank R to an array is roughly the same as
+    # applying the function along an axis of the array.
+    axis = noun_rank - r
 
     try:
-        return verb.monad.function(arr, axis=(noun_rank - r))
+        return verb.monad.function(arr, axis=axis)
     except TypeError:
         pass
 
-    result = np.apply_over_axes(verb.monad.function, (noun_rank - r), arr)
+    result = np.apply_over_axes(verb.monad.function, axis, arr)
     return ndarray_or_scalar_to_noun(result)
 
 

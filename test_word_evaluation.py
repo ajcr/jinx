@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from vocabulary import Noun, Verb, Punctuation, Array, Atom, DataType
+from vocabulary import Punctuation, Atom, DataType
 from word_evaluation import evaluate_words
 from primitives import PRIMITIVE_MAP
 

@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from vocabulary import Punctuation, Atom, DataType
-from word_evaluation import evaluate_words
-from primitives import PRIMITIVE_MAP
+from jinx.vocabulary import Punctuation, Atom, DataType
+from jinx.word_evaluation import evaluate_words
+from jinx.primitives import PRIMITIVE_MAP
 
 
 LPAREN = Punctuation("(", name="Left Parenthesis")

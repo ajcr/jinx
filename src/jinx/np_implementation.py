@@ -9,7 +9,7 @@ import operator
 import numba
 import numpy as np
 
-from vocabulary import Noun, Atom, Array, DataType, Verb
+from jinx.vocabulary import Noun, Atom, Array, DataType, Verb
 
 
 DATATYPE_TO_NP_MAP = {

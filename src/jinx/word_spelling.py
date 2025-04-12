@@ -11,8 +11,8 @@ If a word does not map to a recognised part of speech, raise a SpellingError.
 
 import re
 
-from primitives import PRIMITIVES
-from vocabulary import (
+from jinx.primitives import PRIMITIVES
+from jinx.vocabulary import (
     Word,
     Atom,
     PartOfSpeechT,

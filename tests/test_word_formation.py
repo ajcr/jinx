@@ -1,6 +1,6 @@
 import pytest
 
-from word_formation import form_words, Word
+from jinx.word_formation import form_words, Word
 
 
 @pytest.mark.parametrize(

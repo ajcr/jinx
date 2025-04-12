@@ -8,7 +8,7 @@ spelling (recognition of fragments of a sentence).
 See: https://code.jsoftware.com/wiki/NuVoc
 """
 
-from vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
+from jinx.vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
 
 # The monad and dyad fields are not populated here (they default to None).
 # This is to allow the correct implementation of the verb to be looked up

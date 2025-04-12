@@ -14,7 +14,7 @@ with the original description (except '9' is now 'NUMERIC').
 from enum import Enum
 from typing import Mapping
 
-from vocabulary import Word
+from jinx.vocabulary import Word
 
 
 class State(Enum):

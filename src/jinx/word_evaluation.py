@@ -7,7 +7,7 @@ https://www.jsoftware.com/help/jforc/parsing_and_execution_ii.htm
 
 """
 
-from vocabulary import (
+from jinx.vocabulary import (
     PartOfSpeechT,
     Verb,
     Adverb,
@@ -21,7 +21,7 @@ from vocabulary import (
     Array,
 )
 
-from np_implementation import (
+from jinx.np_implementation import (
     array_to_string,
     atom_to_string,
     apply_monad,

@@ -1,8 +1,8 @@
 import cmd
 
-from word_formation import form_words
-from word_spelling import spell_words
-from word_evaluation import evaluate_words, print_words
+from jinx.word_formation import form_words
+from jinx.word_spelling import spell_words
+from jinx.word_evaluation import evaluate_words, print_words
 
 
 class Shell(cmd.Cmd):
@@ -18,5 +18,9 @@ class Shell(cmd.Cmd):
         print_words(words)
 
 
-if __name__ == "__main__":
+def main():
     Shell().cmdloop()
+
+
+if __name__ == "__main__":
+    main()

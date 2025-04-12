@@ -80,7 +80,7 @@ def dollar_monad(arr: np.ndarray | int | float) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
     if np.isscalar(arr):
         return None
-    return np.array(arr.shape, dtype=np.int64)
+    return np.array(arr.shape)
 
 
 def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.ndarray:
@@ -109,6 +109,15 @@ def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.
     return result
 
 
+def idot_monad(arr: np.ndarray | int) -> np.ndarray:
+    arr = np.atleast_1d(arr)
+    shape = abs(arr)
+    n = np.prod(shape)
+    axes_to_flip = np.where(arr < 0)[0]
+    result = np.arange(n).reshape(shape)
+    return np.flip(result, axes_to_flip)
+
+
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
     "EQ": (None, np.equal),
@@ -117,12 +126,30 @@ PRIMITIVE_MAP = {
     "STAR": (np.sign, np.multiply),
     "PERCENT": (percent_monad, np.divide),
     "DOLLAR": (dollar_monad, dollar_dyad),
+    "IDOT": (idot_monad, None),
 }
 
 
 def ensure_noun_implementation(noun: Noun) -> None:
     if noun.implementation is None:
         noun.implementation = convert_noun_np(noun)
+
+
+def _maybe_pad_with_fill_value(
+    arrays: list[np.ndarray], fill_value: int = 0
+) -> list[np.ndarray]:
+    shapes = [arr.shape for arr in arrays]
+    if len(set(shapes)) == 1:
+        return arrays
+
+    if len((len(shape) for shape in shapes)) != 1:
+        raise NotImplementedError("Cannot pad arrays of different ranks")
+
+    raise NotImplementedError("TODO: pad to max len in each axis")
+
+
+def _is_ufunc(func: callable) -> bool:
+    return isinstance(func, np.ufunc) or hasattr(func, "ufunc")
 
 
 def apply_monad(verb: Verb, noun: Noun) -> Noun:
@@ -132,30 +159,45 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
     # if the verb is not a primitive.
     verb.monad.function = PRIMITIVE_MAP[verb.name][0]
 
+    arr = noun.implementation
+
     if isinstance(noun, Atom):
-        return ndarray_or_scalar_to_noun(verb.monad.function(noun.implementation))
+        return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
     verb_rank = verb.monad.rank
     noun_rank = noun.implementation.ndim
-
     r = min(verb_rank, noun_rank)
-    arr = noun.implementation
 
     # If the verb rank is 0 it applies to each atom of the array.
-    # NumPy's unary ufuncs are typically designed to work this way.
-    if r == 0:
+    # NumPy's unary ufuncs are typically designed to work this way
+    # (along with ufunc.reduce, etc.). Apply the function directly
+    # here as an optimisation.
+    if r == 0 and _is_ufunc(verb.monad.function):
         return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
-    # Applying a verb of rank R to an array is roughly the same as
-    # applying the function along an axis of the array.
-    axis = noun_rank - r
+    # Look at the shape of the array and the rank of the verb to
+    # determine the frame and cell shape.
+    #
+    # The trailing r axes define the cell shape and the preceding
+    # axes define the frame shape. E.g. for r=2:
+    #
+    #   arr.shape = (n0, n1, n2, n3, n4)
+    #                ----------  ------
+    #                ^ frame     ^ cell
+    #
+    # If r=0, the frame shape is the same as the shape and the monad
+    # applies to each atom of the array.
+    if r == 0:
+        frame_shape = arr.shape
+        arr_reshaped = arr.ravel()
+    else:
+        cell_shape = arr.shape[-r:]
+        frame_shape = arr.shape[:-r]
+        arr_reshaped = arr.reshape(-1, *cell_shape)
 
-    try:
-        return verb.monad.function(arr, axis=axis)
-    except TypeError:
-        pass
-
-    result = np.apply_over_axes(verb.monad.function, axis, arr)
+    cells = [verb.monad.function(cell) for cell in arr_reshaped]
+    cells = _maybe_pad_with_fill_value(cells)
+    result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
     return ndarray_or_scalar_to_noun(result)
 
 

@@ -79,7 +79,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Shape", left_rank=1, right_rank=INFINITY),
     ),
     Conjunction("@", "AT"),
-    # More to be implemented...
+    Verb(
+        "i.",
+        "IDOT",
+        monad=Monad(name="Integers", rank=1),
+        dyad=Dyad(name="Index Of", left_rank=INFINITY, right_rank=INFINITY),
+    ),
 ]
 
 

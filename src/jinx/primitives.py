@@ -69,6 +69,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     ),
     Verb("%.", "PERCENTDOT"),
     Verb("%:", "PERCENTCO"),
+    Verb(
+        "<.",
+        "LTDOT",
+        monad=Monad(name="Floor", rank=0),
+        dyad=Dyad(name="Min", left_rank=0, right_rank=0),
+    ),
+    Verb(
+        ">.",
+        "GTDOT",
+        monad=Monad(name="Ceiling", rank=0),
+        dyad=Dyad(name="Max", left_rank=0, right_rank=0),
+    ),
     Adverb("/", "SLASH"),
     Adverb("/.", "SLASHDOT"),
     Verb("/:", "SLASHCO"),

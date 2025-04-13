@@ -144,6 +144,8 @@ PRIMITIVE_MAP = {
     "STAR": (np.sign, np.multiply),
     "PERCENT": (percent_monad, np.divide),
     "DOLLAR": (dollar_monad, dollar_dyad),
+    "LTDOT": (np.floor, np.minimum),
+    "GTDOT": (np.ceil, np.maximum),
     "IDOT": (idot_monad, None),
     "SLASH": (slash_monad, None),
 }

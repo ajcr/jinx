@@ -24,7 +24,7 @@ from jinx.word_spelling import parse_float, parse_integer
         pytest.param("_", None, id="_"),
         pytest.param("__", None, id="__"),
         pytest.param("_x", None, id="_x"),
-        pytest.param("_3.1", None, id="_3.1"), 
+        pytest.param("_3.1", None, id="_3.1"),
     ],
 )
 def test_parse_integer(value, expected):
@@ -44,7 +44,7 @@ def test_parse_integer(value, expected):
         pytest.param("3.1x", None, id="3.1x"),
         pytest.param("_", float("inf"), id="_"),
         pytest.param("__", -float("inf"), id="__"),
-        pytest.param("_3.1", -3.1, id="_3.1"), 
+        pytest.param("_3.1", -3.1, id="_3.1"),
     ],
 )
 def test_parse_float(value, expected):

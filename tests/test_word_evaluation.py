@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Punctuation, Atom, DataType
+from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb
 from jinx.word_evaluation import evaluate_words
 from jinx.primitives import PRIMITIVE_MAP
 
@@ -11,6 +11,7 @@ RPAREN = Punctuation(")", name="Right Parenthesis")
 
 MINUS = PRIMITIVE_MAP["MINUS"]
 PLUS = PRIMITIVE_MAP["PLUS"]
+SLASH = PRIMITIVE_MAP["SLASH"]
 
 
 @pytest.mark.parametrize(
@@ -60,7 +61,14 @@ PLUS = PRIMITIVE_MAP["PLUS"]
             id="-(1)",
         ),
         pytest.param(
-            [LPAREN, MINUS, RPAREN, LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN],
+            [
+                LPAREN,
+                MINUS,
+                RPAREN,
+                LPAREN,
+                Atom(data_type=DataType.Integer, data=1),
+                RPAREN,
+            ],
             [
                 Atom(
                     data_type=DataType.Integer, data=None, implementation=np.int64(-1)
@@ -134,6 +142,70 @@ PLUS = PRIMITIVE_MAP["PLUS"]
         ),
     ],
 )
-def test_word_evaluation(words, expected):
+def test_word_evaluation_basic_arithmetic(words, expected):
+    result = evaluate_words(words)
+    assert result[1:] == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [PLUS, SLASH],
+            "+/",
+            id="+/",
+        ),
+        pytest.param(
+            [LPAREN, PLUS, SLASH, RPAREN],
+            "+/",
+            id="(+/)",
+        ),
+    ],
+)
+def test_word_evaluation_adverb_creation(words, expected):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert isinstance(result[1], Verb)
+    assert result[1].spelling == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [PLUS, SLASH, Atom(data_type=DataType.Integer, data=77)],
+            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
+            id="+/ 77",
+        ),
+        pytest.param(
+            [PLUS, SLASH, Array(data_type=DataType.Integer, data=[1, 3, 5])],
+            [Array(data_type=DataType.Integer, data=None, implementation=np.array(9))],
+            id="+/ 1 3 5",
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PLUS,
+                SLASH,
+                Array(data_type=DataType.Integer, data=[8, 3, 5]),
+                RPAREN,
+            ],
+            [Array(data_type=DataType.Integer, data=None, implementation=np.array(16))],
+            id="(+/ 8 3 5)",
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PLUS,
+                SLASH,
+                RPAREN,
+                Array(data_type=DataType.Integer, data=[8, 3, 5]),
+            ],
+            [Array(data_type=DataType.Integer, data=None, implementation=np.array(16))],
+            id="(+/) 8 3 5",
+        ),
+    ],
+)
+def test_word_evaluation_adverb_application(words, expected):
     result = evaluate_words(words)
     assert result[1:] == expected

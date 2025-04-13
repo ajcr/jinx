@@ -26,6 +26,7 @@ from jinx.np_implementation import (
     atom_to_string,
     apply_monad,
     apply_dyad,
+    apply_adverb_to_verb,
 )
 
 
@@ -82,11 +83,7 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
         while True:
             match fragment:
                 # 0. Monad
-                case (
-                    [None | "=." | "=:" | "(", Verb(), Noun(), _] |
-                    [None | "=." | "=:" | "(", Verb(), Noun()]
-
-                ):
+                case None | "=." | "=:" | "(", Verb(), Noun():
                     edge, verb, noun = fragment
                     result = apply_monad(verb, noun)
                     if edge == "(" and level > 0:
@@ -94,25 +91,13 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     fragment[1:] = [result]
 
                 # 1. Monad
-                case (
-                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                    Verb(),
-                    Verb(),
-                    Noun(),
-                ):
+                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Adverb() | Verb(), Verb(), Noun():
                     edge, _, verb, noun = fragment
                     result = apply_monad(verb, noun)
-                    if edge == "(" and level > 0:
-                        return result
                     fragment[2:] = [result]
 
                 # 2. Dyad
-                case (
-                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                    Noun(),
-                    Verb(),
-                    Noun(),
-                ):
+                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Verb(), Noun():
                     edge, noun, verb, noun_2 = fragment
                     result = apply_dyad(verb, noun, noun_2)
                     if edge == "(" and level > 0:
@@ -121,12 +106,18 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
                 # 3. Adverb
                 case (
-                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                    Verb() | Noun(),
-                    Adverb(),
-                    _,
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb()] | 
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb(), _]
                 ):
-                    raise NotImplementedError("adverb")
+                    edge, verb, adverb, *last = fragment
+                    result = apply_adverb_to_verb(verb, adverb)
+                    if edge == "(" and last == [")"] and level > 0:
+                        return result
+                    fragment[1:3] = [result]
+
+                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Adverb():
+                    edge, noun, adverb = fragment
+                    raise NotImplementedError("adverb application to noun")
 
                 # 4. Conjunction
                 case (

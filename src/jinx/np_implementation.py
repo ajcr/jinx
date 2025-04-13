@@ -5,12 +5,15 @@ support accumulation/reduction, broadcasting, etc.
 """
 
 import operator
+from typing import Callable
 
 import numba
 import numpy as np
 
-from jinx.vocabulary import Noun, Atom, Array, DataType, Verb
+from jinx.vocabulary import Noun, Atom, Array, DataType, Verb, Adverb, Monad
 
+
+INFINITY = float("inf")
 
 DATATYPE_TO_NP_MAP = {
     DataType.Integer: np.int64,
@@ -78,7 +81,7 @@ def percent_monad(y: np.ndarray | int | float) -> np.ndarray:
 
 def dollar_monad(arr: np.ndarray | int | float) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
-    if np.isscalar(arr):
+    if np.isscalar(arr) or arr.size == 1:
         return None
     return np.array(arr.shape)
 
@@ -118,6 +121,21 @@ def idot_monad(arr: np.ndarray | int) -> np.ndarray:
     return np.flip(result, axes_to_flip)
 
 
+def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
+    if verb.dyad.function is None:
+        dyad = PRIMITIVE_MAP[verb.name][1]
+    else:
+        dyad = verb.dyad.function
+
+    if _is_ufunc(dyad) and verb.dyad.is_commutative:
+        return dyad.reduce
+
+    # TODO: generate a ufunc on the fly.
+    raise NotImplementedError(
+        "Adverb '/' only supports commutative operations with ufuncs for now"
+    )
+
+
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
     "EQ": (None, np.equal),
@@ -127,6 +145,7 @@ PRIMITIVE_MAP = {
     "PERCENT": (percent_monad, np.divide),
     "DOLLAR": (dollar_monad, dollar_dyad),
     "IDOT": (idot_monad, None),
+    "SLASH": (slash_monad, None),
 }
 
 
@@ -157,7 +176,8 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
 
     # TODO: update primitive map at startup time - ignore
     # if the verb is not a primitive.
-    verb.monad.function = PRIMITIVE_MAP[verb.name][0]
+    if verb.monad.function is None:
+        verb.monad.function = PRIMITIVE_MAP[verb.name][0]
 
     arr = noun.implementation
 
@@ -165,13 +185,15 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
         return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
     verb_rank = verb.monad.rank
+    if verb_rank < 0:
+        raise NotImplementedError("Negative verb rank not yet supported")
+
     noun_rank = noun.implementation.ndim
     r = min(verb_rank, noun_rank)
 
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way
-    # (along with ufunc.reduce, etc.). Apply the function directly
-    # here as an optimisation.
+    # Apply the function directly here as an optimisation.
     if r == 0 and _is_ufunc(verb.monad.function):
         return ndarray_or_scalar_to_noun(verb.monad.function(arr))
 
@@ -212,3 +234,18 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
     verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
     result = verb.dyad.function(noun_1.implementation, noun_2.implementation)
     return ndarray_or_scalar_to_noun(result)
+
+
+def apply_adverb_to_verb(verb: Verb, adverb: Adverb) -> Verb:
+    if adverb.name in PRIMITIVE_MAP:
+        monad_function = PRIMITIVE_MAP[adverb.name][0](verb)
+    else:
+        raise NotImplementedError(f"Adverb '{adverb.spelling}' not supported")
+
+    spelling = verb.spelling + adverb.spelling
+
+    return Verb(
+        spelling=spelling,
+        name=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad_function),
+    )

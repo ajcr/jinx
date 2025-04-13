@@ -85,6 +85,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Integers", rank=1),
         dyad=Dyad(name="Index Of", left_rank=INFINITY, right_rank=INFINITY),
     ),
+    Adverb(
+        "/",
+        "SLASH",
+        monad=Monad(name="Insert", rank=INFINITY),
+        dyad=Dyad(name="Table", left_rank=INFINITY, right_rank=INFINITY),
+    ),
 ]
 
 

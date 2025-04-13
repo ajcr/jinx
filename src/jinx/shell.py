@@ -6,7 +6,7 @@ from jinx.word_evaluation import evaluate_words, print_words
 
 
 class Shell(cmd.Cmd):
-    prompt = "(jinx) "
+    prompt = "    "
 
     def do_exit(self, _):
         return True

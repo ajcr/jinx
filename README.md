@@ -8,15 +8,15 @@ A work in progress.
 
 Start the interactive shell with `jinx`.
 
-Atoms and (multidimensional) arrays:
+Atoms (scalars) and multidimensional arrays:
 ```j
-(jinx) 3
-3
+    _3
+_3
 
-(jinx) 3 5 7 11 13
+    3 5 7 11 13
 [3 5 7 11 13]
 
-(jinx) 3 2 $ 7 1 0
+    3 2 $ 7 1 0
 [[ 7  1]
  [ 0  7]
  [ 1  0]]
@@ -24,17 +24,25 @@ Atoms and (multidimensional) arrays:
 
 Monadic and dyadic application of verbs (applied right-to-left, parentheses force precedence):
 ```j
-(jinx) -3.141
+     -3.141
 _3.141
 
-(jinx) 10 - 3 5 7 11 13
+    10 - 3 5 7 11 13
 [7 5 3 _1 _3]
 
-(jinx) 8 % 4 - 2
+    8 % 4 - 2
 4
 
-(jinx) (8 % 4) - 2
+    (8 % 4) - 2
 0
+```
+
+Adverbs to modify verbs (e.g. apply sum over axis of a multidimensional array):
+```j
+    +/ i. 2 3 4
+[[ 12  14  16  18]
+ [ 20  22  24  26]
+ [ 28  30  32  34]]
 ```
 
 ## Motivation

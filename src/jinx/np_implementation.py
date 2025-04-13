@@ -143,6 +143,7 @@ PRIMITIVE_MAP = {
     "PLUS": (np.conj, np.add),
     "STAR": (np.sign, np.multiply),
     "PERCENT": (percent_monad, np.divide),
+    "HAT": (np.exp, np.power),
     "DOLLAR": (dollar_monad, dollar_dyad),
     "LTDOT": (np.floor, np.minimum),
     "GTDOT": (np.ceil, np.maximum),
@@ -165,6 +166,8 @@ def _maybe_pad_with_fill_value(
 
     if len((len(shape) for shape in shapes)) != 1:
         raise NotImplementedError("Cannot pad arrays of different ranks")
+
+    dims = [max(dim) for dim in zip(*shapes)]
 
     raise NotImplementedError("TODO: pad to max len in each axis")
 

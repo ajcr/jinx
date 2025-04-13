@@ -70,6 +70,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Verb("%.", "PERCENTDOT"),
     Verb("%:", "PERCENTCO"),
     Verb(
+        "^",
+        "HAT",
+        monad=Monad(name="Exponential", rank=0),
+        dyad=Dyad(name="Power", left_rank=0, right_rank=0, is_commutative=False),
+    ),
+    Verb(
         "<.",
         "LTDOT",
         monad=Monad(name="Floor", rank=0),

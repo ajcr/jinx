@@ -6,17 +6,17 @@ A work in progress.
 
 ## Examples
 
-Start the interactive shell with `jinx`.
+Start the interactive shell with `jinx`. As in the official J implementation, the shell prompt is four spaces, so commands appear indented.
 
 Atoms (scalars) and multidimensional arrays:
 ```j
-    _3
+    _3           NB. single integer (atom)
 _3
 
-    3 5 7 11 13
+    3 5 7 11 13  NB. rank 1 array of integers (atoms)
 [3 5 7 11 13]
 
-    3 2 $ 7 1 0
+    3 2 $ 7 1 0  NB. rank 2 array created using $ dyad
 [[ 7  1]
  [ 0  7]
  [ 1  0]]
@@ -39,7 +39,7 @@ _3.141
 
 Adverbs to modify verbs (e.g. apply sum over axis of a multidimensional array):
 ```j
-    +/ i. 2 3 4
+    +/ i. 2 3 4  NB. verb of infinite rank applies correctly over rank 3 array
 [[ 12  14  16  18]
  [ 20  22  24  26]
  [ 28  30  32  34]]

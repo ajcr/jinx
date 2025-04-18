@@ -188,7 +188,7 @@ def _maybe_pad_with_fill_value(
     if len(set(shapes)) == 1:
         return arrays
 
-    if len((len(shape) for shape in shapes)) != 1:
+    if len({len(shape) for shape in shapes}) != 1:
         raise NotImplementedError("Cannot pad arrays of different ranks")
 
     dims = [max(dim) for dim in zip(*shapes)]
@@ -288,11 +288,27 @@ def apply_adverb_to_verb(verb: Verb, adverb: Adverb) -> Verb:
     )
 
 
+def ensure_verb_implementation(verb: Verb) -> None:
+    if verb.monad and verb.monad.function is None and verb.name in PRIMITIVE_MAP:
+        verb.monad.function = PRIMITIVE_MAP[verb.name][0]
+    if verb.dyad and verb.dyad.function is None and verb.name in PRIMITIVE_MAP:
+        verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
+
+
 # Applying a conjunction usually produces a verb (but not always).
 # Assume the simple case here.
 def apply_conjunction(
     verb_or_noun_1: Verb | Noun, conjunction: Conjunction, verb_or_noun_2: Verb | Noun
 ) -> Verb:
+    if isinstance(verb_or_noun_1, Noun):
+        ensure_noun_implementation(verb_or_noun_1)
+    if isinstance(verb_or_noun_2, Noun):
+        ensure_noun_implementation(verb_or_noun_2)
+    if isinstance(verb_or_noun_1, Verb):
+        ensure_verb_implementation(verb_or_noun_1)
+    if isinstance(verb_or_noun_2, Verb):
+        ensure_verb_implementation(verb_or_noun_2)
+
     f = PRIMITIVE_MAP[conjunction.name]
     return f(verb_or_noun_1, verb_or_noun_2)
 

@@ -134,7 +134,7 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun()] |
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), _]
                 ):
-                    edge, verb_or_noun_1, conjunction, verb_or_noun_2, *_ = fragment
+                    edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
                     result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
                     if edge == "(" and last == [")"] and level > 0:
                         return result

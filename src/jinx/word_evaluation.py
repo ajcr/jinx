@@ -23,7 +23,7 @@ from jinx.vocabulary import (
 )
 
 from jinx.np_implementation import (
-    array_to_string,
+    array_to_string_2,
     atom_to_string,
     apply_monad,
     apply_dyad,
@@ -42,7 +42,7 @@ def str_(word: Atom | Array | Verb) -> str:
     if isinstance(word, Atom):
         return atom_to_string(word)
     elif isinstance(word, Array):
-        return array_to_string(word)
+        return array_to_string_2(word)
     elif isinstance(word, Verb):
         return word.spelling
     else:

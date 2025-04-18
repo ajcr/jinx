@@ -1,17 +1,24 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb
+from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb, Conjunction, Monad
 from jinx.word_evaluation import evaluate_words
 from jinx.primitives import PRIMITIVE_MAP
 
-
+## Words
+# Punctuation
 LPAREN = Punctuation("(", name="Left Parenthesis")
 RPAREN = Punctuation(")", name="Right Parenthesis")
 
+# Verbs
 MINUS = PRIMITIVE_MAP["MINUS"]
 PLUS = PRIMITIVE_MAP["PLUS"]
+
+# Adverbs
 SLASH = PRIMITIVE_MAP["SLASH"]
+
+# Conjunctions
+RANK = Conjunction('"', "RANK")
 
 
 @pytest.mark.parametrize(
@@ -209,3 +216,49 @@ def test_word_evaluation_adverb_creation(words, expected):
 def test_word_evaluation_adverb_application(words, expected):
     result = evaluate_words(words)
     assert result[1:] == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected_verb_spelling",
+    [
+        pytest.param(
+            [PLUS, RANK, Atom(data_type=DataType.Integer, data=0)],
+            '+"0',
+            id='+"0',
+        ),
+        pytest.param(
+            [PLUS, RANK, Atom(data_type=DataType.Integer, data=1)],
+            '+"1',
+            id='+"1',
+        ),
+        pytest.param(
+            [LPAREN, PLUS, RPAREN, RANK, Atom(data_type=DataType.Integer, data=1)],
+            '+"1',
+            id='(+)"1',
+        ),
+        pytest.param(
+            [PLUS, SLASH, RANK, Atom(data_type=DataType.Integer, data=2)],
+            '+/"2',
+            id='+/"2',
+        ),
+        pytest.param(
+            [
+                PLUS,
+                SLASH,
+                RANK,
+                LPAREN,
+                Atom(data_type=DataType.Integer, data=2),
+                RPAREN,
+            ],
+            '+/"2',
+            id='+/"(2)',
+        ),
+    ],
+)
+def test_word_evaluation_verb_conjunction_noun_application(
+    words, expected_verb_spelling
+):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert isinstance(result[1], Verb)
+    assert result[1].spelling == expected_verb_spelling

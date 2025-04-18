@@ -4,6 +4,7 @@ In J, parsing and evaluation happen simultaneously.
 
 https://www.jsoftware.com/ioj/iojSent.htm#Parsing
 https://www.jsoftware.com/help/jforc/parsing_and_execution_ii.htm
+https://code.jsoftware.com/wiki/Vocabulary/Modifiers
 
 """
 
@@ -27,6 +28,7 @@ from jinx.np_implementation import (
     apply_monad,
     apply_dyad,
     apply_adverb_to_verb,
+    apply_conjunction,
 )
 
 
@@ -107,12 +109,20 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                 # 3. Adverb
                 case (
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb()] | 
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb(), _]
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb(), *_]
                 ):
                     edge, verb, adverb, *last = fragment
-                    result = apply_adverb_to_verb(verb, adverb)
+
+                    if isinstance(edge, Adverb):
+                        # TODO: grab entire verb/noun phrase to the left of the adverb
+                        raise NotImplementedError("adverb application to adverb")
+
+                    else:
+                        result = apply_adverb_to_verb(verb, adverb)
+
                     if edge == "(" and last == [")"] and level > 0:
                         return result
+
                     fragment[1:3] = [result]
 
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Adverb():
@@ -121,12 +131,14 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
                 # 4. Conjunction
                 case (
-                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
-                    Verb() | Noun(),
-                    Conjunction(),
-                    Verb() | Noun(),
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun()] |
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), _]
                 ):
-                    raise NotImplementedError("conjunction")
+                    edge, verb_or_noun_1, conjunction, verb_or_noun_2, *_ = fragment
+                    result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
+                    if edge == "(" and last == [")"] and level > 0:
+                        return result
+                    fragment[1:4] = [result]
 
                 # 5. Fork
                 case (

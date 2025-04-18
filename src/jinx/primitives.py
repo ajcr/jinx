@@ -109,6 +109,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Insert", rank=INFINITY),
         dyad=Dyad(name="Table", left_rank=INFINITY, right_rank=INFINITY),
     ),
+    Conjunction('"', "RANK"),
 ]
 
 

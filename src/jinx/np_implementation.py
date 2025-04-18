@@ -4,13 +4,23 @@ numba.vectorize is used to create generalised ufuncs which
 support accumulation/reduction, broadcasting, etc.
 """
 
+import dataclasses
 import operator
 from typing import Callable
 
 import numba
 import numpy as np
 
-from jinx.vocabulary import Noun, Atom, Array, DataType, Verb, Adverb, Monad
+from jinx.vocabulary import (
+    Noun,
+    Atom,
+    Array,
+    DataType,
+    Verb,
+    Adverb,
+    Monad,
+    Conjunction,
+)
 
 
 INFINITY = float("inf")
@@ -136,6 +146,18 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
     )
 
 
+def rank_conjunction(verb: Verb, noun: Atom) -> Verb:
+    ensure_noun_implementation(noun)
+    rank = noun.implementation
+    spelling = f'{verb.spelling}"{rank}'
+    return dataclasses.replace(
+        verb,
+        spelling=spelling,
+        name=spelling,
+        monad=dataclasses.replace(verb.monad, rank=rank),
+    )
+
+
 PRIMITIVE_MAP = {
     # NAME: (MONDAD, DYAD)
     "EQ": (None, np.equal),
@@ -149,6 +171,7 @@ PRIMITIVE_MAP = {
     "GTDOT": (np.ceil, np.maximum),
     "IDOT": (idot_monad, None),
     "SLASH": (slash_monad, None),
+    "RANK": rank_conjunction,
 }
 
 
@@ -168,8 +191,16 @@ def _maybe_pad_with_fill_value(
         raise NotImplementedError("Cannot pad arrays of different ranks")
 
     dims = [max(dim) for dim in zip(*shapes)]
+    padded_arrays = []
 
-    raise NotImplementedError("TODO: pad to max len in each axis")
+    for arr in arrays:
+        pad_widths = [(0, dim - shape) for shape, dim in zip(arr.shape, dims)]
+        padded_array = np.pad(
+            arr, pad_widths, mode="constant", constant_values=fill_value
+        )
+        padded_arrays.append(padded_array)
+
+    return padded_arrays
 
 
 def _is_ufunc(func: callable) -> bool:
@@ -254,3 +285,12 @@ def apply_adverb_to_verb(verb: Verb, adverb: Adverb) -> Verb:
         name=spelling,
         monad=Monad(name=spelling, rank=INFINITY, function=monad_function),
     )
+
+
+# Applying a conjunction usually produces a verb (but not always).
+# Assume the simple case here.
+def apply_conjunction(
+    verb_or_noun_1: Verb | Noun, conjunction: Conjunction, verb_or_noun_2: Verb | Noun
+) -> Verb:
+    f = PRIMITIVE_MAP[conjunction.name]
+    return f(verb_or_noun_1, verb_or_noun_2)

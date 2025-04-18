@@ -181,7 +181,7 @@ def ensure_noun_implementation(noun: Noun) -> None:
         noun.implementation = convert_noun_np(noun)
 
 
-def _maybe_pad_with_fill_value(
+def maybe_pad_with_fill_value(
     arrays: list[np.ndarray], fill_value: int = 0
 ) -> list[np.ndarray]:
     shapes = [arr.shape for arr in arrays]
@@ -210,11 +210,7 @@ def _is_ufunc(func: callable) -> bool:
 
 def apply_monad(verb: Verb, noun: Noun) -> Noun:
     ensure_noun_implementation(noun)
-
-    # TODO: update primitive map at startup time - ignore
-    # if the verb is not a primitive.
-    if verb.monad.function is None:
-        verb.monad.function = PRIMITIVE_MAP[verb.name][0]
+    ensure_verb_implementation(verb)
 
     arr = noun.implementation
 
@@ -255,7 +251,7 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
     cells = [verb.monad.function(cell) for cell in arr_reshaped]
-    cells = _maybe_pad_with_fill_value(cells)
+    cells = maybe_pad_with_fill_value(cells)
     result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
     return ndarray_or_scalar_to_noun(result)
 
@@ -265,10 +261,8 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
 
     ensure_noun_implementation(noun_1)
     ensure_noun_implementation(noun_2)
+    ensure_verb_implementation(verb)
 
-    # TODO: update primitive map at startup time - ignore
-    # if the verb is not a primitive.
-    verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
     result = verb.dyad.function(noun_1.implementation, noun_2.implementation)
     return ndarray_or_scalar_to_noun(result)
 

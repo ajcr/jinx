@@ -5,7 +5,7 @@ from src.jinx.vocabulary import (
     Array,
     DataType,
 )
-from src.jinx.np_implementation import array_to_string_2
+from src.jinx.np_implementation import array_to_string_2, maybe_pad_with_fill_value
 
 
 @pytest.mark.parametrize(
@@ -75,3 +75,33 @@ from src.jinx.np_implementation import array_to_string_2
 def test_array_to_string_2(array, expected):
     result = array_to_string_2(array, max_cols=5)
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "arrays, expected",
+    [
+        pytest.param(
+            [np.array([1, 2, 3])],
+            [np.array([1, 2, 3])],
+            id="[1, 2, 3]",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3]), np.array([7])],
+            [np.array([1, 2, 3]), np.array([7, 0, 0])],
+            id="[1, 2, 3], [7]",
+        ),
+        pytest.param(
+            [np.array([[1, 2], [3, 4]]), np.array([[7]])],
+            [np.array([[1, 2], [3, 4]]), np.array([[7, 0], [0, 0]])],
+            id="[[1, 2], [3, 4]], [[7]]",
+        ),
+        pytest.param(
+            [np.array([[1, 2], [3, 4]]), np.array([[7], [8]])],
+            [np.array([[1, 2], [3, 4]]), np.array([[7, 0], [8, 0]])],
+            id="[[1, 2], [3, 4]], [[7], [8]]",
+        ),
+    ],
+)
+def test_maybe_pad_with_fill_value(arrays, expected):
+    result = maybe_pad_with_fill_value(arrays, fill_value=0)
+    assert [np.array_equal(arr, expected) for arr in result]

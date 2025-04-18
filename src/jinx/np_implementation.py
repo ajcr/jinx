@@ -123,7 +123,7 @@ def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.
     return result
 
 
-def idot_monad(arr: np.ndarray | int) -> np.ndarray:
+def idot_monad(arr: np.ndarray) -> np.ndarray:
     arr = np.atleast_1d(arr)
     shape = abs(arr)
     n = np.prod(shape)
@@ -352,7 +352,7 @@ def rank_n_array_string(
 
 def array_to_string_2(array: Array, max_cols: int = MAX_COLS) -> str:
     ensure_noun_implementation(array)
-    arr = array.implementation
+    arr = np.atleast_1d(array.implementation)
     ndim = arr.ndim
     dtype = arr.dtype
 

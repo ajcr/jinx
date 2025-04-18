@@ -323,6 +323,9 @@ def rank_1_array_string(
 def rank_n_array_string(
     arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
+    if arr.ndim == 1:
+        return rank_1_array_string(arr, justify, append_ellisis=append_ellisis)
+
     subarray_strs = []
 
     for subarr in arr:
@@ -337,7 +340,7 @@ def rank_n_array_string(
     return sep.join(subarray_strs)
 
 
-def array_to_string_2(array: Array) -> str:
+def array_to_string_2(array: Array, max_cols: int = MAX_COLS) -> str:
     ensure_noun_implementation(array)
     arr = array.implementation
     ndim = arr.ndim
@@ -347,9 +350,8 @@ def array_to_string_2(array: Array) -> str:
     if np.issubdtype(dtype, np.floating):
         return array_to_string(array)
 
-    # Crop to max cols
-    if arr.shape[-1] > MAX_COLS:
-        arr = arr[..., :MAX_COLS]
+    if arr.shape[-1] > max_cols:
+        arr = arr[..., :max_cols]
         append_ellipsis = True
     else:
         append_ellipsis = False

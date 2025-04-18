@@ -6,6 +6,7 @@ support accumulation/reduction, broadcasting, etc.
 
 import dataclasses
 import operator
+import os
 from typing import Callable
 
 import numba
@@ -300,14 +301,14 @@ MAX_COLS = 10
 
 
 def rank_1_array_string(
-    arr: np.ndarray, padding: list[int], append_ellisis: bool = False
+    arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
     assert arr.ndim == 1
-    assert len(padding) == len(arr)
+    assert len(justify) == len(arr)
 
     scalars = []
 
-    for scalar, pad in zip(arr, padding):
+    for scalar, pad in zip(arr, justify):
         sign = "_" if scalar < 0 else ""
         str_ = f"{sign}{abs(scalar)}"
         str_ = str_.rjust(pad)
@@ -320,19 +321,19 @@ def rank_1_array_string(
 
 
 def rank_n_array_string(
-    arr: np.ndarray, padding: list[int], append_ellisis: bool = False
+    arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
     subarray_strs = []
-    sep = "\n" * (arr.ndim - 1)
 
     for subarr in arr:
         if subarr.ndim == 1:
-            str_ = rank_1_array_string(subarr, padding, append_ellisis=append_ellisis)
+            str_ = rank_1_array_string(subarr, justify, append_ellisis=append_ellisis)
         else:
-            str_ = rank_n_array_string(subarr, padding, append_ellisis=append_ellisis)
+            str_ = rank_n_array_string(subarr, justify, append_ellisis=append_ellisis)
 
         subarray_strs.append(str_)
 
+    sep = os.linesep * (arr.ndim - 1)
     return sep.join(subarray_strs)
 
 
@@ -342,7 +343,7 @@ def array_to_string_2(array: Array) -> str:
     ndim = arr.ndim
     dtype = arr.dtype
 
-    # For now, just use NumPy for printing floating arrays
+    # For now, just use NumPy for printing float arrays
     if np.issubdtype(dtype, np.floating):
         return array_to_string(array)
 
@@ -371,6 +372,6 @@ def array_to_string_2(array: Array) -> str:
     )
     columnwise_max_digits[columnwise_negative_with_max_digits] += 1
 
-    padding = columnwise_max_digits.tolist()
+    justify = columnwise_max_digits.tolist()
 
-    return rank_n_array_string(arr, padding, append_ellisis=append_ellipsis)
+    return rank_n_array_string(arr, justify, append_ellisis=append_ellipsis)

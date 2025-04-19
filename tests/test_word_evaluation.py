@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb, Conjunction, Monad
+from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb, Conjunction
 from jinx.word_evaluation import evaluate_words
 from jinx.primitives import PRIMITIVE_MAP
 
@@ -13,6 +13,7 @@ RPAREN = Punctuation(")", name="Right Parenthesis")
 # Verbs
 MINUS = PRIMITIVE_MAP["MINUS"]
 PLUS = PRIMITIVE_MAP["PLUS"]
+IDOT = PRIMITIVE_MAP["IDOT"]
 
 # Adverbs
 SLASH = PRIMITIVE_MAP["SLASH"]
@@ -253,6 +254,18 @@ def test_word_evaluation_adverb_application(words, expected):
             '+/"2',
             id='+/"(2)',
         ),
+        pytest.param(
+            [
+                PLUS,
+                SLASH,
+                LPAREN,
+                RANK,
+                RPAREN,
+                Atom(data_type=DataType.Integer, data=2),
+            ],
+            '+/"2',
+            id='+/(")2',
+        ),
     ],
 )
 def test_word_evaluation_verb_conjunction_noun_application(
@@ -262,3 +275,109 @@ def test_word_evaluation_verb_conjunction_noun_application(
     assert len(result) == 2
     assert isinstance(result[1], Verb)
     assert result[1].spelling == expected_verb_spelling
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
+                PLUS,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                LPAREN,
+                Atom(data_type=DataType.Integer, data=5),
+                RPAREN,
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            id='+"0 (5)',
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PLUS,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                RPAREN,
+                Atom(data_type=DataType.Integer, data=5),
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            id='(+"0) 5',
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PLUS,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                RPAREN,
+                LPAREN,
+                Atom(data_type=DataType.Integer, data=5),
+                RPAREN,
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            id='(+"0) (5)',
+        ),
+    ],
+)
+def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected):
+    result = evaluate_words(words)
+    assert result[1:] == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
+                PLUS,
+                SLASH,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                LPAREN,
+                Atom(data_type=DataType.Integer, data=5),
+                RPAREN,
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            id='+/"0 (5)',
+        ),
+    ],
+)
+def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
+    words, expected
+):
+    result = evaluate_words(words)
+    assert result[1:] == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
+                PLUS,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                PLUS,
+                Atom(data_type=DataType.Integer, data=9),
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            id='+"0 + 9',
+        ),
+        pytest.param(
+            [
+                PLUS,
+                SLASH,
+                RANK,
+                Atom(data_type=DataType.Integer, data=0),
+                PLUS,
+                Atom(data_type=DataType.Integer, data=9),
+            ],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            id='+/"0 + 9',
+        ),
+    ],
+)
+def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, expected):
+    result = evaluate_words(words)
+    assert result[1:] == expected

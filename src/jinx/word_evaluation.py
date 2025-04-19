@@ -43,7 +43,7 @@ def str_(word: Atom | Array | Verb) -> str:
         return atom_to_string(word)
     elif isinstance(word, Array):
         return array_to_string_2(word)
-    elif isinstance(word, Verb):
+    elif isinstance(word, (Verb, Conjunction)):
         return word.spelling
     else:
         raise NotImplementedError(f"Cannot print word of type {type(word)}")
@@ -98,6 +98,13 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     result = apply_monad(verb, noun)
                     fragment[2:] = [result]
 
+                # Another monad case for a conjunction that: this will be handled by correctly
+                # building modifiers in future, see: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
+                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Conjunction(), Noun(), Verb(), Noun():
+                    edge, conjunction, noun, verb, noun_2 = fragment
+                    result = apply_monad(verb, noun_2)
+                    fragment[3:] = [result]
+
                 # 2. Dyad
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Verb(), Noun():
                     edge, noun, verb, noun_2 = fragment
@@ -127,7 +134,7 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Adverb():
                     edge, noun, adverb = fragment
-                    raise NotImplementedError("adverb application to noun")
+                    raise NotImplementedError("adverb application to noun not implemented")
 
                 # 4. Conjunction
                 case (
@@ -135,6 +142,8 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), _]
                 ):
                     edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
+                    # TODO: find entire verb phrase on the left of the conjunction before applying the conjunction
+                    # See: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
                     result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
                     if edge == "(" and last == [")"] and level > 0:
                         return result

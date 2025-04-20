@@ -12,20 +12,20 @@ from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
 
 
 @numba.vectorize(["float64(int64)", "float64(float64)"])
-def percent_monad(y: np.ndarray | int | float) -> np.ndarray:
+def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
-    # N.B. np.reciprocal does not support integer types.
+    # N.B. np.reciprocal does not support integer types, use division instead.
     return np.divide(1, y)
 
 
-def dollar_monad(arr: np.ndarray | int | float) -> np.ndarray | None:
+def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
-    if np.isscalar(arr) or arr.size == 1:
+    if np.isscalar(y) or y.size == 1:
         return None
-    return np.array(arr.shape)
+    return np.array(y.shape)
 
 
-def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.ndarray:
+def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """$ dyad: create an array with a particular shape.
 
     Does not support custom fill values at the moment.
@@ -51,8 +51,8 @@ def dollar_dyad(x: np.ndarray | int | float, y: np.ndarray | int | float) -> np.
     return result
 
 
-def idot_monad(arr: np.ndarray) -> np.ndarray:
-    arr = np.atleast_1d(arr)
+def idot_monad(y: np.ndarray) -> np.ndarray:
+    arr = np.atleast_1d(y)
     shape = abs(arr)
     n = np.prod(shape)
     axes_to_flip = np.where(arr < 0)[0]

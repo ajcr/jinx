@@ -21,7 +21,8 @@ def percent_monad(y: np.ndarray) -> np.ndarray:
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
     if np.isscalar(y) or y.size == 1:
-        return None
+        # Differs from the J implementation which returns a missing value for shape of scalar.
+        return np.array([0])
     return np.array(y.shape)
 
 

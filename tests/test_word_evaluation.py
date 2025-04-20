@@ -1,14 +1,15 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Punctuation, Atom, Array, DataType, Verb, Conjunction
+from jinx.vocabulary import Atom, Array, DataType, Verb, Conjunction
 from jinx.word_evaluation import evaluate_words
+from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
 
 ## Words
 # Punctuation
-LPAREN = Punctuation("(", name="Left Parenthesis")
-RPAREN = Punctuation(")", name="Right Parenthesis")
+LPAREN = PUNCTUATION_MAP["("]
+RPAREN = PUNCTUATION_MAP[")"]
 
 # Verbs
 MINUS = PRIMITIVE_MAP["MINUS"]

@@ -87,6 +87,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Ceiling", rank=0),
         dyad=Dyad(name="Max", left_rank=0, right_rank=0),
     ),
+    Verb(
+        "<:",
+        "LTCO",
+        monad=Monad(name="Decrement", rank=0),
+        dyad=Dyad(name="Less Or Equal", left_rank=0, right_rank=0),
+    ),
+    Verb(
+        ">:",
+        "GTCO",
+        monad=Monad(name="Increment", rank=0),
+        dyad=Dyad(name="Larger Or Equal", left_rank=0, right_rank=0),
+    ),
     Adverb("/", "SLASH"),
     Adverb("/.", "SLASHDOT"),
     Verb("/:", "SLASHCO"),

@@ -81,6 +81,10 @@ def array_to_string(array: Array, max_cols: int = MAX_COLS) -> str:
     ndim = arr.ndim
     dtype = arr.dtype
 
+    # If the array is a boolean array, convert it to int8 for printing.
+    if np.issubdtype(dtype, np.bool_):
+        arr = arr.view(np.int8)
+
     # For now, just use NumPy for printing float arrays
     if np.issubdtype(dtype, np.floating):
         return array_to_string_float(array)

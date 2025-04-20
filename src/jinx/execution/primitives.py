@@ -11,11 +11,23 @@ from jinx.vocabulary import Verb, Atom
 from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
 
 
-@numba.vectorize(["float64(int64)", "float64(float64)"])
+@numba.vectorize(["float64(int64)", "float64(float64)"], nopython=True)
 def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
     # N.B. np.reciprocal does not support integer types, use division instead.
     return np.divide(1, y)
+
+
+@numba.vectorize(["int64(int64)", "float64(float64)"], nopython=True)
+def ltco_monad(y: np.ndarray) -> np.ndarray:
+    """<: monad: decrements the array."""
+    return y - 1
+
+
+@numba.vectorize(["int64(int64)", "float64(float64)"], nopython=True)
+def gtco_monad(y: np.ndarray) -> np.ndarray:
+    """>: monad: increments the array."""
+    return y + 1
 
 
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
@@ -98,7 +110,9 @@ PRIMITIVE_MAP = {
     "HAT": (np.exp, np.power),
     "DOLLAR": (dollar_monad, dollar_dyad),
     "LTDOT": (np.floor, np.minimum),
+    "LTCO": (ltco_monad, np.less_equal),
     "GTDOT": (np.ceil, np.maximum),
+    "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, None),
     "SLASH": (slash_monad, None),
     "RANK": rank_conjunction,

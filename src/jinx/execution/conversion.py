@@ -32,7 +32,7 @@ def infer_data_type(data):
         dtype = data.dtype
     except AttributeError:
         dtype = type(data)
-    if np.issubdtype(dtype, np.integer):
+    if np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.bool_):
         return DataType.Integer
     if np.issubdtype(dtype, np.floating):
         return DataType.Float

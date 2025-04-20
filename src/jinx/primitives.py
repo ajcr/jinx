@@ -99,6 +99,11 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Increment", rank=0),
         dyad=Dyad(name="Larger Or Equal", left_rank=0, right_rank=0),
     ),
+    Verb(
+        "~.",
+        "TILDEDOT",
+        monad=Monad(name="Nub", rank=INFINITY),
+    ),
     Adverb("/", "SLASH"),
     Adverb("/.", "SLASHDOT"),
     Verb("/:", "SLASHCO"),

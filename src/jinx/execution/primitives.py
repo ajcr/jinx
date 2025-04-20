@@ -38,6 +38,13 @@ def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     return np.array(y.shape)
 
 
+def tildedot_monad(y: np.ndarray) -> np.ndarray:
+    """~. monad: remove duplicates from a list."""
+    y = np.atleast_1d(y)
+    uniq, idx = np.unique(y, return_index=True, axis=0)
+    return uniq[np.argsort(idx)]
+
+
 def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """$ dyad: create an array with a particular shape.
 
@@ -74,6 +81,9 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
 
 
 def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
+    if not verb.dyad:
+        raise ValueError(f"Verb {verb.spelling} has no dyadic valence.")
+
     if verb.dyad.function is None:
         dyad = PRIMITIVE_MAP[verb.name][1]
     else:
@@ -115,5 +125,6 @@ PRIMITIVE_MAP = {
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, None),
     "SLASH": (slash_monad, None),
+    "TILDEDOT": (tildedot_monad, None),
     "RANK": rank_conjunction,
 }

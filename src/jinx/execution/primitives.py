@@ -1,6 +1,7 @@
 """Methods implementing J primitives."""
 
 import dataclasses
+import itertools
 import operator
 from typing import Callable
 
@@ -38,6 +39,49 @@ def ltco_monad(y: np.ndarray) -> np.ndarray:
 def gtco_monad(y: np.ndarray) -> np.ndarray:
     """>: monad: increments the array."""
     return y + 1
+
+
+def comma_monad(y: np.ndarray) -> np.ndarray:
+    """, monad: returns the flattened array."""
+    y = np.atleast_1d(y)
+    return np.ravel(y)
+
+
+def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
+    idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
+    return y[idx]
+
+
+def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """, dyad: returns array containing the items of x followed by the items of y."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if x.size == 1:
+        x = np.full_like(y[:1], x[0])
+    elif y.size == 1:
+        y = np.full_like(x[:1], y[0])
+    else:
+        trailing_dims = [
+            max(xs, ys)
+            for xs, ys in itertools.zip_longest(
+                reversed(x.shape[1:]), reversed(y.shape[1:]), fillvalue=1
+            )
+        ]
+        trailing_dims.reverse()
+
+        ndmin = max(x.ndim, y.ndim)
+        x = increase_ndim(x, ndmin)
+        y = increase_ndim(y, ndmin)
+
+        x = np.pad(
+            x, [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)]
+        )
+        y = np.pad(
+            y, [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)]
+        )
+
+    return np.concatenate([x, y], axis=0)
 
 
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
@@ -137,5 +181,6 @@ PRIMITIVE_MAP = {
     "IDOT": (idot_monad, None),
     "SLASH": (slash_monad, None),
     "TILDEDOT": (tildedot_monad, None),
+    "COMMA": (comma_monad, comma_dyad),
     "RANK": rank_conjunction,
 }

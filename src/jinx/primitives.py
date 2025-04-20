@@ -44,7 +44,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Plus", left_rank=0, right_rank=0),
     ),
     Verb("+.", "PLUSDOT"),
-    Verb("+:", "PLUSCO"),
+    Verb(
+        "+:",
+        "PLUSCO",
+        monad=Monad(name="Double", rank=0),
+        dyad=Dyad(name="Not-Or", left_rank=0, right_rank=0, is_commutative=True),
+    ),
     Verb(
         "*",
         "STAR",

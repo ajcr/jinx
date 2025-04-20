@@ -11,20 +11,30 @@ from jinx.vocabulary import Verb, Atom
 from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
 
 
-@numba.vectorize(["float64(int64)", "float64(float64)"], nopython=True)
 def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
     # N.B. np.reciprocal does not support integer types, use division instead.
     return np.divide(1, y)
 
 
-@numba.vectorize(["int64(int64)", "float64(float64)"], nopython=True)
+def plusco_monad(y: np.ndarray) -> np.ndarray:
+    """+: monad: double the values in the array."""
+    return 2 * y
+
+
+@numba.vectorize(["int64(int64, int64)"], nopython=True)
+def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """+: dyad: not-or operation."""
+    # N.B. This is not the same as the J implementation which forbids values
+    # outside of 0 and 1.
+    return ~np.logical_or(x, y)
+
+
 def ltco_monad(y: np.ndarray) -> np.ndarray:
     """<: monad: decrements the array."""
     return y - 1
 
 
-@numba.vectorize(["int64(int64)", "float64(float64)"], nopython=True)
 def gtco_monad(y: np.ndarray) -> np.ndarray:
     """>: monad: increments the array."""
     return y + 1
@@ -115,6 +125,7 @@ PRIMITIVE_MAP = {
     "EQ": (None, np.equal),
     "MINUS": (operator.neg, np.subtract),
     "PLUS": (np.conj, np.add),
+    "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),
     "PERCENT": (percent_monad, np.divide),
     "HAT": (np.exp, np.power),

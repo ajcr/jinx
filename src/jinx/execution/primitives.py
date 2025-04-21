@@ -52,6 +52,12 @@ def comma_monad(y: np.ndarray) -> np.ndarray:
     return np.ravel(y)
 
 
+@numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"], nopython=True)
+def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """| dyad: remainder when dividing y by x."""
+    return np.mod(y, x)
+
+
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]
@@ -201,5 +207,6 @@ PRIMITIVE_MAP = {
     "SLASH": (slash_monad, None),
     "TILDEDOT": (tildedot_monad, None),
     "COMMA": (comma_monad, comma_dyad),
+    "BAR": (np.abs, bar_dyad),
     "RANK": rank_conjunction,
 }

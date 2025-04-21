@@ -131,6 +131,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Ravel", rank=INFINITY),
         dyad=Dyad(name="Append", left_rank=INFINITY, right_rank=INFINITY),
     ),
+    Verb(
+        "|",
+        "BAR",
+        monad=Monad(name="Magnitude", rank=0),
+        dyad=Dyad(name="Residue", left_rank=0, right_rank=0),
+    ),
 ]
 
 

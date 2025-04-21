@@ -63,6 +63,17 @@ def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.mod(y, x)
 
 
+def bardot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """|. dyad: rotate the array."""
+    y = np.atleast_1d(y)
+    x = np.atleast_1d(x)
+    if x.shape[-1] > y.ndim:
+        raise ValueError(
+            f"length error, executing dyad |. (x has {x.shape[-1]} atoms but y only has {y.ndim} axes)"
+        )
+    return np.roll(y, -x, axis=tuple(range(x.shape[-1])))
+
+
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]
@@ -213,5 +224,6 @@ PRIMITIVE_MAP = {
     "TILDEDOT": (tildedot_monad, None),
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),
+    "BARDOT": (np.flip, bardot_dyad),
     "RANK": rank_conjunction,
 }

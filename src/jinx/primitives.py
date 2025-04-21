@@ -137,6 +137,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Magnitude", rank=0),
         dyad=Dyad(name="Residue", left_rank=0, right_rank=0),
     ),
+    Verb(
+        "|.",
+        "BARDOT",
+        monad=Monad(name="Reverse", rank=INFINITY),
+        dyad=Dyad(name="Rotate", left_rank=1, right_rank=INFINITY),
+    ),
 ]
 
 

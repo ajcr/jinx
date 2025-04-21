@@ -1,4 +1,9 @@
-"""Methods implementing J primitives."""
+"""Methods implementing J primitives.
+
+Where possible, dyads are implemented as ufuncs (either NumPy ufuncs, or
+using the numba.vectorize decorator). This equips the dyads with efficient
+reduce and accumulate methods over arrays.
+"""
 
 import dataclasses
 import itertools

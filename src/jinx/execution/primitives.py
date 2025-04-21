@@ -8,7 +8,6 @@ reduce and accumulate methods over arrays.
 import dataclasses
 import functools
 import itertools
-import operator
 from typing import Callable
 
 import numpy as np
@@ -227,7 +226,7 @@ def rank_conjunction(verb: Verb, noun: Atom) -> Verb:
 PRIMITIVE_MAP = {
     # NAME: (MONAD, DYAD)
     "EQ": (None, np.equal),
-    "MINUS": (operator.neg, np.subtract),
+    "MINUS": (np.negative, np.subtract),
     "PLUS": (np.conj, np.add),
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),

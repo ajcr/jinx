@@ -18,6 +18,11 @@ def percent_monad(y: np.ndarray) -> np.ndarray:
     return np.divide(1, y)
 
 
+@numba.vectorize(["float64(int64, int64)", "float64(float64, float64)"], nopython=True)
+def percentco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    return np.power(y, 1 / x)
+
+
 def plusco_monad(y: np.ndarray) -> np.ndarray:
     """+: monad: double the values in the array."""
     return 2 * y
@@ -172,6 +177,7 @@ PRIMITIVE_MAP = {
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),
     "PERCENT": (percent_monad, np.divide),
+    "PERCENTCO": (np.sqrt, percentco_dyad),
     "HAT": (np.exp, np.power),
     "DOLLAR": (dollar_monad, dollar_dyad),
     "LTDOT": (np.floor, np.minimum),

@@ -151,10 +151,23 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
     if is_ufunc(dyad) and verb.dyad.is_commutative:
         return dyad.reduce
 
-    # TODO: generate a ufunc on the fly.
-    raise NotImplementedError(
-        "Adverb '/' only supports commutative operations with ufuncs for now"
-    )
+    if is_ufunc(dyad):
+        # Not commutative, but dyad has a reduce method.
+        # By swapping the arguments and applying it to the
+        # reversed array, we can get the same result.
+        @numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"])
+        def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            return dyad(y, x)
+
+        def _dyad_reduce(y: np.ndarray) -> np.ndarray:
+            y = np.atleast_1d(y)
+            y = np.flip(y, axis=0)
+            return _dyad_arg_swap.reduce(y)
+
+        return _dyad_reduce
+
+    # Dyad is not a ufunc, and does not have a reduce method.
+    raise NotImplementedError("Adverb '/' only supports ufuncs for now")
 
 
 def rank_conjunction(verb: Verb, noun: Atom) -> Verb:

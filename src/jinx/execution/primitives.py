@@ -20,7 +20,7 @@ from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
 def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
     # N.B. np.reciprocal does not support integer types, use division instead.
-    return np.divide(1, y)
+    return 1 / y
 
 
 @numba.vectorize(["float64(int64, int64)", "float64(float64, float64)"], nopython=True)
@@ -183,7 +183,7 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
         # Not commutative, but dyad has a reduce method.
         # By swapping the arguments and applying it to the
         # reversed array, we can get the same result.
-        @numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"])
+        @numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"], nopython=True)
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             return dyad(y, x)
 

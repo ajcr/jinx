@@ -6,6 +6,7 @@ reduce and accumulate methods over arrays.
 """
 
 import dataclasses
+import functools
 import itertools
 import operator
 from typing import Callable
@@ -204,8 +205,6 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
         return dyad(y, x)
 
     def _slow_reduce(y: np.ndarray) -> np.ndarray:
-        import functools
-
         y = np.atleast_1d(y)
         y = np.flip(y, axis=0)
         return functools.reduce(_dyad_arg_swap, y)

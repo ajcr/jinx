@@ -196,8 +196,21 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
 
         return _dyad_reduce
 
-    # Dyad is not a ufunc, and does not have a reduce method.
-    raise NotImplementedError("Adverb '/' only supports ufuncs for now")
+    # Slow path: dyad is not a ufunc.
+    # TODO: Try to find a way to get Numba to compile some examples
+    # such as for hooks, where the verbs in the hook are both ufuncs.
+
+    def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        return dyad(y, x)
+
+    def _slow_reduce(y: np.ndarray) -> np.ndarray:
+        import functools
+
+        y = np.atleast_1d(y)
+        y = np.flip(y, axis=0)
+        return functools.reduce(_dyad_arg_swap, y)
+
+    return _slow_reduce
 
 
 def rank_conjunction(verb: Verb, noun: Atom) -> Verb:

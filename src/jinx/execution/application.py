@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from jinx.vocabulary import Noun, Atom, Verb, Conjunction, Adverb, Monad
+from jinx.vocabulary import Noun, Atom, Verb, Conjunction, Adverb, Monad, Dyad
 from jinx.execution.conversion import (
     ensure_noun_implementation,
     ndarray_or_scalar_to_noun,
@@ -131,3 +131,37 @@ def ensure_verb_implementation(verb: Verb) -> None:
         verb.monad.function = PRIMITIVE_MAP[verb.name][0]
     if verb.dyad and verb.dyad.function is None and verb.name in PRIMITIVE_MAP:
         verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
+
+
+INFINITY = float("inf")
+
+
+def build_hook(f: Verb, g: Verb) -> Verb:
+    ensure_verb_implementation(f)
+    ensure_verb_implementation(g)
+
+    def _monad(y: np.ndarray) -> np.ndarray:
+        a = g.monad.function(y)
+        return f.dyad.function(y, a)
+
+    def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        a = g.monad.function(y)
+        return f.dyad.function(x, a)
+
+    spelling = f"{f.spelling} {g.spelling}"
+
+    return Verb(
+        spelling=spelling,
+        name=spelling,
+        monad=Monad(
+            name=spelling,
+            rank=INFINITY,
+            function=_monad,
+        ),
+        dyad=Dyad(
+            name=spelling,
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            function=_dyad,
+        ),
+    )

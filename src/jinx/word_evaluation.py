@@ -27,6 +27,7 @@ from jinx.execution.application import (
     apply_dyad,
     apply_conjunction,
     apply_adverb_to_verb,
+    build_hook,
 )
 
 from jinx.execution.printing import (
@@ -39,7 +40,7 @@ class EvaluationError(Exception):
     pass
 
 
-def str_(word: Atom | Array | Verb) -> str:
+def str_(word: Atom | Array | Verb | Conjunction) -> str:
     if isinstance(word, str):
         return word
     if isinstance(word, Atom):
@@ -163,12 +164,16 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
                 # 6. Hook/Adverb
                 case (
-                    None | "=." | "=:" | "(",
-                    Conjunction() | Adverb() | Verb() | Noun(),
-                    Conjunction() | Adverb() | Verb() | Noun(),
-                    _,
+                    [None | "=." | "=:" | "(", Conjunction() | Adverb() | Verb() | Noun(), Conjunction() | Adverb() | Verb() | Noun()]
                 ):
-                    raise NotImplementedError("hook/adverb")
+                    edge, cavn1, cavn2, *last = fragment
+                    if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):
+                        result = build_hook(cavn1, cavn2)
+                    else:
+                        raise NotImplementedError("Only VV is implemented for hook/adverb matching")
+                    if edge == "(" and level > 0:
+                        return result
+                    fragment[1:] = [result]
 
                 # 7. Is
                 case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), _:

@@ -14,6 +14,7 @@ RPAREN = PUNCTUATION_MAP[")"]
 # Verbs
 MINUS = PRIMITIVE_MAP["MINUS"]
 PLUS = PRIMITIVE_MAP["PLUS"]
+PERCENT = PRIMITIVE_MAP["PERCENT"]
 IDOT = PRIMITIVE_MAP["IDOT"]
 
 # Adverbs
@@ -382,3 +383,38 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
 def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, expected):
     result = evaluate_words(words)
     assert result[1:] == expected
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        pytest.param([PLUS, MINUS], id="+-"),
+        pytest.param([MINUS, PLUS, SLASH], id="-+/"),
+        pytest.param([LPAREN, MINUS, PLUS, RPAREN], id="(-+)"),
+        pytest.param([LPAREN, MINUS, PLUS, SLASH, RPAREN], id="(-+/)"),
+        pytest.param(
+            [LPAREN, LPAREN, MINUS, PLUS, RPAREN, RPAREN],
+            id="((-) +)",
+        ),
+    ],
+)
+def test_word_evaluation_hook_produces_single_verb(words):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert isinstance(result[1], Verb)
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [LPAREN, PLUS, PERCENT, RPAREN, Atom(data_type=DataType.Integer, data=4)],
+            Atom(data_type=DataType.Float, implementation=np.float64(4.25)),
+            id="(+%)4",
+        ),
+    ],
+)
+def test_word_evaluation_hook_correct_result(words, expected):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert result[1] == expected

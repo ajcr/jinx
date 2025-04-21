@@ -41,6 +41,12 @@ def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return ~np.logical_or(x, y)
 
 
+@numba.vectorize(["float64(float64, float64)"], nopython=True)
+def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """^. dyad: logarithm of y to the base x."""
+    return np.log(y) / np.log(x)
+
+
 def ltco_monad(y: np.ndarray) -> np.ndarray:
     """<: monad: decrements the array."""
     return y - 1
@@ -214,6 +220,7 @@ PRIMITIVE_MAP = {
     "PERCENT": (percent_monad, np.divide),
     "PERCENTCO": (np.sqrt, percentco_dyad),
     "HAT": (np.exp, np.power),
+    "HATDOT": (np.log, hatdot_dyad),
     "DOLLAR": (dollar_monad, dollar_dyad),
     "LTDOT": (np.floor, np.minimum),
     "LTCO": (ltco_monad, np.less_equal),

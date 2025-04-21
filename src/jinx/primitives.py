@@ -77,6 +77,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Power", left_rank=0, right_rank=0, is_commutative=False),
     ),
     Verb(
+        "^.",
+        "HATDOT",
+        monad=Monad(name="Natural Log", rank=0),
+        dyad=Dyad(name="Logarithm", left_rank=0, right_rank=0, is_commutative=False),
+    ),
+    Verb(
         "<.",
         "LTDOT",
         monad=Monad(name="Floor", rank=0),

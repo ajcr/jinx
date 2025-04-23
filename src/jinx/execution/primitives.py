@@ -3,6 +3,11 @@
 Where possible, dyads are implemented as ufuncs (either NumPy ufuncs, or
 using the numba.vectorize decorator). This equips the dyads with efficient
 reduce and accumulate methods over arrays.
+
+It is important that the implementations here share the same "rank" characteristics
+as their J counterparts. For example the dyadic `+` operator in J has left and right
+rank 0, meaning that it operates on the "atoms" of each array (i.e. the numeric value
+in the array), not the array or its metadata.
 """
 
 import dataclasses
@@ -13,7 +18,7 @@ from typing import Callable
 import numpy as np
 import numba
 
-from jinx.vocabulary import Verb, Atom
+from jinx.vocabulary import Verb, Atom, Array
 from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
 
 
@@ -211,15 +216,48 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
     return _slow_reduce
 
 
-def rank_conjunction(verb: Verb, noun: Atom) -> Verb:
+def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
     ensure_noun_implementation(noun)
-    rank = noun.implementation
-    spelling = f'{verb.spelling}"{rank}'
+    rank = np.atleast_1d(noun.implementation)
+
+    if not np.issubdtype(rank.dtype, np.integer):
+        raise ValueError(f"Rank must be an integer, got {rank.dtype}")
+
+    if rank.size > 2 or rank.ndim > 1:
+        raise ValueError(
+            f"Rank must be a scalar or 1D array of length 2, got {rank.ndim}D array with shape {rank.shape}"
+        )
+
+    if rank.size == 1:
+        monad_rank = left_rank = right_rank = rank[0]
+        spelling = f'{verb.spelling}"{rank[0]}'
+
+    else:
+        left_rank, right_rank = rank
+        monad_rank = left_rank
+        spelling = f'{verb.spelling}"{left_rank} {right_rank}'
+
+    if verb.monad:
+        monad = dataclasses.replace(verb.monad, rank=monad_rank, function=verb)
+    else:
+        monad = None
+
+    if verb.dyad:
+        dyad = dataclasses.replace(
+            verb.dyad,
+            left_rank=left_rank,
+            right_rank=right_rank,
+            function=verb,
+        )
+    else:
+        dyad = None
+
     return dataclasses.replace(
         verb,
         spelling=spelling,
         name=spelling,
-        monad=dataclasses.replace(verb.monad, rank=rank),
+        monad=monad,
+        dyad=dyad,
     )
 
 

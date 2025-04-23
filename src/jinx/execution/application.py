@@ -1,4 +1,12 @@
-"""Methods for applying verb implementations to nouns and verbs."""
+"""Methods for applying verb implementations to nouns and verbs.
+
+Main references:
+* https://code.jsoftware.com/wiki/Vocabulary/Agreement
+* https://www.jsoftware.com/help/jforc/loopless_code_i_verbs_have_r.htm
+
+"""
+
+import functools
 
 import numpy as np
 
@@ -34,27 +42,34 @@ def maybe_pad_with_fill_value(
     return padded_arrays
 
 
-def apply_monad(verb: Verb, noun: Noun) -> Noun:
+def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
     ensure_noun_implementation(noun)
     ensure_verb_implementation(verb)
 
     arr = noun.implementation
 
-    if isinstance(noun, Atom):
-        return ndarray_or_scalar_to_noun(verb.monad.function(arr))
+    result = _apply_monad(verb, arr)
+    return ndarray_or_scalar_to_noun(result)
+
+
+def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
+    if isinstance(verb.monad.function, Verb):
+        function = functools.partial(_apply_monad, verb.monad.function)
+    else:
+        function = verb.monad.function
 
     verb_rank = verb.monad.rank
     if verb_rank < 0:
         raise NotImplementedError("Negative verb rank not yet supported")
 
-    noun_rank = noun.implementation.ndim
+    noun_rank = arr.ndim
     r = min(verb_rank, noun_rank)
 
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way
     # Apply the function directly here as an optimisation.
-    if r == 0 and is_ufunc(verb.monad.function):
-        return ndarray_or_scalar_to_noun(verb.monad.function(arr))
+    if r == 0 and is_ufunc(function):
+        return function(arr)
 
     # Look at the shape of the array and the rank of the verb to
     # determine the frame and cell shape.
@@ -76,21 +91,138 @@ def apply_monad(verb: Verb, noun: Noun) -> Noun:
         frame_shape = arr.shape[:-r]
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
-    cells = [verb.monad.function(cell) for cell in arr_reshaped]
+    cells = [function(cell) for cell in arr_reshaped]
     cells = maybe_pad_with_fill_value(cells)
     result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
-    return ndarray_or_scalar_to_noun(result)
+    return result
 
 
 def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
-    # For now, just apply the verb with no regard to its rank.
-
     ensure_noun_implementation(noun_1)
     ensure_noun_implementation(noun_2)
     ensure_verb_implementation(verb)
 
-    result = verb.dyad.function(noun_1.implementation, noun_2.implementation)
+    left_arr = noun_1.implementation
+    right_arr = noun_2.implementation
+
+    result = _apply_dyad(verb, left_arr, right_arr)
     return ndarray_or_scalar_to_noun(result)
+
+
+def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.ndarray:
+    # If the dyad is another Verb object, apply_dyad will be called
+    # recursively. This allows for implicit nested loops given by
+    # verb definitions such as `(+"1 2)"0 3`.
+    #
+    # Otherwise, the dyad function is a callable implementing a J
+    # primitive and is applied directly.
+    if isinstance(verb.dyad.function, Verb):
+        function = functools.partial(_apply_dyad, verb.dyad.function)
+    else:
+        function = verb.dyad.function
+
+    left_rank = min(left_arr.ndim, verb.dyad.left_rank)
+    right_rank = min(right_arr.ndim, verb.dyad.right_rank)
+
+    if left_rank < 0:
+        raise NotImplementedError("Negative left rank not yet supported")
+
+    if right_rank < 0:
+        raise NotImplementedError("Negative right rank not yet supported")
+
+    # Cell and frame shapes are determined using the same approach as for
+    # the monadic application above.
+    if left_rank == 0:
+        left_cell_shape = (1,)
+        left_frame_shape = left_arr.shape
+        left_arr_reshaped = left_arr.ravel()
+    else:
+        left_cell_shape = left_arr.shape[-left_rank:]
+        left_frame_shape = left_arr.shape[:-left_rank]
+        left_arr_reshaped = left_arr.reshape(-1, *left_cell_shape)
+
+    if right_rank == 0:
+        right_cell_shape = (1,)
+        right_frame_shape = right_arr.shape
+        right_arr_reshaped = right_arr.ravel()
+    else:
+        right_cell_shape = right_arr.shape[-right_rank:]
+        right_frame_shape = right_arr.shape[:-right_rank]
+        right_arr_reshaped = right_arr.reshape(-1, *right_cell_shape)
+
+    # If the frame shapes are the same, we can apply the dyad without further manipulation.
+    if left_frame_shape == right_frame_shape:
+        cells = [
+            function(left_cell, right_cell)
+            for left_cell, right_cell in zip(
+                left_arr_reshaped, right_arr_reshaped, strict=True
+            )
+        ]
+        result = np.asarray(cells).reshape(left_frame_shape + cells[0].shape)
+        return result
+
+    # Otherwise we need to find the common frame shape. One of the frame shapes must
+    # be a prefix of the other, otherwise it's not possible to apply the dyad.
+    common_frame_shape = find_common_frame_shape(left_frame_shape, right_frame_shape)
+    if common_frame_shape is None:
+        raise ValueError(
+            f"Cannot apply dyad {verb.spelling} to arrays of shape {left_frame_shape} and {right_frame_shape}"
+        )
+
+    rcf = len(common_frame_shape)
+    left_rcf_cell_shape = left_arr.shape[rcf:] or (1,)
+    right_rcf_cell_shape = right_arr.shape[rcf:] or (1,)
+
+    left_arr_reshaped = left_arr.reshape(-1, *left_rcf_cell_shape)
+    right_arr_reshaped = right_arr.reshape(-1, *right_rcf_cell_shape)
+
+    cells = []
+    for left_cell, right_cell in zip(
+        left_arr_reshaped, right_arr_reshaped, strict=True
+    ):
+        subcells = []
+        if common_frame_shape == left_frame_shape:
+            # right_cell is longer and contains multiple operand cells
+            r = (
+                right_cell.reshape(-1, *right_cell_shape)
+                if right_rank > 0
+                else right_cell.ravel()
+            )
+            for right_subcell in r:
+                subcells.append(function(left_cell, right_subcell))
+        else:
+            # left_cell is longer and contains multiple operand cells
+            l = (
+                left_cell.reshape(-1, *left_cell_shape)
+                if left_rank > 0
+                else left_cell.ravel()
+            )
+            for left_subcell in l:
+                subcells.append(function(left_subcell, right_cell))
+        cells.append(np.asarray(subcells))
+
+    cells = maybe_pad_with_fill_value(cells)
+    cells = np.asarray(cells)
+
+    final_frame_shape = max(left_frame_shape, right_frame_shape, key=len)
+
+    return cells.reshape(final_frame_shape)
+
+
+def find_common_frame_shape(
+    left_frame_shape: tuple[int, ...], right_frame_shape: tuple[int, ...]
+) -> tuple[int, ...] | None:
+    if len(left_frame_shape) <= len(right_frame_shape):
+        shorter = left_frame_shape
+        longer = right_frame_shape
+    else:
+        shorter = right_frame_shape
+        longer = left_frame_shape
+
+    if all(a == b for a, b in zip(shorter, longer)):
+        return shorter
+
+    return None
 
 
 # Applying a conjunction usually produces a verb (but not always).

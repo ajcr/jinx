@@ -93,7 +93,9 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=1),
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Array(
+                    data_type=DataType.Integer, data=None, implementation=np.array(0)
+                ),
             ],
             id="1-1",
         ),
@@ -106,7 +108,9 @@ RANK = Conjunction('"', "RANK")
                 RPAREN,
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Array(
+                    data_type=DataType.Integer, data=None, implementation=np.array(0)
+                ),
             ],
             id="(1-1)",
         ),
@@ -125,8 +129,8 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=3),
             ],
             [
-                Atom(
-                    data_type=DataType.Integer, data=None, implementation=np.int64(15)
+                Array(
+                    data_type=DataType.Integer, data=None, implementation=np.array(15)
                 ),
             ],
             id="(8 - (1 - 5)) + 3",
@@ -146,7 +150,9 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=3),
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(5)),
+                Array(
+                    data_type=DataType.Integer, data=None, implementation=np.array(5)
+                ),
             ],
             id="((8 - 1) - 5) + 3",
         ),
@@ -184,7 +190,7 @@ def test_word_evaluation_adverb_creation(words, expected):
     [
         pytest.param(
             [PLUS, SLASH, Atom(data_type=DataType.Integer, data=77)],
-            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
+            [Array(data_type=DataType.Integer, data=None, implementation=np.array(77))],
             id="+/ 77",
         ),
         pytest.param(
@@ -291,7 +297,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Array(data_type=DataType.Integer, implementation=np.array(5))],
             id='+"0 (5)',
         ),
         pytest.param(
@@ -303,7 +309,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 RPAREN,
                 Atom(data_type=DataType.Integer, data=5),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Array(data_type=DataType.Integer, implementation=np.array(5))],
             id='(+"0) 5',
         ),
         pytest.param(
@@ -317,7 +323,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Array(data_type=DataType.Integer, implementation=np.array(5))],
             id='(+"0) (5)',
         ),
     ],
@@ -340,7 +346,7 @@ def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Array(data_type=DataType.Integer, implementation=np.array(5))],
             id='+/"0 (5)',
         ),
     ],
@@ -363,7 +369,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Atom(data_type=DataType.Integer, data=9),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            [Array(data_type=DataType.Integer, implementation=np.array(9))],
             id='+"0 + 9',
         ),
         pytest.param(
@@ -375,7 +381,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Atom(data_type=DataType.Integer, data=9),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            [Array(data_type=DataType.Integer, implementation=np.array(9))],
             id='+/"0 + 9',
         ),
     ],
@@ -409,7 +415,7 @@ def test_word_evaluation_hook_produces_single_verb(words):
     [
         pytest.param(
             [LPAREN, PLUS, PERCENT, RPAREN, Atom(data_type=DataType.Integer, data=4)],
-            Atom(data_type=DataType.Float, implementation=np.float64(4.25)),
+            Array(data_type=DataType.Float, implementation=np.array(4.25)),
             id="(+%)4",
         ),
     ],

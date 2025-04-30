@@ -105,6 +105,11 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
     left_arr = noun_1.implementation
     right_arr = noun_2.implementation
 
+    result = _apply_dyad(verb, left_arr, right_arr)
+    return ndarray_or_scalar_to_noun(result)
+
+
+def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.ndarray:
     left_rank = min(left_arr.ndim, verb.dyad.left_rank)
     right_rank = min(right_arr.ndim, verb.dyad.right_rank)
 
@@ -115,7 +120,7 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
     # Otherwise, the dyad function is a callable implementing a J
     # primitive and is applied directly.
     if isinstance(verb.dyad.function, Verb):
-        function = functools.partial(apply_dyad, verb.dyad.function)
+        function = functools.partial(_apply_dyad, verb.dyad.function)
     else:
         function = verb.dyad.function
 
@@ -154,7 +159,7 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
             )
         ]
         result = np.asarray(cells).reshape(left_frame_shape + cells[0].shape)
-        return ndarray_or_scalar_to_noun(result)
+        return result
 
     # Otherwise we need to find the common frame shape. One of the frame shapes must
     # be a prefix of the other, otherwise it's not possible to apply the dyad.
@@ -179,18 +184,35 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
     ):
         subcells = []
         if common_frame_shape == left_frame_shape:
-            # left_cell contains multiple operand cells
-            for left_subcell in left_cell.reshape(-1, *left_cell_shape):
-                subcells.extend(function(left_subcell, right_cell))
+            # right cell is longer and contains multiple operand cells
+            r = (
+                right_cell.reshape(-1, *right_cell_shape)
+                if right_rank > 0
+                else right_cell.ravel()
+            )
+            for right_subcell in r:
+                subcells.append(function(left_cell, right_subcell))
         else:
-            # right_cell contains multiple operand cells
-            for right_subcell in right_cell.reshape(-1, *right_cell_shape):
-                subcells.extend(function(left_cell, right_subcell))
+            # left_cell is longer and contains multiple operand cells
+            l = (
+                left_cell.reshape(-1, *left_cell_shape)
+                if left_rank > 0
+                else left_cell.ravel()
+            )
+            for left_subcell in l:
+                subcells.append(function(left_subcell, right_cell))
         cells.append(subcells)
 
     cells = np.asarray(cells)
-    result = cells.reshape(common_frame_shape + cells[0].shape)
-    return ndarray_or_scalar_to_noun(result)
+
+    last_dim_len = cells.shape[-1]
+    last_dim = () if last_dim_len == 1 else (last_dim_len,)
+
+    final_frame_shape = max(left_frame_shape, right_frame_shape, key=len) + last_dim
+
+    result = cells.reshape(final_frame_shape)
+
+    return result
 
 
 def find_common_frame_shape(

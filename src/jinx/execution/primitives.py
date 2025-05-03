@@ -215,7 +215,7 @@ def slash_adverb(verb: Verb) -> Verb:
             ["int64(int64, int64)", "float64(float64, float64)"], nopython=True
         )
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return functionq(y, x)
+            return function(y, x)
 
         def _reduce(y: np.ndarray) -> np.ndarray:
             y = np.atleast_1d(y)

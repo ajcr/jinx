@@ -19,7 +19,7 @@ import numpy as np
 import numba
 
 from jinx.vocabulary import Verb, Atom, Array
-from jinx.execution.conversion import ensure_noun_implementation, is_ufunc
+from jinx.execution.conversion import is_ufunc
 
 
 def percent_monad(y: np.ndarray) -> np.ndarray:
@@ -217,7 +217,6 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
 
 
 def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
-    ensure_noun_implementation(noun)
     rank = np.atleast_1d(noun.implementation)
 
     if not np.issubdtype(rank.dtype, np.integer):

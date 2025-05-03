@@ -4,7 +4,6 @@ import os
 
 import numpy as np
 
-from jinx.execution.conversion import ensure_noun_implementation
 from jinx.vocabulary import Atom, Array
 
 
@@ -15,7 +14,6 @@ def format_numeric(n):
 
 
 def atom_to_string(atom: Atom) -> str:
-    ensure_noun_implementation(atom)
     n = atom.implementation
     if np.isinf(n):
         return "__" if n < 0 else "_"
@@ -28,7 +26,6 @@ def array_to_string_float(array: Array) -> str:
     np.set_printoptions(
         infstr="_", formatter={"int_kind": format_numeric, "float_kind": format_numeric}
     )
-    ensure_noun_implementation(array)
     return str(array.implementation)
 
 
@@ -76,7 +73,6 @@ MAX_COLS = 10
 
 
 def array_to_string(array: Array, max_cols: int = MAX_COLS) -> str:
-    ensure_noun_implementation(array)
     arr = np.atleast_1d(array.implementation)
     ndim = arr.ndim
     dtype = arr.dtype

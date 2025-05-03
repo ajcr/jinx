@@ -29,17 +29,17 @@ RANK = Conjunction('"', "RANK")
     [
         pytest.param(
             [Atom(data_type=DataType.Integer, data=1)],
-            [Atom(data_type=DataType.Integer, data=1)],
+            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
             id="1",
         ),
         pytest.param(
             [LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN],
-            [Atom(data_type=DataType.Integer, data=1)],
+            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
             id="(1)",
         ),
         pytest.param(
             [LPAREN, LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN, RPAREN],
-            [Atom(data_type=DataType.Integer, data=1)],
+            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
             id="((1))",
         ),
         pytest.param(

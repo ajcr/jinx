@@ -28,6 +28,8 @@ from jinx.execution.application import (
     apply_conjunction,
     apply_adverb_to_verb,
     build_hook,
+    ensure_noun_implementation,
+    ensure_verb_implementation,
 )
 
 from jinx.execution.printing import (
@@ -58,6 +60,12 @@ def print_words(words: list[PartOfSpeechT]) -> None:
 
 
 def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
+    for word in words:
+        if isinstance(word, Noun):
+            ensure_noun_implementation(word)
+        elif isinstance(word, Verb):
+            ensure_verb_implementation(word)
+
     if words[0] is not None:
         words = [None, *words]
 

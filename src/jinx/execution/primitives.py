@@ -13,12 +13,11 @@ in the array), not the array or its metadata.
 import dataclasses
 import functools
 import itertools
-from typing import Callable
 
 import numpy as np
 import numba
 
-from jinx.vocabulary import Verb, Atom, Array
+from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError
 from jinx.execution.conversion import is_ufunc
 
@@ -173,19 +172,21 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
     return np.flip(result, axes_to_flip)
 
 
-def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
-    if not verb.dyad:
+INFINITY = float("inf")
+
+
+def slash_adverb(verb: Verb) -> Verb:
+    function = verb.dyad.function
+    if function is None:
+        # Note: this differs from J which still allows the adverb to be applied
+        # to a noun, but may raise an error when the new verb is applied to a noun.
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
-    if verb.dyad.function is None:
-        dyad = PRIMITIVE_MAP[verb.name][1]
-    else:
-        dyad = verb.dyad.function
+    if is_ufunc(function) and verb.dyad.is_commutative:
+        monad = function.reduce
+        dyad = function.outer
 
-    if is_ufunc(dyad) and verb.dyad.is_commutative:
-        return dyad.reduce
-
-    if is_ufunc(dyad):
+    elif is_ufunc(function):
         # Not commutative, but dyad has a reduce method.
         # By swapping the arguments and applying it to the
         # reversed array, we can get the same result.
@@ -195,26 +196,60 @@ def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             return dyad(y, x)
 
-        def _dyad_reduce(y: np.ndarray) -> np.ndarray:
+        def _reduce(y: np.ndarray) -> np.ndarray:
             y = np.atleast_1d(y)
             y = np.flip(y, axis=0)
             return _dyad_arg_swap.reduce(y)
 
-        return _dyad_reduce
+        monad = _reduce
+        dyad = function.outer
 
-    # Slow path: dyad is not a ufunc.
-    # TODO: Try to find a way to get Numba to compile some examples
-    # such as for hooks, where the verbs in the hook are both ufuncs.
+    elif callable(function):
+        # Slow path: dyad is not a ufunc.
+        # TODO: Try to find a way to get Numba to compile some examples
+        # such as for hooks, where the verbs in the hook are both ufuncs.
 
-    def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return dyad(y, x)
+        def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            return dyad(y, x)
 
-    def _slow_reduce(y: np.ndarray) -> np.ndarray:
-        y = np.atleast_1d(y)
-        y = np.flip(y, axis=0)
-        return functools.reduce(_dyad_arg_swap, y)
+        def _reduce(y: np.ndarray) -> np.ndarray:
+            y = np.atleast_1d(y)
+            y = np.flip(y, axis=0)
+            return functools.reduce(_dyad_arg_swap, y)
 
-    return _slow_reduce
+        def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            x = np.atleast_1d(x)
+            y = np.atleast_1d(y)
+            table = []
+            for x_item in x:
+                row = []
+                for y_item in y:
+                    value = function(x_item, y_item)
+                    row.append(value)
+                table.append(row)
+            return np.asarray(table)
+
+        monad = _reduce
+        dyad = _outer
+
+    else:
+        raise NotImplementedError(
+            f"Adverb / cannot yet be applied to verb '{verb.spelling}'"
+        )
+
+    if " " in verb.spelling:
+        spelling = f"({verb.spelling})/"
+    else:
+        spelling = f"{verb.spelling}/"
+
+    return Verb(
+        name=spelling,
+        spelling=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad),
+        dyad=Dyad(
+            name=spelling, left_rank=INFINITY, right_rank=INFINITY, function=dyad
+        ),
+    )
 
 
 def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
@@ -282,7 +317,7 @@ PRIMITIVE_MAP = {
     "GTDOT": (np.ceil, np.maximum),
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, None),
-    "SLASH": (slash_monad, None),
+    "SLASH": (slash_adverb, None),
     "TILDEDOT": (tildedot_monad, None),
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),

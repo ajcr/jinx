@@ -226,17 +226,10 @@ def apply_conjunction(
 
 def apply_adverb_to_verb(verb: Verb, adverb: Adverb) -> Verb:
     if adverb.name in PRIMITIVE_MAP:
-        monad_function = PRIMITIVE_MAP[adverb.name][0](verb)
+        f = PRIMITIVE_MAP[adverb.name][0]
     else:
         raise NotImplementedError(f"Adverb '{adverb.spelling}' not supported")
-
-    spelling = verb.spelling + adverb.spelling
-
-    return Verb(
-        spelling=spelling,
-        name=spelling,
-        monad=Monad(name=spelling, rank=float("inf"), function=monad_function),
-    )
+    return f(verb)
 
 
 def ensure_verb_implementation(verb: Verb) -> None:

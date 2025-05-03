@@ -27,6 +27,7 @@ from jinx.execution.application import (
     apply_dyad,
     apply_conjunction,
     apply_adverb_to_verb,
+    build_fork,
     build_hook,
     ensure_verb_implementation,
 )
@@ -168,7 +169,13 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     Verb(),
                     Verb(),
                 ):
-                    raise NotImplementedError("fork")
+                    edge, verb_or_noun_1, verb_2, verb_3 = fragment
+                    if not isinstance(verb_2, Verb):
+                        raise NotImplementedError("Fork currently implemented only for verb/verb/verb")
+                    result = build_fork(verb_or_noun_1, verb_2, verb_3)
+                    if edge == "(" and level > 0:
+                        return result
+                    fragment[1:] = [result]
 
                 # 6. Hook/Adverb
                 case (

@@ -271,3 +271,37 @@ def build_hook(f: Verb, g: Verb) -> Verb:
             function=_dyad,
         ),
     )
+
+
+def build_fork(f: Verb, g: Verb, h: Verb) -> Verb:
+    def _monad(y: np.ndarray) -> np.ndarray:
+        a = f.monad.function(y)
+        b = h.monad.function(y)
+        return g.dyad.function(a, b)
+
+    def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        a = f.dyad.function(y)
+        b = h.dyad.function(y)
+        return g.dyad.function(a, b)
+
+    f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
+    g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
+    h_spelling = f"({h.spelling})" if " " in h.spelling else h.spelling
+
+    spelling = f"{f_spelling} {g_spelling} {h_spelling}"
+
+    return Verb(
+        spelling=spelling,
+        name=spelling,
+        monad=Monad(
+            name=spelling,
+            rank=INFINITY,
+            function=_monad,
+        ),
+        dyad=Dyad(
+            name=spelling,
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            function=_dyad,
+        ),
+    )

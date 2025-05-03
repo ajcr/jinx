@@ -151,6 +151,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
                 left_arr_reshaped, right_arr_reshaped, strict=True
             )
         ]
+        cells = maybe_pad_with_fill_value(cells)
         result = np.asarray(cells).reshape(left_frame_shape + cells[0].shape)
         return result
 
@@ -192,6 +193,8 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
             )
             for left_subcell in l:
                 subcells.append(function(left_subcell, right_cell))
+
+        subcells = maybe_pad_with_fill_value(subcells)
         cells.append(np.asarray(subcells))
 
     cells = maybe_pad_with_fill_value(cells)
@@ -199,7 +202,10 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
 
     final_frame_shape = max(left_frame_shape, right_frame_shape, key=len)
 
-    return cells.reshape(final_frame_shape)
+    try:
+        return cells.reshape(final_frame_shape)
+    except ValueError:
+        return cells
 
 
 def find_common_frame_shape(

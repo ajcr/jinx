@@ -179,7 +179,8 @@ def slash_adverb(verb: Verb) -> Verb:
     function = verb.dyad.function
     if function is None:
         # Note: this differs from J which still allows the adverb to be applied
-        # to a noun, but may raise an error when the new verb is applied to a noun.
+        # to a verb, but may raise an error when the new verb is applied to a noun
+        # and the verb has no dyadic valence.
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
     if is_ufunc(function) and verb.dyad.is_commutative:
@@ -194,7 +195,7 @@ def slash_adverb(verb: Verb) -> Verb:
             ["int64(int64, int64)", "float64(float64, float64)"], nopython=True
         )
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return dyad(y, x)
+            return functionq(y, x)
 
         def _reduce(y: np.ndarray) -> np.ndarray:
             y = np.atleast_1d(y)
@@ -210,7 +211,7 @@ def slash_adverb(verb: Verb) -> Verb:
         # such as for hooks, where the verbs in the hook are both ufuncs.
 
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return dyad(y, x)
+            return function(y, x)
 
         def _reduce(y: np.ndarray) -> np.ndarray:
             y = np.atleast_1d(y)

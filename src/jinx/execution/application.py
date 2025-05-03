@@ -251,7 +251,10 @@ def build_hook(f: Verb, g: Verb) -> Verb:
         a = g.monad.function(y)
         return f.dyad.function(x, a)
 
-    spelling = f"{f.spelling} {g.spelling}"
+    f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
+    g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
+
+    spelling = f"{f_spelling} {g_spelling}"
 
     return Verb(
         spelling=spelling,

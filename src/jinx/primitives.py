@@ -53,6 +53,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Times", left_rank=0, right_rank=0),
     ),
     Verb(
+        "*:",
+        "STARCO",
+        monad=Monad(name="Square", rank=0),
+        dyad=Dyad(name="Not-And", left_rank=0, right_rank=0, is_commutative=True),
+    ),
+    Verb(
         "-",
         "MINUS",
         monad=Monad(name="Negate", rank=0),

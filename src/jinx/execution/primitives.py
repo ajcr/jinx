@@ -46,6 +46,14 @@ def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return ~np.logical_or(x, y)
 
 
+@numba.vectorize(["int64(int64, int64)"], nopython=True)
+def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """*: dyad: not-and operation."""
+    # N.B. This is not the same as the J implementation which forbids values
+    # outside of 0 and 1.
+    return ~np.logical_and(x, y)
+
+
 @numba.vectorize(["float64(float64, float64)"], nopython=True)
 def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """^. dyad: logarithm of y to the base x."""
@@ -308,6 +316,7 @@ PRIMITIVE_MAP = {
     "PLUS": (np.conj, np.add),
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),
+    "STARCO": (np.square, starco_dyad),
     "PERCENT": (percent_monad, np.divide),
     "PERCENTCO": (np.sqrt, percentco_dyad),
     "HAT": (np.exp, np.power),

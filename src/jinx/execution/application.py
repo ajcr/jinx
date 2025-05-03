@@ -86,8 +86,11 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
     cells = [function(cell) for cell in arr_reshaped]
-    cells = maybe_pad_with_fill_value(cells)
-    result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
+    if len(cells) == 1 and np.isscalar(cells[0]):
+        result = cells[0]
+    else:
+        cells = maybe_pad_with_fill_value(cells)
+        result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
     return result
 
 
@@ -280,8 +283,8 @@ def build_fork(f: Verb, g: Verb, h: Verb) -> Verb:
         return g.dyad.function(a, b)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        a = f.dyad.function(y)
-        b = h.dyad.function(y)
+        a = f.dyad.function(x, y)
+        b = h.dyad.function(x, y)
         return g.dyad.function(a, b)
 
     f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling

@@ -180,6 +180,18 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
     return np.flip(result, axes_to_flip)
 
 
+def tally_monad(y: np.ndarray) -> np.ndarray:
+    """# monad: count number of items in y."""
+    if np.isscalar(y) or y.size == 1 and y.ndim <= 1:
+        return 0
+    return y.shape[0]
+
+
+def tally_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """# monad: copy items in y exactly x times."""
+    return np.repeat(y, x, axis=0)
+
+
 INFINITY = float("inf")
 
 
@@ -333,4 +345,5 @@ PRIMITIVE_MAP = {
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
     "RANK": rank_conjunction,
+    "NUMBER": (tally_monad, tally_dyad),
 }

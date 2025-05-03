@@ -190,12 +190,12 @@ def test_word_evaluation_adverb_creation(words, expected):
     [
         pytest.param(
             [PLUS, SLASH, Atom(data_type=DataType.Integer, data=77)],
-            [Array(data_type=DataType.Integer, data=None, implementation=np.array(77))],
+            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
             id="+/ 77",
         ),
         pytest.param(
             [PLUS, SLASH, Array(data_type=DataType.Integer, data=[1, 3, 5])],
-            [Array(data_type=DataType.Integer, data=None, implementation=np.array(9))],
+            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(9))],
             id="+/ 1 3 5",
         ),
         pytest.param(
@@ -206,7 +206,7 @@ def test_word_evaluation_adverb_creation(words, expected):
                 Array(data_type=DataType.Integer, data=[8, 3, 5]),
                 RPAREN,
             ],
-            [Array(data_type=DataType.Integer, data=None, implementation=np.array(16))],
+            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
             id="(+/ 8 3 5)",
         ),
         pytest.param(
@@ -217,7 +217,7 @@ def test_word_evaluation_adverb_creation(words, expected):
                 RPAREN,
                 Array(data_type=DataType.Integer, data=[8, 3, 5]),
             ],
-            [Array(data_type=DataType.Integer, data=None, implementation=np.array(16))],
+            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
             id="(+/) 8 3 5",
         ),
     ],
@@ -297,7 +297,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(5))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
             id='+"0 (5)',
         ),
         pytest.param(
@@ -309,7 +309,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 RPAREN,
                 Atom(data_type=DataType.Integer, data=5),
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(5))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
             id='(+"0) 5',
         ),
         pytest.param(
@@ -323,7 +323,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(5))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
             id='(+"0) (5)',
         ),
     ],
@@ -346,7 +346,7 @@ def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected
                 Atom(data_type=DataType.Integer, data=5),
                 RPAREN,
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(5))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
             id='+/"0 (5)',
         ),
     ],
@@ -369,7 +369,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Atom(data_type=DataType.Integer, data=9),
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(9))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
             id='+"0 + 9',
         ),
         pytest.param(
@@ -381,7 +381,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Atom(data_type=DataType.Integer, data=9),
             ],
-            [Array(data_type=DataType.Integer, implementation=np.array(9))],
+            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
             id='+/"0 + 9',
         ),
     ],
@@ -415,7 +415,7 @@ def test_word_evaluation_hook_produces_single_verb(words):
     [
         pytest.param(
             [LPAREN, PLUS, PERCENT, RPAREN, Atom(data_type=DataType.Integer, data=4)],
-            Array(data_type=DataType.Float, implementation=np.array(4.25)),
+            Atom(data_type=DataType.Float, implementation=np.float64(4.25)),
             id="(+%)4",
         ),
     ],

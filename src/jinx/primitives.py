@@ -155,6 +155,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Reverse", rank=INFINITY),
         dyad=Dyad(name="Rotate", left_rank=1, right_rank=INFINITY),
     ),
+    Verb(
+        "#",
+        "NUMBER",
+        monad=Monad(name="Tally", rank=INFINITY),
+        dyad=Dyad(name="Copy", left_rank=1, right_rank=INFINITY),
+    ),
 ]
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.jinx.execution.application import maybe_pad_with_fill_value, apply_dyad
+from src.jinx.execution.application import maybe_pad_with_fill_value, apply_dyad, ensure_verb_implementation
 from src.jinx.vocabulary import Array, DataType
 from src.jinx.execution.primitives import rank_conjunction
 from src.jinx.primitives import PRIMITIVE_MAP
@@ -38,6 +38,7 @@ def test_maybe_pad_with_fill_value(arrays, expected):
 
 
 PLUS = PRIMITIVE_MAP["PLUS"]
+ensure_verb_implementation(PLUS)
 PLUS_0_1 = rank_conjunction(
     PLUS, Array(DataType.Integer, implementation=np.array([0, 1]))
 )

@@ -10,12 +10,9 @@ import functools
 
 import numpy as np
 
-from jinx.vocabulary import Noun, Atom, Verb, Conjunction, Adverb, Monad, Dyad
-from jinx.execution.conversion import (
-    ensure_noun_implementation,
-    ndarray_or_scalar_to_noun,
-    is_ufunc,
-)
+from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad
+from jinx.errors import LengthError
+from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
 from jinx.execution.primitives import PRIMITIVE_MAP
 
 
@@ -43,9 +40,6 @@ def maybe_pad_with_fill_value(
 
 
 def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
-    ensure_noun_implementation(noun)
-    ensure_verb_implementation(verb)
-
     arr = noun.implementation
 
     result = _apply_monad(verb, arr)
@@ -98,10 +92,6 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
 
 
 def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
-    ensure_noun_implementation(noun_1)
-    ensure_noun_implementation(noun_2)
-    ensure_verb_implementation(verb)
-
     left_arr = noun_1.implementation
     right_arr = noun_2.implementation
 
@@ -165,7 +155,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     # be a prefix of the other, otherwise it's not possible to apply the dyad.
     common_frame_shape = find_common_frame_shape(left_frame_shape, right_frame_shape)
     if common_frame_shape is None:
-        raise ValueError(
+        raise LengthError(
             f"Cannot apply dyad {verb.spelling} to arrays of shape {left_frame_shape} and {right_frame_shape}"
         )
 
@@ -230,15 +220,6 @@ def find_common_frame_shape(
 def apply_conjunction(
     verb_or_noun_1: Verb | Noun, conjunction: Conjunction, verb_or_noun_2: Verb | Noun
 ) -> Verb:
-    if isinstance(verb_or_noun_1, Noun):
-        ensure_noun_implementation(verb_or_noun_1)
-    if isinstance(verb_or_noun_2, Noun):
-        ensure_noun_implementation(verb_or_noun_2)
-    if isinstance(verb_or_noun_1, Verb):
-        ensure_verb_implementation(verb_or_noun_1)
-    if isinstance(verb_or_noun_2, Verb):
-        ensure_verb_implementation(verb_or_noun_2)
-
     f = PRIMITIVE_MAP[conjunction.name]
     return f(verb_or_noun_1, verb_or_noun_2)
 
@@ -269,9 +250,6 @@ INFINITY = float("inf")
 
 
 def build_hook(f: Verb, g: Verb) -> Verb:
-    ensure_verb_implementation(f)
-    ensure_verb_implementation(g)
-
     def _monad(y: np.ndarray) -> np.ndarray:
         a = g.monad.function(y)
         return f.dyad.function(y, a)

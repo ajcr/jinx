@@ -19,6 +19,7 @@ import numpy as np
 import numba
 
 from jinx.vocabulary import Verb, Atom, Array
+from jinx.errors import DomainError, ValenceError
 from jinx.execution.conversion import is_ufunc
 
 
@@ -144,7 +145,7 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Does not support INFINITY as an atom of x.
     """
     if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
-        raise ValueError(f"Invalid shape: {x}")
+        raise DomainError(f"Invalid shape: {x}")
 
     if np.isscalar(x) or x.size == 1:
         x_shape = (x,)
@@ -174,7 +175,7 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
 
 def slash_monad(verb: Verb) -> Callable[[np.ndarray], np.ndarray]:
     if not verb.dyad:
-        raise ValueError(f"Verb {verb.spelling} has no dyadic valence.")
+        raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
     if verb.dyad.function is None:
         dyad = PRIMITIVE_MAP[verb.name][1]
@@ -220,10 +221,10 @@ def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
     rank = np.atleast_1d(noun.implementation)
 
     if not np.issubdtype(rank.dtype, np.integer):
-        raise ValueError(f"Rank must be an integer, got {rank.dtype}")
+        raise DomainError(f"Rank must be an integer, got {rank.dtype}")
 
     if rank.size > 3 or rank.ndim > 1:
-        raise ValueError(
+        raise DomainError(
             f"Rank must be a scalar or 1D array of length 2, got {rank.ndim}D array with shape {rank.shape}"
         )
 

@@ -28,9 +28,9 @@ from jinx.execution.application import (
     apply_conjunction,
     apply_adverb_to_verb,
     build_hook,
-    ensure_noun_implementation,
     ensure_verb_implementation,
 )
+from jinx.execution.conversion import ensure_noun_implementation
 
 from jinx.execution.printing import (
     atom_to_string,

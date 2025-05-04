@@ -18,27 +18,14 @@ from jinx.vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
 INFINITY = float("inf")
 
 PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
-    Verb("=", "EQ", dyad=Dyad(name="Equal", left_rank=0, right_rank=0)),
+    Verb("=", "EQ", dyad=Dyad(name="Equal", left_rank=0, right_rank=0, is_commutative=True)),
     Copula("=.", "EQDOT"),
     Copula("=:", "EQCO"),
-    Verb(
-        "<.",
-        "LTDOT",
-        monad=Monad(name="Floor", rank=0),
-        dyad=Dyad(name="Min", left_rank=0, right_rank=0),
-    ),
-    Verb(
-        ">.",
-        "GTDOT",
-        monad=Monad(name="Ceiling", rank=0),
-        dyad=Dyad(name="Max", left_rank=0, right_rank=0),
-    ),
-    Verb(">:", "GTCO"),
     Verb(
         "+",
         "PLUS",
         monad=Monad(name="Conjugate", rank=0),
-        dyad=Dyad(name="Plus", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Plus", left_rank=0, right_rank=0, is_commutative=True),
     ),
     Verb(
         "+.",
@@ -56,7 +43,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "*",
         "STAR",
         monad=Monad(name="Signum", rank=0),
-        dyad=Dyad(name="Times", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Times", left_rank=0, right_rank=0, is_commutative=True),
     ),
     Verb(
         "*:",
@@ -82,7 +69,9 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "-:",
         "MINUSCO",
         monad=Monad(name="Halve", rank=0),
-        dyad=Dyad(name="Match", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(
+            name="Match", left_rank=INFINITY, right_rank=INFINITY, is_commutative=True
+        ),
     ),
     Verb(
         "%",
@@ -94,7 +83,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "%:",
         "PERCENTCO",
         monad=Monad(name="Square Root", rank=0),
-        dyad=Dyad(name="Root", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Root", left_rank=0, right_rank=0, is_commutative=False),
     ),
     Verb(
         "^",
@@ -112,25 +101,29 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "<.",
         "LTDOT",
         monad=Monad(name="Floor", rank=0),
-        dyad=Dyad(name="Min", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Min", left_rank=0, right_rank=0, is_commutative=True),
     ),
     Verb(
         ">.",
         "GTDOT",
         monad=Monad(name="Ceiling", rank=0),
-        dyad=Dyad(name="Max", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Max", left_rank=0, right_rank=0, is_commutative=True),
     ),
     Verb(
         "<:",
         "LTCO",
         monad=Monad(name="Decrement", rank=0),
-        dyad=Dyad(name="Less Or Equal", left_rank=0, right_rank=0),
+        dyad=Dyad(
+            name="Less Or Equal", left_rank=0, right_rank=0, is_commutative=False
+        ),
     ),
     Verb(
         ">:",
         "GTCO",
         monad=Monad(name="Increment", rank=0),
-        dyad=Dyad(name="Larger Or Equal", left_rank=0, right_rank=0),
+        dyad=Dyad(
+            name="Larger Or Equal", left_rank=0, right_rank=0, is_commutative=False
+        ),
     ),
     Adverb(
         "~",
@@ -148,57 +141,70 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "$",
         "DOLLAR",
         monad=Monad(name="Shape Of", rank=INFINITY),
-        dyad=Dyad(name="Shape", left_rank=1, right_rank=INFINITY),
+        dyad=Dyad(name="Shape", left_rank=1, right_rank=INFINITY, is_commutative=False),
     ),
     Conjunction("@", "AT"),
     Verb(
         "i.",
         "IDOT",
         monad=Monad(name="Integers", rank=1),
-        dyad=Dyad(name="Index Of", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(
+            name="Index Of",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
     ),
     Adverb(
         "/",
         "SLASH",
         monad=Monad(name="Insert", rank=INFINITY),
-        dyad=Dyad(name="Table", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(name="Table", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False),
     ),
     Conjunction('"', "RANK"),
     Verb(
         ",",
         "COMMA",
         monad=Monad(name="Ravel", rank=INFINITY),
-        dyad=Dyad(name="Append", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(
+            name="Append", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
     ),
     Verb(
         "|",
         "BAR",
         monad=Monad(name="Magnitude", rank=0),
-        dyad=Dyad(name="Residue", left_rank=0, right_rank=0),
+        dyad=Dyad(name="Residue", left_rank=0, right_rank=0, is_commutative=False),
     ),
     Verb(
         "|.",
         "BARDOT",
         monad=Monad(name="Reverse", rank=INFINITY),
-        dyad=Dyad(name="Rotate", left_rank=1, right_rank=INFINITY),
+        dyad=Dyad(
+            name="Rotate", left_rank=1, right_rank=INFINITY, is_commutative=False
+        ),
     ),
     Verb(
         "#",
         "NUMBER",
         monad=Monad(name="Tally", rank=INFINITY),
-        dyad=Dyad(name="Copy", left_rank=1, right_rank=INFINITY),
+        dyad=Dyad(name="Copy", left_rank=1, right_rank=INFINITY, is_commutative=False),
     ),
     Verb(
         "[",
         "SQUARELF",
         monad=Monad(name="Same", rank=INFINITY),
-        dyad=Dyad(name="LEFT", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(
+            name="LEFT", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
     ),
     Verb(
         "]",
         "SQUARERF",
         monad=Monad(name="Same", rank=INFINITY),
-        dyad=Dyad(name="RIGHT", left_rank=INFINITY, right_rank=INFINITY),
+        dyad=Dyad(
+            name="RIGHT", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
     ),
 ]
 

@@ -115,28 +115,31 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 
-    if x.size == 1:
+    if x.size == 1 and x.ndim == 1:
         x = np.full_like(y[:1], x[0])
-    elif y.size == 1:
+    elif y.size == 1 and y.ndim == 1:
         y = np.full_like(x[:1], y[0])
     else:
         trailing_dims = [
             max(xs, ys)
             for xs, ys in itertools.zip_longest(
-                reversed(x.shape[1:]), reversed(y.shape[1:]), fillvalue=1
+                reversed(x.shape), reversed(y.shape), fillvalue=1
             )
         ]
         trailing_dims.reverse()
+        trailing_dims = trailing_dims[1:]  # ignore dimension that we concatenate along
 
         ndmin = max(x.ndim, y.ndim)
         x = increase_ndim(x, ndmin)
         y = increase_ndim(y, ndmin)
 
         x = np.pad(
-            x, [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)]
+            x,
+            [(0, 0)] + [(0, max(d - s, 0)) for s, d in zip(x.shape[1:], trailing_dims)],
         )
         y = np.pad(
-            y, [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)]
+            y,
+            [(0, 0)] + [(0, max(d - s, 0)) for s, d in zip(y.shape[1:], trailing_dims)],
         )
 
     return np.concatenate([x, y], axis=0)

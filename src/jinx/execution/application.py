@@ -235,10 +235,10 @@ def apply_conjunction(
 
 def apply_adverb_to_verb(verb: Verb, adverb: Adverb) -> Verb:
     if adverb.name in PRIMITIVE_MAP:
-        f = PRIMITIVE_MAP[adverb.name][0]
+        function = PRIMITIVE_MAP[adverb.name]
     else:
         raise NotImplementedError(f"Adverb '{adverb.spelling}' not supported")
-    return f(verb)
+    return function(verb)
 
 
 def ensure_verb_implementation(verb: Verb) -> None:

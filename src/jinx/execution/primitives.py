@@ -372,7 +372,7 @@ def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
 
 
 PRIMITIVE_MAP = {
-    # NAME: (MONAD, DYAD)
+    # VERB: (MONAD, DYAD)
     "EQ": (None, np.equal),
     "MINUS": (np.negative, np.subtract),
     "MINUSCO": (minusco_monad, minusco_dyad),
@@ -390,12 +390,14 @@ PRIMITIVE_MAP = {
     "GTDOT": (np.ceil, np.maximum),
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, None),
-    "SLASH": (slash_adverb, None),
-    "TILDE": (tilde_adverb, None),
     "TILDEDOT": (tildedot_monad, None),
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
-    "RANK": rank_conjunction,
     "NUMBER": (tally_monad, tally_dyad),
+    # ADVERB: adverb
+    "SLASH": slash_adverb,
+    "TILDE": tilde_adverb,
+    # CONJUNCTION: conjunction
+    "RANK": rank_conjunction,
 }

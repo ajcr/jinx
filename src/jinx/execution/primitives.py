@@ -135,11 +135,11 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
         x = np.pad(
             x,
-            [(0, 0)] + [(0, max(d - s, 0)) for s, d in zip(x.shape[1:], trailing_dims)],
+            [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)],
         )
         y = np.pad(
             y,
-            [(0, 0)] + [(0, max(d - s, 0)) for s, d in zip(y.shape[1:], trailing_dims)],
+            [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
         )
 
     return np.concatenate([x, y], axis=0)

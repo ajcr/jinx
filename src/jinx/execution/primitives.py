@@ -253,6 +253,9 @@ def slash_adverb(verb: Verb) -> Verb:
             y = np.flip(y, axis=0)
             return functools.reduce(_dyad_arg_swap, y)
 
+        # This gives incorrect results for some verbs, for example
+        # comma: (i.6),/(i.2 2).
+        # TODO: fix this.
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             x = np.atleast_1d(x)
             y = np.atleast_1d(y)

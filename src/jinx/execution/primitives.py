@@ -20,6 +20,7 @@ import numba
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError
 from jinx.execution.conversion import is_ufunc
+from jinx.execution.helpers import maybe_pad_with_fill_value
 
 
 def percent_monad(y: np.ndarray) -> np.ndarray:
@@ -171,15 +172,15 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Does not support custom fill values at the moment.
     Does not support INFINITY as an atom of x.
     """
-    if _is_scalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
+    if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
         raise DomainError(f"Invalid shape: {x}")
 
-    if _is_scalar(x):
-        x_shape = (x,)
+    if np.isscalar(x) or x.size == 1:
+        x_shape = (np.squeeze(x),)
     else:
         x_shape = tuple(x)
 
-    if _is_scalar(y):
+    if np.isscalar(y) or y.size == 1:
         result = np.zeros(x_shape, dtype=x.dtype)
         result[:] = y
         return result
@@ -290,6 +291,8 @@ def slash_adverb(verb: Verb) -> Verb:
             for x_item in x:
                 row = function(x_item, y)
                 table.append(row)
+
+            table = maybe_pad_with_fill_value(table, fill_value=0)
             return np.asarray(table)
 
         monad = _reduce

@@ -110,14 +110,19 @@ def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     return y[idx]
 
 
+def _is_scalar(x: np.ndarray) -> bool:
+    """Check if the array is a scalar or has only one item."""
+    return np.isscalar(x) or (x.ndim <= 1 and x.size == 1)
+
+
 def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """, dyad: returns array containing the items of x followed by the items of y."""
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 
-    if x.size == 1 and x.ndim == 1:
+    if _is_scalar(x):
         x = np.full_like(y[:1], x[0])
-    elif y.size == 1 and y.ndim == 1:
+    elif _is_scalar(y):
         y = np.full_like(x[:1], y[0])
     else:
         trailing_dims = [
@@ -147,7 +152,7 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
-    if np.isscalar(y) or y.size == 1:
+    if _is_scalar(y):
         # Differs from the J implementation which returns a missing value for shape of scalar.
         return np.array([0])
     return np.array(y.shape)
@@ -166,15 +171,15 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Does not support custom fill values at the moment.
     Does not support INFINITY as an atom of x.
     """
-    if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
+    if _is_scalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
         raise DomainError(f"Invalid shape: {x}")
 
-    if np.isscalar(x) or x.size == 1:
+    if _is_scalar(x):
         x_shape = (x,)
     else:
         x_shape = tuple(x)
 
-    if np.isscalar(y) or y.size == 1:
+    if _is_scalar(y):
         result = np.zeros(x_shape, dtype=x.dtype)
         result[:] = y
         return result
@@ -197,7 +202,7 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
 
 def tally_monad(y: np.ndarray) -> np.ndarray:
     """# monad: count number of items in y."""
-    if np.isscalar(y) or y.size == 1 and y.ndim <= 1:
+    if _is_scalar(y):
         return 0
     return y.shape[0]
 

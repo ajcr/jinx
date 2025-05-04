@@ -65,6 +65,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Minus", left_rank=0, right_rank=0, is_commutative=False),
     ),
     Verb(
+        "-:",
+        "MINUSCO",
+        monad=Monad(name="Halve", rank=0),
+        dyad=Dyad(name="Match", left_rank=INFINITY, right_rank=INFINITY),
+    ),
+    Verb(
         "%",
         "PERCENT",
         monad=Monad(name="Reciprocal", rank=0),

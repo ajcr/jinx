@@ -38,6 +38,18 @@ def plusco_monad(y: np.ndarray) -> np.ndarray:
     return 2 * y
 
 
+@numba.vectorize(["float64(int64)", "float64(float64)"], nopython=True)
+def minusco_monad(y: np.ndarray) -> np.ndarray:
+    """-: monad: halve the values in the array."""
+    return y / 2
+
+
+def minusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """-: dyad: match, returns true if x and y have same shape and values."""
+    is_equal = np.array_equal(x, y, equal_nan=True)
+    return np.asarray(is_equal)
+
+
 @numba.vectorize(["int64(int64, int64)"], nopython=True)
 def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """+: dyad: not-or operation."""
@@ -357,6 +369,7 @@ PRIMITIVE_MAP = {
     # NAME: (MONAD, DYAD)
     "EQ": (None, np.equal),
     "MINUS": (np.negative, np.subtract),
+    "MINUSCO": (minusco_monad, minusco_dyad),
     "PLUS": (np.conj, np.add),
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),

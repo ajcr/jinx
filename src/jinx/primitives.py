@@ -174,6 +174,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Tally", rank=INFINITY),
         dyad=Dyad(name="Copy", left_rank=1, right_rank=INFINITY),
     ),
+    Verb(
+        "[",
+        "SQUARELF",
+        monad=Monad(name="Same", rank=INFINITY),
+        dyad=Dyad(name="LEFT", left_rank=INFINITY, right_rank=INFINITY),
+    ),
+    Verb(
+        "]",
+        "SQUARERF",
+        monad=Monad(name="Same", rank=INFINITY),
+        dyad=Dyad(name="RIGHT", left_rank=INFINITY, right_rank=INFINITY),
+    ),
 ]
 
 

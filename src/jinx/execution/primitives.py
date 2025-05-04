@@ -207,6 +207,24 @@ def tally_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.repeat(y, x, axis=0)
 
 
+def squarelf_monad(y: np.ndarray) -> np.ndarray:
+    """[ monad: returns the whole array."""
+    return y
+
+
+def squarelf_dyad(x: np.ndarray, _: np.ndarray) -> np.ndarray:
+    """[ dyad: returns x."""
+    return x
+
+
+squarerf_monad = squarelf_monad
+
+
+def squarerf_dyad(_: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """] dyad: returns y."""
+    return y
+
+
 INFINITY = float("inf")
 
 
@@ -395,6 +413,8 @@ PRIMITIVE_MAP = {
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
     "NUMBER": (tally_monad, tally_dyad),
+    "SQUARELF": (squarelf_monad, squarelf_dyad),
+    "SQUARERF": (squarerf_monad, squarerf_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,
     "TILDE": tilde_adverb,

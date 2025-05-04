@@ -99,7 +99,7 @@ def rank_n_array_string(
     return sep.join(subarray_strs)
 
 
-MAX_COLS = 10
+MAX_COLS = 100
 
 
 def array_to_string(array: Array, max_cols: int = MAX_COLS) -> str:

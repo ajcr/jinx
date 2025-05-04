@@ -29,7 +29,33 @@ def array_to_string_float(array: Array) -> str:
     return str(array.implementation)
 
 
-def rank_1_array_string(
+def rank_1_array_float_to_string(
+    arr: np.ndarray, justify: list[int], append_ellisis: bool = False
+) -> list[int]:
+    assert arr.ndim == 1
+    assert len(justify) == len(arr)
+
+    arr_python = arr.tolist()
+    scalars = []
+
+    for scalar, pad in zip(arr_python, justify):
+        if np.isinf(scalar):
+            str_ = scalar = "_" if scalar < 0 else "__"
+        else:
+            if scalar.is_integer():
+                scalar = int(scalar)
+            sign = "_" if scalar < 0 else ""
+            str_ = f"{sign}{abs(scalar)}"
+        str_ = str_.rjust(pad)
+        scalars.append(str_)
+
+    if append_ellisis:
+        scalars.append("...")
+
+    return scalars
+
+
+def rank_1_array_integer_to_string(
     arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
     assert arr.ndim == 1
@@ -53,13 +79,17 @@ def rank_n_array_string(
     arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
     if arr.ndim == 1:
-        return rank_1_array_string(arr, justify, append_ellisis=append_ellisis)
+        return rank_1_array_integer_to_string(
+            arr, justify, append_ellisis=append_ellisis
+        )
 
     subarray_strs = []
 
     for subarr in arr:
         if subarr.ndim == 1:
-            str_ = rank_1_array_string(subarr, justify, append_ellisis=append_ellisis)
+            str_ = rank_1_array_integer_to_string(
+                subarr, justify, append_ellisis=append_ellisis
+            )
         else:
             str_ = rank_n_array_string(subarr, justify, append_ellisis=append_ellisis)
 

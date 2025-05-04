@@ -112,6 +112,13 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Increment", rank=0),
         dyad=Dyad(name="Larger Or Equal", left_rank=0, right_rank=0),
     ),
+    Adverb(
+        "~",
+        "TILDE",
+        monad=Monad(name="Reflex", rank=INFINITY),
+        # N.B. Left and right rank depend on the verb that this adverb is applied to.
+        dyad=Dyad(name="Passive", left_rank=0, right_rank=0, is_commutative=True),
+    ),
     Verb(
         "~.",
         "TILDEDOT",

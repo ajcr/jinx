@@ -43,7 +43,7 @@ class EvaluationError(Exception):
     pass
 
 
-def str_(word: Atom | Array | Verb | Conjunction) -> str:
+def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
     if isinstance(word, str):
         return word
     if isinstance(word, Atom):
@@ -51,6 +51,8 @@ def str_(word: Atom | Array | Verb | Conjunction) -> str:
     elif isinstance(word, Array):
         return array_to_string(word)
     elif isinstance(word, (Verb, Conjunction)):
+        return word.spelling
+    elif isinstance(word, Adverb):
         return word.spelling
     else:
         raise NotImplementedError(f"Cannot print word of type {type(word)}")

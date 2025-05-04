@@ -39,6 +39,11 @@ def plusco_monad(y: np.ndarray) -> np.ndarray:
     return 2 * y
 
 
+def minusdot_monad(y: np.ndarray) -> np.ndarray:
+    """-.: monad: returns 1 - y."""
+    return 1 - y
+
+
 @numba.vectorize(["float64(int64)", "float64(float64)"], nopython=True)
 def minusco_monad(y: np.ndarray) -> np.ndarray:
     """-: monad: halve the values in the array."""
@@ -403,6 +408,7 @@ PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
     "EQ": (None, np.equal),
     "MINUS": (np.negative, np.subtract),
+    "MINUSDOT": (minusdot_monad, None),
     "MINUSCO": (minusco_monad, minusco_dyad),
     "PLUS": (np.conj, np.add),
     "PLUSCO": (plusco_monad, plusco_dyad),

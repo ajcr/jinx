@@ -34,6 +34,12 @@ def percentco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.power(y, 1 / x)
 
 
+def plusdot_monad(y: np.ndarray) -> np.ndarray:
+    """+. monad: returns real and imaginary parts of numbers."""
+    y = np.atleast_1d(y)
+    return np.concatenate([np.real(y), np.imag(y)], axis=-1)
+
+
 def plusco_monad(y: np.ndarray) -> np.ndarray:
     """+: monad: double the values in the array."""
     return 2 * y
@@ -411,6 +417,7 @@ PRIMITIVE_MAP = {
     "MINUSDOT": (minusdot_monad, None),
     "MINUSCO": (minusco_monad, minusco_dyad),
     "PLUS": (np.conj, np.add),
+    "PLUSDOT": (plusdot_monad, np.gcd),
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),
     "STARCO": (np.square, starco_dyad),

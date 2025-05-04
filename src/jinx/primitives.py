@@ -41,6 +41,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Plus", left_rank=0, right_rank=0),
     ),
     Verb(
+        "+.",
+        "PLUSDOT",
+        monad=Monad(name="Real / Imaginary", rank=0),
+        dyad=Dyad(name="GCD (or)", left_rank=0, right_rank=0, is_commutative=True),
+    ),
+    Verb(
         "+:",
         "PLUSCO",
         monad=Monad(name="Double", rank=0),
@@ -68,7 +74,9 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "-.",
         "MINUSDOT",
         monad=Monad(name="Not", rank=0),
-        dyad=Dyad(name="Less", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False),
+        dyad=Dyad(
+            name="Less", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
     ),
     Verb(
         "-:",

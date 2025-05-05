@@ -416,13 +416,13 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
     """@ conjunction: compose verbs u and v, with the rank of the new verb dependent on v."""
 
     def monad(y: np.ndarray) -> np.ndarray:
-        a = u.monad.function(y)
-        b = v.monad.function(a)
+        a = v.monad.function(y)
+        b = u.monad.function(a)
         return b
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        a = u.dyad.function(x, y)
-        b = v.dyad.function(a, y)
+        a = v.dyad.function(x, y)
+        b = u.dyad.function(a, y)
         return b
 
     u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
@@ -441,6 +441,24 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
             left_rank=v.dyad.left_rank,
             right_rank=v.dyad.right_rank,
             function=dyad,
+        ),
+    )
+
+
+def atco_conjunction(u: Verb, v: Verb) -> Verb:
+    """@: conjunction: compose verbs u and v, with the rank of the new verb as infinity."""
+
+    verb = at_conjunction(u, v)
+    return dataclasses.replace(
+        verb,
+        monad=dataclasses.replace(
+            verb.monad,
+            rank=INFINITY,
+        ),
+        dyad=dataclasses.replace(
+            verb.dyad,
+            left_rank=INFINITY,
+            right_rank=INFINITY,
         ),
     )
 
@@ -479,4 +497,5 @@ PRIMITIVE_MAP = {
     # CONJUNCTION: conjunction
     "RANK": rank_conjunction,
     "AT": at_conjunction,
+    "ATCO": atco_conjunction,
 }

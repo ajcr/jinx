@@ -148,6 +148,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Shape", left_rank=1, right_rank=INFINITY, is_commutative=False),
     ),
     Conjunction("@", "AT"),
+    Conjunction("@:", "ATCO"),
     Verb(
         "i.",
         "IDOT",

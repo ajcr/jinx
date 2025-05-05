@@ -21,7 +21,7 @@ import numpy as np
 import numba
 
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
-from jinx.errors import DomainError, ValenceError
+from jinx.errors import DomainError, ValenceError, JIndexError
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
@@ -117,6 +117,22 @@ def bardot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             f"length error, executing dyad |. (x has {x.shape[-1]} atoms but y only has {y.ndim} axes)"
         )
     return np.roll(y, -x, axis=tuple(range(x.shape[-1])))
+
+
+def barco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """|: dyad: rearrange the axes of the array."""
+    x = np.atleast_1d(x)
+    if len(x) > y.ndim:
+        raise JIndexError("|: x has more items than y has dimensions")
+    if any(item > y.ndim for item in x):
+        raise JIndexError("|: x has items greater than y has dimensions")
+    if len(set(x)) != len(x):
+        raise JIndexError("|: x contains a duplicate axis number")
+    first = []
+    for i in range(y.ndim):
+        if i not in x:
+            first.append(i)
+    return np.transpose(y, axes=first + x.tolist())
 
 
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
@@ -495,6 +511,7 @@ PRIMITIVE_MAP = {
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
+    "BARCO": (np.transpose, barco_dyad),
     "NUMBER": (tally_monad, tally_dyad),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),

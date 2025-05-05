@@ -15,3 +15,7 @@ class DomainError(BaseJError):
 
 class ValenceError(BaseJError):
     pass
+
+
+class JIndexError(BaseJError):
+    pass

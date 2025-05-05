@@ -192,6 +192,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
     ),
     Verb(
+        "|:",
+        "BARCO",
+        monad=Monad(name="Transpose", rank=INFINITY),
+        dyad=Dyad(
+            name="Rearrange Axes",
+            left_rank=1,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+    ),
+    Verb(
         "#",
         "NUMBER",
         monad=Monad(name="Tally", rank=INFINITY),

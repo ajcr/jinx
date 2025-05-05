@@ -458,12 +458,12 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
         spelling=f"{u_spelling}@:{v_spelling}",
         monad=dataclasses.replace(
             verb.monad,
-            spelling=f"{u_spelling}@:{v_spelling}",
+            name=f"{u_spelling}@:{v_spelling}",
             rank=INFINITY,
         ),
         dyad=dataclasses.replace(
             verb.dyad,
-            spelling=f"{u_spelling}@:{v_spelling}",
+            name=f"{u_spelling}@:{v_spelling}",
             left_rank=INFINITY,
             right_rank=INFINITY,
         ),

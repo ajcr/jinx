@@ -230,6 +230,14 @@ INFINITY = float("inf")
 
 
 def build_hook(f: Verb, g: Verb) -> Verb:
+    """Build a hook given verbs f and g.
+
+      (f g) y  ->  y f (g y)
+    x (f g) y  ->  x f (g y)
+
+    The new verb has infinite rank.
+    """
+
     def _monad(y: np.ndarray) -> np.ndarray:
         a = g.monad.function(y)
         return f.dyad.function(y, a)
@@ -261,6 +269,14 @@ def build_hook(f: Verb, g: Verb) -> Verb:
 
 
 def build_fork(f: Verb, g: Verb, h: Verb) -> Verb:
+    """Build a fork given verbs f, g, h.
+
+      (f g h) y  ->    (f y) g   (h y)
+    x (f g h) y  ->  (x f y) g (x h y)
+
+    The new verb has infinite rank.
+    """
+
     def _monad(y: np.ndarray) -> np.ndarray:
         a = f.monad.function(y)
         b = h.monad.function(y)

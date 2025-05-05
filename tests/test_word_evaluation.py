@@ -424,3 +424,38 @@ def test_word_evaluation_hook_correct_result(words, expected):
     result = evaluate_words(words)
     assert len(result) == 2
     assert result[1] == expected
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
+                PRIMITIVE_MAP["TILDEDOT"],
+                PRIMITIVE_MAP["BARDOT"],
+                LPAREN,
+                PRIMITIVE_MAP["PLUSDOT"],
+                IDOT,
+                RPAREN,
+                Atom(data_type=DataType.Integer, data=36),
+            ],
+            np.array([1, 2, 3, 4, 6, 9, 12, 18, 36]),
+            id="~. |. (+. i.) 36",
+        ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["STARCO"],
+                Array(data_type=DataType.Integer, data=[3, 4, 5]),
+            ],
+            np.array(50),
+            id="+/@:*: 3 4 5",
+        ),
+    ],
+)
+def test_word_evaluation_general(words, expected):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert np.array_equal(result[1].implementation, expected)

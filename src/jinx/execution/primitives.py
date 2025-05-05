@@ -372,7 +372,7 @@ def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
 
     if rank.size > 3 or rank.ndim > 1:
         raise DomainError(
-            f"Rank must be a scalar or 1D array of length 2, got {rank.ndim}D array with shape {rank.shape}"
+            f"Rank must be a scalar or 1D array of length <= 3, got {rank.ndim}D array with shape {rank.shape}"
         )
 
     if rank.size == 1:
@@ -412,6 +412,39 @@ def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
     )
 
 
+def at_conjunction(u: Verb, v: Verb) -> Verb:
+    """@ conjunction: compose verbs u and v, with the rank of the new verb dependent on v."""
+
+    def monad(y: np.ndarray) -> np.ndarray:
+        a = u.monad.function(y)
+        b = v.monad.function(a)
+        return b
+
+    def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        a = u.dyad.function(x, y)
+        b = v.dyad.function(a, y)
+        return b
+
+    u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
+    v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
+
+    return Verb(
+        name=f"{u.name}@{v.name}",
+        spelling=f"{u_spelling}@{v_spelling}",
+        monad=Monad(
+            name=f"{u.name}@{v.name}",
+            rank=v.monad.rank,
+            function=monad,
+        ),
+        dyad=Dyad(
+            name=f"{u.name}@{v.name}",
+            left_rank=v.dyad.left_rank,
+            right_rank=v.dyad.right_rank,
+            function=dyad,
+        ),
+    )
+
+
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
     "EQ": (None, np.equal),
@@ -445,4 +478,5 @@ PRIMITIVE_MAP = {
     "TILDE": tilde_adverb,
     # CONJUNCTION: conjunction
     "RANK": rank_conjunction,
+    "AT": at_conjunction,
 }

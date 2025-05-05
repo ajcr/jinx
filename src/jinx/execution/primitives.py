@@ -449,14 +449,21 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
     """@: conjunction: compose verbs u and v, with the rank of the new verb as infinity."""
 
     verb = at_conjunction(u, v)
+    u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
+    v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
+
     return dataclasses.replace(
         verb,
+        name=f"{u.name}@:{v.name}",
+        spelling=f"{u_spelling}@:{v_spelling}",
         monad=dataclasses.replace(
             verb.monad,
+            spelling=f"{u_spelling}@:{v_spelling}",
             rank=INFINITY,
         ),
         dyad=dataclasses.replace(
             verb.dyad,
+            spelling=f"{u_spelling}@:{v_spelling}",
             left_rank=INFINITY,
             right_rank=INFINITY,
         ),

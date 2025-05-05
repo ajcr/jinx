@@ -18,7 +18,11 @@ from jinx.vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
 INFINITY = float("inf")
 
 PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
-    Verb("=", "EQ", dyad=Dyad(name="Equal", left_rank=0, right_rank=0, is_commutative=True)),
+    Verb(
+        "=",
+        "EQ",
+        dyad=Dyad(name="Equal", left_rank=0, right_rank=0, is_commutative=True),
+    ),
     Copula("=.", "EQDOT"),
     Copula("=:", "EQCO"),
     Verb(
@@ -159,7 +163,9 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "/",
         "SLASH",
         monad=Monad(name="Insert", rank=INFINITY),
-        dyad=Dyad(name="Table", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False),
+        dyad=Dyad(
+            name="Table", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
     ),
     Conjunction('"', "RANK"),
     Verb(

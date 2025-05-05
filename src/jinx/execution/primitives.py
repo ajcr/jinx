@@ -2,12 +2,15 @@
 
 Where possible, dyads are implemented as ufuncs (either NumPy ufuncs, or
 using the numba.vectorize decorator). This equips the dyads with efficient
-reduce and accumulate methods over arrays.
+reduce, outer and accumulate methods over arrays.
 
-It is important that the implementations here share the same "rank" characteristics
-as their J counterparts. For example the dyadic `+` operator in J has left and right
-rank 0, meaning that it operates on the "atoms" of each array (i.e. the numeric value
-in the array), not the array or its metadata.
+Specifically where a dyadic application of a verb has left and right rank both 0,
+this is equivalent to elementwise application of the verb to the arrays. This is
+what ufuncs capture. For example, dyadic `+` is equivalent to `np.add` and dyadic
+`*` is equivalent to `np.multiply`.
+
+It is important that all implementations here share the same "rank" characteristics
+as their J counterparts.
 """
 
 import dataclasses
@@ -50,7 +53,6 @@ def minusdot_monad(y: np.ndarray) -> np.ndarray:
     return 1 - y
 
 
-@numba.vectorize(["float64(int64)", "float64(float64)"], nopython=True)
 def minusco_monad(y: np.ndarray) -> np.ndarray:
     """-: monad: halve the values in the array."""
     return y / 2

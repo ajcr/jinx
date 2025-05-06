@@ -1,6 +1,6 @@
 import cmd
 
-from jinx.errors import BaseJError
+from jinx.errors import BaseJError, SpellingError
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
 from jinx.word_evaluation import evaluate_words, print_words
@@ -14,7 +14,11 @@ class Shell(cmd.Cmd):
 
     def default(self, line):
         words = form_words(line)
-        words = spell_words(words)
+        try:
+            words = spell_words(words)
+        except SpellingError as e:
+            print(e)
+            return
         try:
             words = evaluate_words(words)
             print_words(words)

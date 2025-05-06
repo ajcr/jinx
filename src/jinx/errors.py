@@ -19,3 +19,7 @@ class ValenceError(BaseJError):
 
 class JIndexError(BaseJError):
     pass
+
+
+class SpellingError(BaseJError):
+    pass

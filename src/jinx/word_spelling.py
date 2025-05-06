@@ -11,6 +11,7 @@ If a word does not map to a recognised part of speech, raise a SpellingError.
 
 import re
 
+from jinx.errors import SpellingError
 from jinx.primitives import PRIMITIVES
 from jinx.vocabulary import (
     Word,
@@ -22,10 +23,6 @@ from jinx.vocabulary import (
     Name,
     Punctuation,
 )
-
-
-class SpellingError(Exception):
-    pass
 
 
 def parse_integer(word: str) -> int | None:

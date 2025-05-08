@@ -155,35 +155,47 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         subcells = []
         if common_frame_shape == left_frame_shape:
             # right_cell is longer and contains multiple operand cells
-            r = (
-                right_cell.reshape(-1, *right_cell_shape)
-                if right_rank > 0
-                else right_cell.ravel()
-            )
-            for right_subcell in r:
+
+            if right_rank == 0:
+                right = right_cell.ravel()
+                is_ravelled = True
+            else:
+                right = right_cell.reshape(-1, *right_cell_shape)
+                is_ravelled = False
+
+            for right_subcell in right:
                 subcells.append(function(left_cell, right_subcell))
         else:
             # left_cell is longer and contains multiple operand cells
-            l = (
-                left_cell.reshape(-1, *left_cell_shape)
-                if left_rank > 0
-                else left_cell.ravel()
-            )
-            for left_subcell in l:
+            if left_rank == 0:
+                left = left_cell.ravel()
+                is_ravelled = True
+            else:
+                left = left_cell.reshape(-1, *left_cell_shape)
+                is_ravelled = False
+
+            for left_subcell in left:
                 subcells.append(function(left_subcell, right_cell))
 
         subcells = maybe_pad_with_fill_value(subcells)
-        cells.append(np.asarray(subcells))
+        subcells = np.asarray(subcells)
+        # If we ravelled the array and all the subcells are scalars, we
+        # drop the last dimension.
+        if is_ravelled and subcells.shape[-1] == 1:
+            subcells.shape = subcells.shape[:-1]
+        cells.extend(subcells)
 
     cells = maybe_pad_with_fill_value(cells)
     cells = np.asarray(cells)
 
-    final_frame_shape = max(left_frame_shape, right_frame_shape, key=len)
+    # Gather the cells into the final frame shape (the longer of the left
+    # and right frame shapes, plus the result cell shape).
+    collecting_frame = max(left_frame_shape, right_frame_shape, key=len)
+    _, *trailing_dims = cells.shape
 
-    try:
-        return cells.reshape(final_frame_shape)
-    except ValueError:
-        return cells
+    # breakpoint()
+
+    return cells.reshape(collecting_frame + tuple(trailing_dims))
 
 
 def find_common_frame_shape(

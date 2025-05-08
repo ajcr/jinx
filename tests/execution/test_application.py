@@ -46,6 +46,9 @@ ensure_verb_implementation(PLUS)
 PLUS_0_1 = rank_conjunction(
     PLUS, Array(DataType.Integer, implementation=np.array([0, 1]))
 )
+PLUS_1_0 = rank_conjunction(
+    PLUS, Array(DataType.Integer, implementation=np.array([1, 0]))
+)
 PLUS_0_2 = rank_conjunction(
     PLUS, Array(DataType.Integer, implementation=np.array([0, 2]))
 )
@@ -102,16 +105,30 @@ PLUS_1_2 = rank_conjunction(
         pytest.param(
             PLUS_0_1,
             np.array([0, 100]),
+            np.arange(6).reshape(2, 3),
+            np.array([[0, 1, 2], [103, 104, 105]]),
+            id='(0 100) +"0 1 (i. 2 3)',
+        ),
+        pytest.param(
+            PLUS_0_1,
+            np.array([0, 100]),
             np.arange(6).reshape(2, 3, 1),
+            np.array([[[0], [1], [2]], [[103], [104], [105]]]),
+            id='(0 100) +"0 1 (i. 2 3 1)',
+        ),
+        pytest.param(
+            PLUS_1_0,
+            np.array([0, 100]),
+            np.arange(8).reshape(2, 2, 2),
             np.array(
                 [
-                    [[[0, 100]], [[1, 101]], [[2, 102]]],
-                    [[[3, 103]], [[4, 104]], [[5, 105]]],
+                    [[[0, 100], [1, 101]], [[2, 102], [3, 103]]],
+                    [[[4, 104], [5, 105]], [[6, 106], [7, 107]]],
                 ]
             ),
-            id='(0 100) +"0 1 (i. 2 3 1)',
-            marks=pytest.mark.xfail(),
+            id='(0 100) +"1 0 (i. 2 2 2)',
         ),
+        # TODO: add test for (0 100) +"0 1 (i. 2 2 2)
     ],
 )
 def test_dyadic_application_using_plus(verb, left_array, right_array, expected):

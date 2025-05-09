@@ -180,19 +180,21 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.concatenate([x, y], axis=0)
 
 
-def dollar_monad(y: np.ndarray) -> np.ndarray | None:
-    """$ monad: returns the shape of the array."""
-    if _is_scalar(y):
-        # Differs from the J implementation which returns a missing value for shape of scalar.
-        return np.array([0])
-    return np.array(y.shape)
-
-
 def tildedot_monad(y: np.ndarray) -> np.ndarray:
     """~. monad: remove duplicates from a list."""
     y = np.atleast_1d(y)
     uniq, idx = np.unique(y, return_index=True, axis=0)
     return uniq[np.argsort(idx)]
+
+
+def dollar_monad(y: np.ndarray) -> np.ndarray | None:
+    """$ monad: returns the shape of the array."""
+    if np.isscalar(y) or y.shape == ():
+        # Differs from the J implementation which returns a missing value for shape of scalar.
+        return np.array(0)
+    if y.ndim == 1:
+        return np.array(y.shape[0])
+    return np.array(y.shape)
 
 
 def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

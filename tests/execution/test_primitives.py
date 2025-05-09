@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from src.jinx.execution.primitives import comma_dyad, dollar_dyad
+from src.jinx.execution.primitives import comma_dyad, dollar_dyad, dollar_monad
 
 
 @pytest.mark.parametrize(
@@ -133,4 +133,20 @@ def test_comma_dyad(x, y, expected):
 )
 def test_dollar_dyad(x, y, expected):
     result = dollar_dyad(x, y)
+    assert np.array_equal(result, expected), f"Expected {expected}, got {result}"
+
+
+@pytest.mark.parametrize(
+    "y, expected",
+    [
+        (np.int64(99), 0),
+        (np.array(99), 0),
+        (np.array([99]), 1),
+        (np.array([[99]]), np.array([1, 1])),
+        (np.array([-1, 1, 0]), np.array(3)),
+        (np.array([[1, 2], [3, 4]]), np.array([2, 2])),
+    ],
+)
+def test_dollar_monad(y, expected):
+    result = dollar_monad(y)
     assert np.array_equal(result, expected), f"Expected {expected}, got {result}"

@@ -185,8 +185,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     # Gather the cells into the final frame shape (the longer of the left
     # and right frame shapes, plus the result cell shape).
     collecting_frame = max(left_frame_shape, right_frame_shape, key=len)
-    _, *trailing_dims = cells.shape
-    return cells.reshape(collecting_frame + tuple(trailing_dims))
+    return cells.reshape(collecting_frame + cells[0].shape)
 
 
 def find_common_frame_shape(

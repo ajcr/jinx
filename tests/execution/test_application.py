@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from jinx.errors import LengthError
 from src.jinx.execution.application import (
     maybe_pad_with_fill_value,
     apply_dyad,
@@ -90,6 +91,13 @@ PLUS_1_2 = rank_conjunction(
         ),
         pytest.param(
             PLUS,
+            np.array([4, 5, 6]),
+            np.array([5, 6, 7]),
+            np.array([9, 11, 13]),
+            id="4 5 6 + 5 6 7",
+        ),
+        pytest.param(
+            PLUS,
             np.array(1),
             np.array([[1, 2], [3, 4]]),
             np.array([[2, 3], [4, 5]]),
@@ -135,6 +143,15 @@ PLUS_1_2 = rank_conjunction(
             np.array([[[0, 1], [2, 3]], [[504, 505], [506, 507]]]),
             id='(0 500) +"0 1 (i. 2 2 2)',
         ),
+        pytest.param(
+            PLUS_0_2,
+            np.arange(6).reshape(3, 2),
+            np.arange(6).reshape(3, 1, 2),
+            np.array(
+                [[[[0, 1]], [[1, 2]]], [[[4, 5]], [[5, 6]]], [[[8, 9]], [[9, 10]]]]
+            ),
+            id='(0 500) +"0 1 (i. 2 2 2)',
+        ),
     ],
 )
 def test_dyadic_application_using_plus(verb, left_array, right_array, expected):
@@ -144,3 +161,23 @@ def test_dyadic_application_using_plus(verb, left_array, right_array, expected):
 
     result = apply_dyad(verb, left_noun, right_noun)
     assert np.array_equal(result.implementation, expected)
+
+
+@pytest.mark.parametrize(
+    "verb, left_array, right_array",
+    [
+        pytest.param(
+            PLUS,
+            np.array([0, 500]),
+            np.array([1, 2, 3]),
+            id="0 500 + 1 2 3",
+        ),
+    ],
+)
+def test_dyadic_application_using_plus_raises_length_error(
+    verb, left_array, right_array
+):
+    left_noun = Array(DataType.Integer, implementation=left_array)
+    right_noun = Array(DataType.Integer, implementation=right_array)
+    with pytest.raises(LengthError):
+        apply_dyad(verb, left_noun, right_noun)

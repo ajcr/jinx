@@ -93,9 +93,7 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=1),
             ],
             [
-                Array(
-                    data_type=DataType.Integer, data=None, implementation=np.array(0)
-                ),
+                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
             ],
             id="1-1",
         ),
@@ -108,9 +106,7 @@ RANK = Conjunction('"', "RANK")
                 RPAREN,
             ],
             [
-                Array(
-                    data_type=DataType.Integer, data=None, implementation=np.array(0)
-                ),
+                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
             ],
             id="(1-1)",
         ),
@@ -129,8 +125,8 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=3),
             ],
             [
-                Array(
-                    data_type=DataType.Integer, data=None, implementation=np.array(15)
+                Atom(
+                    data_type=DataType.Integer, data=None, implementation=np.int64(15)
                 ),
             ],
             id="(8 - (1 - 5)) + 3",
@@ -150,9 +146,7 @@ RANK = Conjunction('"', "RANK")
                 Atom(data_type=DataType.Integer, data=3),
             ],
             [
-                Array(
-                    data_type=DataType.Integer, data=None, implementation=np.array(5)
-                ),
+                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(5)),
             ],
             id="((8 - 1) - 5) + 3",
         ),

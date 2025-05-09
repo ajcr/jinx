@@ -43,7 +43,7 @@ def infer_data_type(data):
 
 def ndarray_or_scalar_to_noun(data) -> Noun:
     data_type = infer_data_type(data)
-    if np.isscalar(data):
+    if np.isscalar(data) or data.ndim == 0:
         return Atom(data_type=data_type, implementation=data)
     return Array(data_type=data_type, implementation=data)
 

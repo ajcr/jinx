@@ -81,12 +81,6 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
 
 
 def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.ndarray:
-    # If the dyad is another Verb object, apply_dyad will be called
-    # recursively. This allows for implicit nested loops given by
-    # verb definitions such as `(+"1 2)"0 3`.
-    #
-    # Otherwise, the dyad function is a callable implementing a J
-    # primitive and is applied directly.
     if isinstance(verb.dyad.function, Verb):
         function = functools.partial(_apply_dyad, verb.dyad.function)
     else:
@@ -95,33 +89,35 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     left_rank = min(left_arr.ndim, verb.dyad.left_rank)
     right_rank = min(right_arr.ndim, verb.dyad.right_rank)
 
+    # If the left and right ranks are both 0 and one of the arrays is a scalar,
+    # apply the dyad directly as an optimisation.
+    if (
+        left_rank == right_rank == 0
+        and is_ufunc(function)
+        and left_arr.ndim == 0
+        or right_arr.ndim == 0
+    ):
+        return function(left_arr, right_arr)
+
     if left_rank < 0:
         raise NotImplementedError("Negative left rank not yet supported")
 
     if right_rank < 0:
         raise NotImplementedError("Negative right rank not yet supported")
 
-    # Cell and frame shapes are determined using the same approach as for
-    # the monadic application above.
-    if left_rank == 0:
-        left_cell_shape = ()
-        left_frame_shape = left_arr.shape
-        left_arr_reshaped = left_arr.ravel()
-    else:
-        left_cell_shape = left_arr.shape[-left_rank:]
-        left_frame_shape = left_arr.shape[:-left_rank]
-        left_arr_reshaped = left_arr.reshape(-1, *left_cell_shape)
+    left_cell_shape = left_arr.shape[-left_rank:] if left_rank else ()
+    left_frame_shape = left_arr.shape[:-left_rank] if left_rank else left_arr.shape
+    left_arr_reshaped = (
+        left_arr.reshape(-1, *left_cell_shape) if left_rank else left_arr.ravel()
+    )
 
-    if right_rank == 0:
-        right_cell_shape = ()
-        right_frame_shape = right_arr.shape
-        right_arr_reshaped = right_arr.ravel()
-    else:
-        right_cell_shape = right_arr.shape[-right_rank:]
-        right_frame_shape = right_arr.shape[:-right_rank]
-        right_arr_reshaped = right_arr.reshape(-1, *right_cell_shape)
+    right_cell_shape = right_arr.shape[-right_rank:] if right_rank else ()
+    right_frame_shape = right_arr.shape[:-right_rank] if right_rank else right_arr.shape
+    right_arr_reshaped = (
+        right_arr.reshape(-1, *right_cell_shape) if right_rank else right_arr.ravel()
+    )
 
-    # If the frame shapes are the same, we can apply the dyad without further manipulation.
+    # If the left and right frame shapes are the same, we can apply the dyad immediately.
     if left_frame_shape == right_frame_shape:
         cells = [
             function(left_cell, right_cell)

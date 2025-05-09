@@ -94,8 +94,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     if (
         left_rank == right_rank == 0
         and is_ufunc(function)
-        and left_arr.ndim == 0
-        or right_arr.ndim == 0
+        and (left_arr.ndim == 0 or right_arr.ndim == 0)
     ):
         return function(left_arr, right_arr)
 

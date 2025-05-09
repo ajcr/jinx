@@ -128,7 +128,13 @@ PLUS_1_2 = rank_conjunction(
             ),
             id='(0 100) +"1 0 (i. 2 2 2)',
         ),
-        # TODO: add test for (0 100) +"0 1 (i. 2 2 2)
+        pytest.param(
+            PLUS_0_1,
+            np.array([0, 500]),
+            np.arange(8).reshape(2, 2, 2),
+            np.array([[[0, 1], [2, 3]], [[504, 505], [506, 507]]]),
+            id='(0 500) +"0 1 (i. 2 2 2)',
+        ),
     ],
 )
 def test_dyadic_application_using_plus(verb, left_array, right_array, expected):

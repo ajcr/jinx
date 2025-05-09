@@ -104,7 +104,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     # Cell and frame shapes are determined using the same approach as for
     # the monadic application above.
     if left_rank == 0:
-        left_cell_shape = (1,)
+        left_cell_shape = ()
         left_frame_shape = left_arr.shape
         left_arr_reshaped = left_arr.ravel()
     else:
@@ -113,7 +113,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         left_arr_reshaped = left_arr.reshape(-1, *left_cell_shape)
 
     if right_rank == 0:
-        right_cell_shape = (1,)
+        right_cell_shape = ()
         right_frame_shape = right_arr.shape
         right_arr_reshaped = right_arr.ravel()
     else:
@@ -142,8 +142,8 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         )
 
     rcf = len(common_frame_shape)
-    left_rcf_cell_shape = left_arr.shape[rcf:] or (1,)
-    right_rcf_cell_shape = right_arr.shape[rcf:] or (1,)
+    left_rcf_cell_shape = left_arr.shape[rcf:]
+    right_rcf_cell_shape = right_arr.shape[rcf:]
 
     left_arr_reshaped = left_arr.reshape(-1, *left_rcf_cell_shape)
     right_arr_reshaped = right_arr.reshape(-1, *right_rcf_cell_shape)
@@ -155,13 +155,10 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         subcells = []
         if common_frame_shape == left_frame_shape:
             # right_cell is longer and contains multiple operand cells
-
             if right_rank == 0:
                 right = right_cell.ravel()
-                is_ravelled = True
             else:
                 right = right_cell.reshape(-1, *right_cell_shape)
-                is_ravelled = False
 
             for right_subcell in right:
                 subcells.append(function(left_cell, right_subcell))
@@ -169,21 +166,18 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
             # left_cell is longer and contains multiple operand cells
             if left_rank == 0:
                 left = left_cell.ravel()
-                is_ravelled = True
             else:
                 left = left_cell.reshape(-1, *left_cell_shape)
-                is_ravelled = False
 
             for left_subcell in left:
                 subcells.append(function(left_subcell, right_cell))
 
         subcells = maybe_pad_with_fill_value(subcells)
         subcells = np.asarray(subcells)
-        # If we ravelled the array and all the subcells are scalars, we
-        # drop the last dimension.
-        if is_ravelled and subcells.shape[-1] == 1:
-            subcells.shape = subcells.shape[:-1]
-        cells.extend(subcells)
+        if subcells.shape:
+            cells.extend(subcells)
+        else:
+            cells.append(subcells)
 
     cells = maybe_pad_with_fill_value(cells)
     cells = np.asarray(cells)
@@ -192,9 +186,6 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     # and right frame shapes, plus the result cell shape).
     collecting_frame = max(left_frame_shape, right_frame_shape, key=len)
     _, *trailing_dims = cells.shape
-
-    # breakpoint()
-
     return cells.reshape(collecting_frame + tuple(trailing_dims))
 
 

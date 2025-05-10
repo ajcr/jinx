@@ -192,8 +192,6 @@ def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     if np.isscalar(y) or y.shape == ():
         # Differs from the J implementation which returns a missing value for shape of scalar.
         return np.array(0)
-    if y.ndim == 1:
-        return np.array(y.shape[0])
     return np.array(y.shape)
 
 

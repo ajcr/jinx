@@ -139,12 +139,14 @@ def test_dollar_dyad(x, y, expected):
 @pytest.mark.parametrize(
     "y, expected",
     [
-        (np.int64(99), 0),
-        (np.array(99), 0),
-        (np.array([99]), 1),
-        (np.array([[99]]), np.array([1, 1])),
-        (np.array([-1, 1, 0]), np.array(3)),
-        (np.array([[1, 2], [3, 4]]), np.array([2, 2])),
+        pytest.param(np.int64(99), 0, id="$ 99"),
+        pytest.param(np.array(99), 0, id="$ 99"),
+        pytest.param(np.array([99]), np.array([1]), id="$ 1 $ 99"),
+        pytest.param(np.array([[99]]), np.array([1, 1]), id="$ 1 1 $ 99"),
+        pytest.param(np.array([-1, 1, 0]), np.array([3]), id="$ -1 1 0"),
+        pytest.param(
+            np.array([[1, 2], [3, 4]]), np.array([2, 2]), id="$ 2 2 $ 1 2 3 4"
+        ),
     ],
 )
 def test_dollar_monad(y, expected):

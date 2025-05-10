@@ -1,8 +1,6 @@
 # Jinx
 
-J interpreter written in Python, backed with NumPy for execution (with scope to execute with JAX, PyTorch, or another library in future).
-
-A work in progress.
+A work-in-progress J interpreter written in Python and NumPy.
 
 ## Examples
 
@@ -10,13 +8,13 @@ Start the interactive shell with `jinx`. As in the official J implementation, th
 
 Atoms (scalars) and arrays with 1 or more dimensions (rank):
 ```j
-    _3           NB. single integer (atom)
-_3
+    3           NB. single integer (atom)
+3
 
     3 5 7 11 13  NB. rank 1 array of integers (atoms)
 3 5 7 11 13
 
-    3 2 $ 7 1 0  NB. rank 2 array created using $ dyad, values repeated to fill shape
+    3 2 $ 7 1 0  NB. rank 2 array created using $ dyad (values repeated to fill shape)
 7 1
 0 7
 1 0
@@ -24,20 +22,44 @@ _3
 
 Monadic and dyadic application of verbs (applied right-to-left, parentheses force precedence):
 ```j
-     -3.141
+     -3.141            # NB. monadic -
 _3.141
 
-    10 - 3 5 7 11 13
+    10 - 3 5 7 11 13   # NB. dyadic -
 7 5 3 _1 _3
 
-    8 % 4 - 2    NB. dyad % is division, but subtraction done first
+    8 % 4 - 2    NB. dyad % is division, but the subtraction with - is done first
 4
 
     (8 % 4) - 2  NB. force division before substraction
 0
 ```
 
-Adverbs to modify verbs (e.g. change the rank that a verb will apply with):
+Verbs can apply to nouns of different rank. The rank of a verb can be modified (creating a new verb), changing how it applies over its noun arguments:
+```j
+    (2 2 $ 10 100 1000 10000) + (i. 2 2 2)      NB. default rank of + is (0 0)
+   10    11
+  102   103
+
+ 1004  1005
+10006 10007
+
+    (2 2 $ 10 100 1000 10000) +"0 2 (i. 2 2 2)  NB. conjunction " changes rank of + to (0 2)
+   10    11
+   12    13
+
+  100   101
+  102   103
+
+
+ 1004  1005
+ 1006  1007
+
+10004 10005
+10006 10007
+```
+
+Adverbs modify verbs, e.g. `/` inserts the verb between items of its argument:
 ```j
     i. 2 3 4       NB. a rank 3 array created with (i.)
  0  1  2  3
@@ -64,6 +86,6 @@ Adverbs to modify verbs (e.g. change the rank that a verb will apply with):
 
 ## Motivation
 
-This project is primarily a learning exercise: I want to improve my patchy understanding of J by implementing a useful subset of the language and its core concepts (ranks, obverses, etc.).
+This project is primarily a learning exercise: I want to improve my patchy understanding of J by implementing a useful subset of the language and its core concepts (rank, modifiers, etc.).
 
-It is also an attempt to prototype an interpreter for an array language that can be executed using different array frameworks (NumPy, JAX, PyTorch, etc.) according to the user's choice.
+It is also an attempt to prototype an interpreter for an array language that can be executed using Python's different array and tensor frameworks (NumPy, JAX, PyTorch, etc.) according to user's choice.

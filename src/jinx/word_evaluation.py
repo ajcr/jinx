@@ -63,20 +63,20 @@ def print_words(words: list[PartOfSpeechT]) -> None:
 
 
 def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
+    # Ensure noun and verb implementations are set according to the chosen execution
+    # framework (this is just NumPy for now).
     for word in words:
         if isinstance(word, Noun):
             ensure_noun_implementation(word)
         elif isinstance(word, Verb):
             ensure_verb_implementation(word)
 
+    # If the first word is None, prepend a None to the list denoting the left-most
+    # edge of the expression.
     if words[0] is not None:
         words = [None, *words]
 
     fragment = []
-    verb: Verb
-    noun: Noun
-    noun_2: Noun
-    adverb: Adverb
 
     while words:
         word = words.pop()

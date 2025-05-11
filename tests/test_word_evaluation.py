@@ -447,9 +447,45 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array(50),
             id="+/@:*: 3 4 5",
         ),
+        # From: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
+        pytest.param(
+            [
+                Atom(data_type=DataType.Integer, data=2),
+                PRIMITIVE_MAP["STAR"],
+                PRIMITIVE_MAP["PERCENTCO"],
+                PRIMITIVE_MAP["AT"],
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["STARCO"],
+                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+            ],
+            np.array(4.29211),
+            id="2 * %: @ + / @: *: 1 2 3",
+            marks=pytest.mark.xfail,
+        ),
+        # From: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
+        pytest.param(
+            [
+                Atom(data_type=DataType.Integer, data=2),
+                PRIMITIVE_MAP["STAR"],
+                PRIMITIVE_MAP["PERCENTCO"],
+                PRIMITIVE_MAP["AT"],
+                LPAREN,
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                RPAREN,
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["STARCO"],
+                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+            ],
+            np.array(7.48331),
+            id="2 * %: @ (+ /) @: *: 1 2 3",
+            marks=pytest.mark.xfail,
+        ),
     ],
 )
-def test_word_evaluation_general(words, expected):
+def test_word_evaluation_computes_correct_noun(words, expected):
     result = evaluate_words(words)
     assert len(result) == 2
     assert np.array_equal(result[1].implementation, expected)

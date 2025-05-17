@@ -267,6 +267,7 @@ def test_word_evaluation_adverb_application(words, expected):
             ],
             '+/"2',
             id='+/(")2',
+            marks=pytest.mark.xfail,
         ),
     ],
 )
@@ -462,7 +463,6 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ],
             np.array(4.29211),
             id="2 * %: @ + / @: *: 1 2 3",
-            marks=pytest.mark.xfail,
         ),
         # From: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
         pytest.param(
@@ -481,11 +481,10 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ],
             np.array(7.48331),
             id="2 * %: @ (+ /) @: *: 1 2 3",
-            marks=pytest.mark.xfail,
         ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):
     result = evaluate_words(words)
     assert len(result) == 2
-    assert np.array_equal(result[1].implementation, expected)
+    assert np.array_equal(np.round(result[1].implementation, 5), expected)

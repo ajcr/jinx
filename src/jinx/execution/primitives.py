@@ -438,22 +438,22 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         a = v.dyad.function(x, y)
-        b = u.dyad.function(a, y)
+        b = u.monad.function(a)
         return b
 
     u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
     v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
 
     return Verb(
-        name=f"{u.name}@{v.name}",
+        name=f"{u_spelling}@{v_spelling}",
         spelling=f"{u_spelling}@{v_spelling}",
         monad=Monad(
-            name=f"{u.name}@{v.name}",
+            name=f"{u_spelling}@{v_spelling}",
             rank=v.monad.rank,
             function=monad,
         ),
         dyad=Dyad(
-            name=f"{u.name}@{v.name}",
+            name=f"{u_spelling}@{v_spelling}",
             left_rank=v.dyad.left_rank,
             right_rank=v.dyad.right_rank,
             function=dyad,
@@ -470,7 +470,7 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
 
     return dataclasses.replace(
         verb,
-        name=f"{u.name}@:{v.name}",
+        name=f"{u_spelling}@:{v_spelling}",
         spelling=f"{u_spelling}@:{v_spelling}",
         monad=dataclasses.replace(
             verb.monad,

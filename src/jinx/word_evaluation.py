@@ -26,7 +26,7 @@ from jinx.execution.application import (
     apply_monad,
     apply_dyad,
     apply_conjunction,
-    apply_adverb_to_verb,
+    apply_adverb,
     build_fork,
     build_hook,
     ensure_verb_implementation,
@@ -62,6 +62,25 @@ def print_words(words: list[PartOfSpeechT]) -> None:
     print(" ".join(str_(word) for word in words if word is not None))
 
 
+def build_verb_noun_phrase(
+    words: list[Verb | Noun | Adverb | Conjunction],
+) -> Verb | Noun:
+    assert len(words) > 0
+    if len(words) == 1:
+        return words[0]
+    words = words.copy()
+    while len(words) > 1:
+        if isinstance(words[1], Adverb):
+            result = apply_adverb(words.pop(0), words.pop(0))
+            words = [result, *words]
+        elif isinstance(words[1], Conjunction):
+            result = apply_conjunction(words.pop(0), words.pop(0), words.pop(0))
+            words = [result, *words]
+        else:
+            raise EvaluationError("Unable to build verb/noun phrase")
+    return result
+
+
 def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     # Ensure noun and verb implementations are set according to the chosen execution
     # framework (this is just NumPy for now).
@@ -89,16 +108,51 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
         # TODO: If word is a Name, lookup the Verb/Noun it refers to and add that.
 
+        # If the next word closes a parenthesis, we need to evaluate the words inside it
+        # first to get the next word to prepend to the fragment.
         if word == ")":
-            result = evaluate_words(words, level=level + 1)
-            fragment = [result, *fragment]
+            word = evaluate_words(words, level=level + 1)
 
-        else:
-            fragment = [word, *fragment]
-
+        # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
+        # entire verb/noun phrase to the left as the next word to prepend to the fragment.
+        # Contrary to usual parsing and evaluation, the verb/noun phrase is evaluated left-to-right.
         # fmt: off
+        if fragment and isinstance(fragment[0], Adverb | Conjunction):
+            parts_to_left = []
+
+            while words:
+                # A verb/noun phrase starts with a verb/noun which does not have a conjunction to its left.
+                if isinstance(word, Noun | Verb):
+                    if not isinstance(words[-1], Conjunction):
+                        parts_to_left = [word, *parts_to_left]
+                        break
+                    else:
+                        conjunction = words.pop()
+                        parts_to_left = [conjunction, word, *parts_to_left]
+
+                elif isinstance(word, Adverb | Conjunction):
+                    parts_to_left = [word, *parts_to_left]
+
+                elif word == ")":
+                    word = evaluate_words(words, level=level + 1)
+                    continue
+
+                else:
+                    break
+
+                if words:
+                    word = words.pop()
+
+            # evaluate the parts_to_left sequence (return single noun/verb)
+            if not parts_to_left:
+                continue
+            word = build_verb_noun_phrase(parts_to_left)
+
+        fragment = [word, *fragment]
+
         while True:
             match fragment:
+
                 # 0. Monad
                 case None | "=." | "=:" | "(", Verb(), Noun():
                     edge, verb, noun = fragment
@@ -140,7 +194,7 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                         raise NotImplementedError("adverb application to adverb")
 
                     else:
-                        result = apply_adverb_to_verb(verb, adverb)
+                        result = apply_adverb(verb, adverb)
 
                     if edge == "(" and last == [")"] and level > 0:
                         return result
@@ -210,5 +264,8 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     break
 
         # fmt: on
+
+    if len(fragment) > 2 and level > 0:
+        raise EvaluationError("Unexecutable fragment")
 
     return fragment

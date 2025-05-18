@@ -168,6 +168,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             name="Table", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
         ),
     ),
+    Adverb(
+        "\\",
+        "BSLASH",
+        monad=Monad(name="Prefix", rank=INFINITY),
+        dyad=Dyad(name="Infix", left_rank=0, right_rank=INFINITY, is_commutative=False),
+    ),
     Conjunction('"', "RANK"),
     Verb(
         ",",

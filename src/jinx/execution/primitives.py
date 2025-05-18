@@ -233,9 +233,9 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
 
 def tally_monad(y: np.ndarray) -> np.ndarray:
     """# monad: count number of items in y."""
-    if _is_scalar(y):
-        return 0
-    return y.shape[0]
+    if np.isscalar(y):
+        return np.array(0)
+    return np.array(y.shape[0])
 
 
 def tally_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -345,6 +345,62 @@ def slash_adverb(verb: Verb) -> Verb:
         dyad=Dyad(
             name=spelling, left_rank=INFINITY, right_rank=INFINITY, function=dyad
         ),
+    )
+
+
+def bslash_adverb(verb: Verb) -> Verb:
+    # Common cases that have a straightforward optimisation.
+    SPECIAL_MONAD = {
+        "+/": np.add.accumulate,
+        "*/": np.multiply.accumulate,
+        "<./": np.minimum.accumulate,
+        ">./": np.maximum.accumulate,
+    }
+
+    if verb.spelling in SPECIAL_MONAD:
+        monad_ = SPECIAL_MONAD[verb.spelling]
+
+    else:
+
+        def monad_(y: np.ndarray) -> np.ndarray:
+            y = np.atleast_1d(y)
+            result = []
+            for i in range(1, len(y) + 1):
+                result.append(verb.monad.function(y[:i]))
+            result = maybe_pad_with_fill_value(result, fill_value=0)
+            return np.asarray(result)
+
+    def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        if not np.issubdtype(x.dtype, np.integer):
+            raise DomainError(f"x has nonintegral value ({x})")
+        y = np.atleast_1d(y)
+        if x == 0:
+            return np.zeros(len(y) + 1, dtype=np.int64)
+        if x == 1 or x == -1:
+            windows = y
+        elif x > 0:
+            # Overlapping windows
+            windows = [y[i : i + x] for i in range(len(y) - x + 1)]
+        else:
+            # Non-overlapping window
+            windows = [y[i : i - x] for i in range(0, len(y), -x)]
+
+        result = []
+        for window in windows:
+            result.append(verb.monad.function(window))
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        return np.asarray(result)
+
+    if " " in verb.spelling:
+        spelling = f"({verb.spelling})\\"
+    else:
+        spelling = f"{verb.spelling}\\"
+
+    return Verb(
+        name=spelling,
+        spelling=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
+        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=dyad_),
     )
 
 
@@ -517,6 +573,7 @@ PRIMITIVE_MAP = {
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,
+    "BSLASH": bslash_adverb,
     "TILDE": tilde_adverb,
     # CONJUNCTION: conjunction
     "RANK": rank_conjunction,

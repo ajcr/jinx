@@ -537,3 +537,38 @@ def test_word_evaluation_computes_correct_noun(words, expected):
     result = evaluate_words(words)
     assert len(result) == 2
     assert np.array_equal(np.round(result[1].implementation, 5), expected)
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [PRIMITIVE_MAP["MINUS"], PRIMITIVE_MAP["SLASH"]],
+            "-/",
+            id="-/",
+        ),
+        pytest.param(
+            [LPAREN, PRIMITIVE_MAP["MINUS"], PRIMITIVE_MAP["SLASH"], RPAREN],
+            "-/",
+            id="(-/)",
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["PERCENT"],
+                RPAREN,
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["MINUS"],
+                PRIMITIVE_MAP["RANK"],
+                Atom(data_type=DataType.Integer, data=0),
+            ],
+            '%@:-"0',
+            id='(%)@:-"0',
+        ),
+    ],
+)
+def test_word_evaluation_build_verb(words, expected):
+    result = evaluate_words(words)
+    assert len(result) == 2
+    assert isinstance(result[1], Verb)
+    assert result[1].spelling == expected

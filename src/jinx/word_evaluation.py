@@ -62,6 +62,9 @@ def print_words(words: list[PartOfSpeechT]) -> None:
     print(" ".join(str_(word) for word in words if word is not None))
 
 
+# TODO: clean up the code for building verb/noun phrases and evalating words.
+
+
 def build_verb_noun_phrase(
     words: list[Verb | Noun | Adverb | Conjunction],
 ) -> Verb | Noun:
@@ -77,6 +80,7 @@ def build_verb_noun_phrase(
             result = apply_conjunction(words.pop(0), words.pop(0), words.pop(0))
             words = [result, *words]
         else:
+            breakpoint()
             raise EvaluationError("Unable to build verb/noun phrase")
     return result
 
@@ -142,6 +146,8 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
 
                 if words:
                     word = words.pop()
+                    if isinstance(word, (Punctuation, Copula)):
+                        word = word.spelling
 
             # evaluate the parts_to_left sequence (return single noun/verb)
             if not parts_to_left:

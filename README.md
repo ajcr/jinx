@@ -1,6 +1,19 @@
 # Jinx
 
-A work-in-progress J interpreter written in Python and NumPy.
+A work-in-progress interpreter for the J programming language, using NumPy with the potential to target other Python array/tensor frameworks.
+
+Supports many features that are central to J, including:
+- Multidimensional arrays.
+- Many primitive verbs (e.g. `+`, `%:`, `,`, ...), adverbs (`/`, `~`, ...) and conjunctions (`"`, `@:`, ...).
+- Correct monadic and dyadic application of verbs of different ranks.
+- Trains (e.g. hooks and forks).
+
+This allows some fairly sophisticated expressions to be evaluated:
+```j
+    9 +/@:(-*:)~@:-"1 >: i. 2 3 4
+_148  _20  _20
+_148 _404 _788
+```
 
 ## Examples
 
@@ -86,6 +99,6 @@ Adverbs modify verbs, e.g. `/` inserts the verb between items of its argument:
 
 ## Motivation
 
-This project is primarily a learning exercise: I want to improve my patchy understanding of J by implementing a useful subset of the language and its core concepts (rank, modifiers, etc.).
+This project is primarily a learning exercise: I want to improve my patchy understanding of J by implementing a useful subset of the language and its core concepts.
 
-It is also an attempt to prototype an interpreter for an array language that can be executed using Python's different array and tensor frameworks (NumPy, JAX, PyTorch, etc.) according to user's choice.
+It is also an attempt to prototype an interpreter for an array language that can be executed using Python's different array and tensor frameworks (NumPy, JAX, PyTorch, etc.) according to user's whim. It is immensely satisfying to build complex expressions using a few symbols and, with no further effort, execute the expression over massive arrays of numbers on a GPU.

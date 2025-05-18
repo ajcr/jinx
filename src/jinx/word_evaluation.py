@@ -162,13 +162,13 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
                     fragment[1:] = [result]
 
                 # 1. Monad
-                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Adverb() | Verb(), Verb(), Noun():
+                # N.B. differs from reference in that the 'edge' can be a conjunction.
+                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun() | Conjunction(), Adverb() | Verb(), Verb(), Noun():
                     edge, _, verb, noun = fragment
                     result = apply_monad(verb, noun)
                     fragment[2:] = [result]
 
-                # Another monad case for a conjunction that: this will be handled by correctly
-                # building modifiers in future, see: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
+                # Another monad case for a conjunction that is not in the J reference.
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Conjunction(), Noun(), Verb(), Noun():
                     edge, conjunction, noun, verb, noun_2 = fragment
                     result = apply_monad(verb, noun_2)

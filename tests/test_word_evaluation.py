@@ -482,6 +482,55 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array(7.48331),
             id="2 * %: @ (+ /) @: *: 1 2 3",
         ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["MINUS"],
+                PRIMITIVE_MAP["TILDE"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["IDOT"],
+                Atom(data_type=DataType.Integer, data=10),
+            ],
+            np.array(-27),
+            id="-~/i.10",
+        ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["LTCO"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["NUMBER"],
+                PRIMITIVE_MAP["IDOT"],
+                Atom(data_type=DataType.Integer, data=6),
+            ],
+            np.array(5),
+            id="<:@:#i.6",
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["LTCO"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["NUMBER"],
+                RPAREN,
+                PRIMITIVE_MAP["IDOT"],
+                Atom(data_type=DataType.Integer, data=8),
+            ],
+            np.array(7),
+            id="(<:@:#)i.8",
+        ),
+        pytest.param(
+            [
+                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["STARCO"],
+                PRIMITIVE_MAP["ATCO"],
+                PRIMITIVE_MAP["MINUS"],
+                Array(data_type=DataType.Integer, data=[2, 2, 2]),
+            ],
+            np.array(2),
+            id="1 2 3 +/@:*:@:- 2 2 2",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

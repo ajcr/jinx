@@ -488,9 +488,9 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
 
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
-    "EQ": (None, np.equal),
+    "EQ": (NotImplemented, np.equal),
     "MINUS": (np.negative, np.subtract),
-    "MINUSDOT": (minusdot_monad, None),
+    "MINUSDOT": (minusdot_monad, NotImplemented),
     "MINUSCO": (minusco_monad, minusco_dyad),
     "PLUS": (np.conj, np.add),
     "PLUSDOT": (plusdot_monad, np.gcd),
@@ -506,7 +506,7 @@ PRIMITIVE_MAP = {
     "LTCO": (ltco_monad, np.less_equal),
     "GTDOT": (np.ceil, np.maximum),
     "GTCO": (gtco_monad, np.greater_equal),
-    "IDOT": (idot_monad, None),
+    "IDOT": (idot_monad, NotImplemented),
     "TILDEDOT": (tildedot_monad, None),
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),

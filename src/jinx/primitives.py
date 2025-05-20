@@ -230,6 +230,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             name="RIGHT", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
         ),
     ),
+    Conjunction("&", "AMPM"),
 ]
 
 

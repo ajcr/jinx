@@ -20,7 +20,7 @@ import itertools
 import numpy as np
 import numba
 
-from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
+from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad, Noun
 from jinx.errors import DomainError, ValenceError, JIndexError
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
@@ -231,14 +231,14 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
     return np.flip(result, axes_to_flip)
 
 
-def tally_monad(y: np.ndarray) -> np.ndarray:
+def number_monad(y: np.ndarray) -> np.ndarray:
     """# monad: count number of items in y."""
-    if np.isscalar(y):
-        return np.array(0)
+    if np.isscalar(y) or y.shape == ():
+        return np.array(1)
     return np.array(y.shape[0])
 
 
-def tally_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+def number_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """# monad: copy items in y exactly x times."""
     return np.repeat(y, x, axis=0)
 
@@ -542,6 +542,63 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
+def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> Verb:
+    """& conjunction: make a monad from a dyad by providing the left or right noun argument,
+    or compose two verbs."""
+    if isinstance(left, Atom | Array) and isinstance(right, Verb):
+        function = functools.partial(right.dyad.function, left.implementation)
+        verb_spelling = (
+            right.spelling if " " not in right.spelling else f"({right.spelling})"
+        )
+        spelling = f"{left.implementation}&{verb_spelling}"
+        monad = Monad(name=spelling, rank=right.dyad.right_rank, function=function)
+        dyad = None
+
+    elif isinstance(left, Verb) and isinstance(right, Atom | Array):
+        # functools.partial cannot be used to apply to right argument of ufuncs
+        # as they do not accept kwargs, so we need to wrap the function.
+        def _wrapper(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            return left.dyad.function(x, y)
+
+        function = functools.partial(_wrapper, y=right.implementation)
+        verb_spelling = (
+            left.spelling if " " not in left.spelling else f"({left.spelling})"
+        )
+        spelling = f"{verb_spelling}&{right.implementation}"
+        monad = Monad(name=spelling, rank=left.dyad.left_rank, function=function)
+        dyad = None
+
+    elif isinstance(left, Verb) and isinstance(right, Verb):
+        # Compose u&v, with the new verb having the right verb's monadic rank.
+        def monad_(y: np.ndarray) -> np.ndarray:
+            a = right.monad.function(y)
+            b = left.monad.function(a)
+            return b
+
+        def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            ry = right.monad.function(y)
+            rx = right.monad.function(x)
+            return left.dyad.function(rx, ry)
+
+        left_spelling = (
+            left.spelling if " " not in left.spelling else f"({left.spelling})"
+        )
+        right_spelling = (
+            right.spelling if " " not in right.spelling else f"({right.spelling})"
+        )
+        spelling = f"{left_spelling}&{right_spelling}"
+
+        monad = Monad(name=spelling, rank=right.monad.rank, function=monad_)
+        dyad = Dyad(
+            name=spelling,
+            left_rank=right.monad.rank,
+            right_rank=right.monad.rank,
+            function=dyad_,
+        )
+
+    return Verb(name=spelling, spelling=spelling, monad=monad, dyad=dyad)
+
+
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
     "EQ": (NotImplemented, np.equal),
@@ -568,7 +625,7 @@ PRIMITIVE_MAP = {
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
     "BARCO": (np.transpose, barco_dyad),
-    "NUMBER": (tally_monad, tally_dyad),
+    "NUMBER": (number_monad, number_dyad),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     # ADVERB: adverb
@@ -579,4 +636,5 @@ PRIMITIVE_MAP = {
     "RANK": rank_conjunction,
     "AT": at_conjunction,
     "ATCO": atco_conjunction,
+    "AMPM": ampm_conjunction,
 }

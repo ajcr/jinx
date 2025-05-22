@@ -258,6 +258,30 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="]",
     ),
     Conjunction("&", "AMPM"),
+    Verb(
+        "/:",
+        "SLASHCO",
+        monad=Monad(name="Grade Up", rank=INFINITY),
+        dyad=Dyad(
+            name="Sort Up",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+        obverse="/:",
+    ),
+    Verb(
+        "\\:",
+        "BSLASHCO",
+        monad=Monad(name="Grade Down", rank=INFINITY),
+        dyad=Dyad(
+            name="Sort Down",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+        obverse="/:@|.",
+    ),
 ]
 
 

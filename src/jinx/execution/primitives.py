@@ -261,6 +261,74 @@ def squarerf_dyad(_: np.ndarray, y: np.ndarray) -> np.ndarray:
     return y
 
 
+def slashco_monad(y: np.ndarray) -> np.ndarray:
+    """/: monad: permutation sorting y in increasing order."""
+    y = np.atleast_1d(y)
+    if y.ndim == 1:
+        return np.argsort(y, stable=True)
+    # Flatten the items of y. There is no easy way to sort the 1D arrays
+    # lexicographically in NumPy, so use Python's built-in sort.
+    y = y.reshape(len(y), -1)
+    y_list = y.tolist()
+    iy_list = [(y, i) for i, y in enumerate(y_list)]
+    result = [i for _, i in sorted(iy_list)]
+    return np.asarray(result)
+
+
+def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """/: monad: sort y in increasing order."""
+    if not np.issubdtype(x.dtype, np.integer):
+        raise JIndexError
+
+    y = np.atleast_1d(y)
+
+    if x is y:
+        # This handles /:~
+        if x.ndim == 1:
+            return np.sort(y, kind="stable")
+        idx = slashco_monad(y)
+        return y[idx]
+
+    # Need to implement '(/: y) { x'
+    raise NotImplementedError()
+
+
+def bslashco_monad(y: np.ndarray) -> np.ndarray:
+    """/: monad: permutation sorting y in decreasing order."""
+    y = np.atleast_1d(y)
+    if y.ndim == 1:
+        # Stable sort in decreasing order.
+        # np.argsort(a)[::-1] on its own does not work as the indices of
+        # equal elements will appear reversed in the result.
+        return len(y) - 1 - np.argsort(y[::-1], kind="stable")[::-1]
+
+    y = y.reshape(len(y), -1)
+    y_list = y.tolist()
+    iy_list = [(y, i) for i, y in enumerate(y_list[::-1])]
+    result = [len(y) - 1 - i for _, i in sorted(iy_list, reverse=True)]
+    return np.asarray(result)
+
+
+def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """/: monad: sort y in decreasing order."""
+    if not np.issubdtype(x.dtype, np.integer):
+        raise JIndexError
+
+    y = np.atleast_1d(y)
+
+    if x is y:
+        # This handles \:~
+        if x.ndim == 1:
+            # Not technically correct (see comment on monad above), but
+            # good enough for now.
+            return np.flip(np.sort(y, kind="stable"))
+        idx = bslashco_monad(y)
+        return y[idx]
+
+    # Need to implement '(\: y) { x'
+    raise NotImplementedError()
+
+
 INFINITY = float("inf")
 
 
@@ -675,6 +743,8 @@ PRIMITIVE_MAP = {
     "NUMBER": (number_monad, number_dyad),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),
+    "SLASHCO": (slashco_monad, slashco_dyad),
+    "BSLASHCO": (bslashco_monad, bslashco_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,
     "BSLASH": bslash_adverb,

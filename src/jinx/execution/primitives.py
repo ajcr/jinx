@@ -382,7 +382,7 @@ def bslash_adverb(verb: Verb) -> Verb:
             # Overlapping windows
             windows = [y[i : i + x] for i in range(len(y) - x + 1)]
         else:
-            # Non-overlapping window
+            # Non-overlapping windows
             windows = [y[i : i - x] for i in range(0, len(y), -x)]
 
         result = []
@@ -395,6 +395,53 @@ def bslash_adverb(verb: Verb) -> Verb:
         spelling = f"({verb.spelling})\\"
     else:
         spelling = f"{verb.spelling}\\"
+
+    return Verb(
+        name=spelling,
+        spelling=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
+        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=dyad_),
+    )
+
+
+def bslashdot_adverb(verb: Verb) -> Verb:
+    def monad_(y: np.ndarray) -> np.ndarray:
+        y = np.atleast_1d(y)
+        result = []
+        for i in range(len(y)):
+            result.append(verb.monad.function(y[i:]))
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        return np.asarray(result)
+
+    def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        if not np.issubdtype(x.dtype, np.integer):
+            raise DomainError(f"x has nonintegral value ({x})")
+        y = np.atleast_1d(y)
+        if x == 0:
+            return y
+        elif x > 0:
+            # Overlapping windows
+            windows = [
+                np.concatenate([y[:i], y[i + x :]], axis=0)
+                for i in range(len(y) - x + 1)
+            ]
+        else:
+            # Non-overlapping windows
+            windows = [
+                np.concatenate([y[:i], y[i - x :]], axis=0)
+                for i in range(0, len(y), -x)
+            ]
+
+        result = []
+        for window in windows:
+            result.append(verb.monad.function(window))
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        return np.asarray(result)
+
+    if " " in verb.spelling:
+        spelling = f"({verb.spelling})\\."
+    else:
+        spelling = f"{verb.spelling}\\."
 
     return Verb(
         name=spelling,
@@ -631,6 +678,7 @@ PRIMITIVE_MAP = {
     # ADVERB: adverb
     "SLASH": slash_adverb,
     "BSLASH": bslash_adverb,
+    "BSLASHDOT": bslashdot_adverb,
     "TILDE": tilde_adverb,
     # CONJUNCTION: conjunction
     "RANK": rank_conjunction,

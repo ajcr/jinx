@@ -189,6 +189,14 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Prefix", rank=INFINITY),
         dyad=Dyad(name="Infix", left_rank=0, right_rank=INFINITY, is_commutative=False),
     ),
+    Adverb(
+        "\\.",
+        "BSLASHDOT",
+        monad=Monad(name="Suffix", rank=INFINITY),
+        dyad=Dyad(
+            name="Outfix", left_rank=0, right_rank=INFINITY, is_commutative=False
+        ),
+    ),
     Conjunction('"', "RANK"),
     Verb(
         ",",

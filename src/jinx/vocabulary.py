@@ -76,6 +76,7 @@ class Verb:
     name: str
     monad: Monad | None = None
     dyad: Dyad | None = None
+    obverse: str | None = None
 
 
 @dataclass

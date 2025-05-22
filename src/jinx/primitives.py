@@ -5,7 +5,9 @@ Names of sequences of characters that are assigned some meaning in the J languag
 These objects are not tied to their implementation here and are just used for
 spelling (recognition of fragments of a sentence).
 
-See: https://code.jsoftware.com/wiki/NuVoc
+See:
+- https://code.jsoftware.com/wiki/NuVoc
+- https://code.jsoftware.com/wiki/Vocabulary/Inverses
 """
 
 from jinx.vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
@@ -30,6 +32,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "PLUS",
         monad=Monad(name="Conjugate", rank=0),
         dyad=Dyad(name="Plus", left_rank=0, right_rank=0, is_commutative=True),
+        obverse="+",
     ),
     Verb(
         "+.",
@@ -42,24 +45,28 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "PLUSCO",
         monad=Monad(name="Double", rank=0),
         dyad=Dyad(name="Not-Or", left_rank=0, right_rank=0, is_commutative=True),
+        obverse="-:",
     ),
     Verb(
         "*",
         "STAR",
         monad=Monad(name="Signum", rank=0),
         dyad=Dyad(name="Times", left_rank=0, right_rank=0, is_commutative=True),
+        obverse="%:",
     ),
     Verb(
         "*:",
         "STARCO",
         monad=Monad(name="Square", rank=0),
         dyad=Dyad(name="Not-And", left_rank=0, right_rank=0, is_commutative=True),
+        obverse="%:",
     ),
     Verb(
         "-",
         "MINUS",
         monad=Monad(name="Negate", rank=0),
         dyad=Dyad(name="Minus", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="-",
     ),
     Verb(
         "-.",
@@ -68,6 +75,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="Less", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
         ),
+        obverse="-.",
     ),
     Verb(
         "-:",
@@ -76,30 +84,35 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="Match", left_rank=INFINITY, right_rank=INFINITY, is_commutative=True
         ),
+        obverse="+:",
     ),
     Verb(
         "%",
         "PERCENT",
         monad=Monad(name="Reciprocal", rank=0),
         dyad=Dyad(name="Divide", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="%",
     ),
     Verb(
         "%:",
         "PERCENTCO",
         monad=Monad(name="Square Root", rank=0),
         dyad=Dyad(name="Root", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="%:",
     ),
     Verb(
         "^",
         "HAT",
         monad=Monad(name="Exponential", rank=0),
         dyad=Dyad(name="Power", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="^.",
     ),
     Verb(
         "^.",
         "HATDOT",
         monad=Monad(name="Natural Log", rank=0),
         dyad=Dyad(name="Logarithm", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="^",
     ),
     Verb(
         "<.",
@@ -120,6 +133,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="Less Or Equal", left_rank=0, right_rank=0, is_commutative=False
         ),
+        obverse=">:",
     ),
     Verb(
         ">:",
@@ -128,6 +142,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="Larger Or Equal", left_rank=0, right_rank=0, is_commutative=False
         ),
+        obverse="<:",
     ),
     Adverb(
         "~",
@@ -196,6 +211,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="Rotate", left_rank=1, right_rank=INFINITY, is_commutative=False
         ),
+        obverse="|.",
     ),
     Verb(
         "|:",
@@ -207,6 +223,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             right_rank=INFINITY,
             is_commutative=False,
         ),
+        obverse="|:",
     ),
     Verb(
         "#",
@@ -221,6 +238,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="LEFT", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
         ),
+        obverse="[",
     ),
     Verb(
         "]",
@@ -229,6 +247,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(
             name="RIGHT", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
         ),
+        obverse="]",
     ),
     Conjunction("&", "AMPM"),
 ]

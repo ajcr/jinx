@@ -708,6 +708,44 @@ def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> V
     return Verb(name=spelling, spelling=spelling, monad=monad, dyad=dyad)
 
 
+def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
+    """&.: conjunction: execute v on the arguments, then u on the result, then
+    the inverse v of on that result."""
+
+    if v.obverse is None:
+        raise DomainError(f"{v.spelling} has no obverse")
+
+    def _monad(y: np.ndarray) -> np.ndarray:
+        vy = v.monad.function(y)
+        uvy = u.monad.function(vy)
+        return v.obverse.monad.function(uvy)
+
+    def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        vy = v.monad.function(y)
+        vx = v.monad.function(x)
+        uvy = u.dyad.function(vx, vy)
+        return v.obverse.monad.function(uvy)
+
+    v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
+    u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
+
+    return Verb(
+        name=f"{u_spelling}&.:{v_spelling}",
+        spelling=f"{u_spelling}&.:{v_spelling}",
+        monad=Monad(
+            name=f"{u_spelling}&.:{v_spelling}",
+            rank=INFINITY,
+            function=_monad,
+        ),
+        dyad=Dyad(
+            name=f"{u_spelling}&.:{v_spelling}",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            function=_dyad,
+        ),
+    )
+
+
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
     "EQ": (NotImplemented, np.equal),
@@ -749,4 +787,5 @@ PRIMITIVE_MAP = {
     "AT": at_conjunction,
     "ATCO": atco_conjunction,
     "AMPM": ampm_conjunction,
+    "AMPDOTCO": ampdotco_conjunction,
 }

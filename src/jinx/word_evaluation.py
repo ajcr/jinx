@@ -32,11 +32,13 @@ from jinx.execution.application import (
     ensure_verb_implementation,
 )
 from jinx.execution.conversion import ensure_noun_implementation
-
+from jinx.primitives import PRIMITIVES
 from jinx.execution.printing import (
     atom_to_string,
     array_to_string,
 )
+from jinx.word_formation import form_words
+from jinx.word_spelling import spell_words
 
 
 class EvaluationError(Exception):
@@ -60,6 +62,14 @@ def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
 
 def print_words(words: list[PartOfSpeechT]) -> None:
     print(" ".join(str_(word) for word in words if word is not None))
+
+
+def evaluate_single_verb_sentence(sentence: str) -> Verb:
+    tokens = form_words(sentence)
+    words = spell_words(tokens)
+    words = _evaluate_words(words)
+    assert len(words) == 2 and isinstance(words[1], Verb)
+    return words[1]
 
 
 # TODO: clean up the code for building verb/noun phrases and evalating words.
@@ -91,9 +101,21 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
     for word in words:
         if isinstance(word, Noun):
             ensure_noun_implementation(word)
-        elif isinstance(word, Verb):
-            ensure_verb_implementation(word)
 
+    for primitive in PRIMITIVES:
+        if isinstance(primitive, Verb):
+            ensure_verb_implementation(primitive)
+
+    # Verb obverses are converted from strings to Verb objects.
+    for word in words:
+        if isinstance(word, Verb) and isinstance(word.obverse, str):
+            verb = evaluate_single_verb_sentence(word.obverse)
+            word.obverse = verb
+
+    return _evaluate_words(words, level=level)
+
+
+def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
     if words[0] is not None:

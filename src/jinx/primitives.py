@@ -282,6 +282,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
         obverse="/:@|.",
     ),
+    Conjunction("&.:", "AMPDOTCO"),
 ]
 
 

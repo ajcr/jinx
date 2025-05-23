@@ -266,13 +266,10 @@ def slashco_monad(y: np.ndarray) -> np.ndarray:
     y = np.atleast_1d(y)
     if y.ndim == 1:
         return np.argsort(y, stable=True)
-    # Flatten the items of y. There is no easy way to sort the 1D arrays
-    # lexicographically in NumPy, so use Python's built-in sort.
+
+    # Ravelled items of y are sorted lexicographically.
     y = y.reshape(len(y), -1)
-    y_list = y.tolist()
-    iy_list = [(y, i) for i, y in enumerate(y_list)]
-    result = [i for _, i in sorted(iy_list)]
-    return np.asarray(result)
+    return np.lexsort(np.rot90(y))
 
 
 def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -303,10 +300,7 @@ def bslashco_monad(y: np.ndarray) -> np.ndarray:
         return len(y) - 1 - np.argsort(y[::-1], kind="stable")[::-1]
 
     y = y.reshape(len(y), -1)
-    y_list = y.tolist()
-    iy_list = [(y, i) for i, y in enumerate(y_list[::-1])]
-    result = [len(y) - 1 - i for _, i in sorted(iy_list, reverse=True)]
-    return np.asarray(result)
+    return len(y) - 1 - np.lexsort(np.rot90(y[::-1]))[::-1]
 
 
 def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

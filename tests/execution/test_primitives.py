@@ -1,7 +1,13 @@
 import pytest
 import numpy as np
 
-from src.jinx.execution.primitives import comma_dyad, dollar_dyad, dollar_monad
+from src.jinx.execution.primitives import (
+    comma_dyad,
+    dollar_dyad,
+    dollar_monad,
+    slashco_monad,
+    bslashco_monad,
+)
 
 
 @pytest.mark.parametrize(
@@ -152,3 +158,51 @@ def test_dollar_dyad(x, y, expected):
 def test_dollar_monad(y, expected):
     result = dollar_monad(y)
     assert np.array_equal(result, expected), f"Expected {expected}, got {result}"
+
+
+@pytest.mark.parametrize(
+    ["y", "expected"],
+    [
+        pytest.param(np.array(1), np.array([0]), id="/: 1"),
+        pytest.param(np.array([1, 1]), np.array([0, 1]), id="/: 1 2"),
+        pytest.param(np.array([1, 2]), np.array([0, 1]), id="/: 1 2"),
+        pytest.param(np.array([3, 2, 1]), np.array([2, 1, 0]), id="/: 3 2 1"),
+        pytest.param(
+            np.array([3, 1, 4, 1, 5, 9]),
+            np.array([1, 3, 0, 2, 4, 5]),
+            id="/: 3 1 4 1 5 9",
+        ),
+        pytest.param(
+            np.array([0, 1, 0, 0, 0, 0, 1, 0, 0]).reshape(3, 3),
+            np.array([1, 0, 2]),
+            id="/: (3 3 $ 0 1 0 0 0 0 1 0 0)",
+        ),
+    ],
+)
+def test_slashco_monad(y, expected):
+    result = slashco_monad(y)
+    assert np.array_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    ["y", "expected"],
+    [
+        pytest.param(np.array(1), np.array([0]), id="\\: 1"),
+        pytest.param(np.array([1, 1]), np.array([0, 1]), id="\\: 1 2"),
+        pytest.param(np.array([1, 2]), np.array([1, 0]), id="\\: 1 2"),
+        pytest.param(np.array([3, 2, 1]), np.array([0, 1, 2]), id="\\: 3 2 1"),
+        pytest.param(
+            np.array([3, 1, 4, 1, 5, 9]),
+            np.array([5, 4, 2, 0, 1, 3]),
+            id="\\: 3 1 4 1 5 9",
+        ),
+        pytest.param(
+            np.array([0, 1, 0, 0, 0, 0, 1, 0, 0]).reshape(3, 3),
+            np.array([2, 0, 1]),
+            id="\\: (3 3 $ 0 1 0 0 0 0 1 0 0)",
+        ),
+    ],
+)
+def test_bslashco_monad(y, expected):
+    result = bslashco_monad(y)
+    assert np.array_equal(result, expected)

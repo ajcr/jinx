@@ -385,18 +385,18 @@ def slash_adverb(verb: Verb) -> Verb:
             x = np.atleast_1d(x)
             left_rank = min(x.ndim, verb.dyad.left_rank)
             if left_rank == 0:
-                x = x.ravel()
+                x_reshaped = x.ravel()
             else:
                 x_cell_shape = x.shape[-left_rank:]
-                x = x.reshape(-1, *x_cell_shape)
+                x_reshaped = x.reshape(-1, *x_cell_shape)
 
             table = []
-            for x_item in x:
+            for x_item in x_reshaped:
                 row = function(x_item, y)
                 table.append(row)
 
             table = maybe_pad_with_fill_value(table, fill_value=0)
-            return np.asarray(table)
+            return np.asarray(table).reshape(x.shape + table[0].shape)
 
         monad = _reduce
         dyad = _outer

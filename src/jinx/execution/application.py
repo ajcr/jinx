@@ -31,11 +31,14 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     else:
         function = verb.monad.function
 
-    verb_rank = verb.monad.rank
-    if verb_rank < 0:
-        raise NotImplementedError("Negative verb rank not yet supported")
-
     noun_rank = arr.ndim
+    verb_rank = verb.monad.rank
+
+    # If the verb rank is negative, it means that the verb rank is subtracted
+    # from the operand rank, to a minimum of 0.
+    if verb_rank < 0:
+        verb_rank = max(0, noun_rank + verb_rank)
+
     r = min(verb_rank, noun_rank)
 
     # If the verb rank is 0 it applies to each atom of the array.
@@ -87,6 +90,15 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     else:
         function = verb.dyad.function
 
+    left_rank = verb.dyad.left_rank
+    right_rank = verb.dyad.right_rank
+
+    if left_rank < 0:
+        left_rank = max(0, left_arr.ndim + left_rank)
+
+    if right_rank < 0:
+        right_rank = max(0, right_arr.ndim + right_rank)
+
     left_rank = min(left_arr.ndim, verb.dyad.left_rank)
     right_rank = min(right_arr.ndim, verb.dyad.right_rank)
 
@@ -98,12 +110,6 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         and (left_arr.ndim == 0 or right_arr.ndim == 0)
     ):
         return function(left_arr, right_arr)
-
-    if left_rank < 0:
-        raise NotImplementedError("Negative left rank not yet supported")
-
-    if right_rank < 0:
-        raise NotImplementedError("Negative right rank not yet supported")
 
     left_cell_shape = left_arr.shape[-left_rank:] if left_rank else ()
     left_frame_shape = left_arr.shape[:-left_rank] if left_rank else left_arr.shape

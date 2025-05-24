@@ -752,6 +752,8 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
+# Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
+# Use None for monadic or dyadic valences of the verb do not exist in J.
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
     "EQ": (NotImplemented, np.equal),

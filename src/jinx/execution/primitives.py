@@ -187,6 +187,15 @@ def tildedot_monad(y: np.ndarray) -> np.ndarray:
     return uniq[np.argsort(idx)]
 
 
+def tildeco_monad(y: np.ndarray) -> np.ndarray:
+    """~: monad: nub sieve."""
+    y = np.atleast_1d(y)
+    _, idx = np.unique(y, return_index=True, axis=0)
+    result = np.zeros(y.shape[0], dtype=np.int64)
+    result[idx] = 1
+    return result
+
+
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
     if np.isscalar(y) or y.shape == ():
@@ -768,6 +777,7 @@ PRIMITIVE_MAP = {
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, NotImplemented),
     "TILDEDOT": (tildedot_monad, None),
+    "TILDECO": (tildeco_monad, np.not_equal),
     "COMMA": (comma_monad, comma_dyad),
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),

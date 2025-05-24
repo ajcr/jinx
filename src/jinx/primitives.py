@@ -157,6 +157,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         monad=Monad(name="Nub", rank=INFINITY),
     ),
     Verb(
+        "~:",
+        "TILDECO",
+        monad=Monad(name="Nub Sieve", rank=INFINITY),
+        dyad=Dyad(
+            name="Not-Equal",
+            left_rank=0,
+            right_rank=0,
+            is_commutative=True,
+        ),
+    ),
+    Verb(
         "$",
         "DOLLAR",
         monad=Monad(name="Shape Of", rank=INFINITY),

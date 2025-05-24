@@ -8,11 +8,12 @@ Supports many features that are central to J, including:
 - Correct monadic and dyadic application of verbs of different ranks.
 - Trains (e.g. hooks and forks).
 
-This allows some fairly sophisticated expressions to be evaluated:
+This allows some fairly sophisticated tacit expressions to be evaluated.
+
+The "trapping rainwater" problem (solution from [here](https://mmapped.blog/posts/04-square-joy-trapped-rain-water)):
 ```j
-    9 +/@:(-*:)~@:-"1 >: i. 2 3 4
-_148  _20  _20
-_148 _404 _788
+    +/@((>./\ <. >./\.)-]) 0 1 0 2 1 0 1 3 2 1 2 1
+6
 ```
 
 ## Examples

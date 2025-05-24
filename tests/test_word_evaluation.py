@@ -556,6 +556,33 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array(6),
             id=r"+/@(-~ >./\ <. >./\.) 0 1 0 2 1 0 1 3 2 1 2 1",
         ),
+        # See: https://mmapped.blog/posts/04-square-joy-trapped-rain-water
+        pytest.param(
+            [
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["AT"],
+                LPAREN,
+                LPAREN,
+                PRIMITIVE_MAP["GTDOT"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["BSLASH"],
+                PRIMITIVE_MAP["LTDOT"],
+                PRIMITIVE_MAP["GTDOT"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["BSLASHDOT"],
+                RPAREN,
+                PRIMITIVE_MAP["MINUS"],
+                PRIMITIVE_MAP["SQUARERF"],
+                RPAREN,
+                Array(
+                    data_type=DataType.Integer,
+                    data=[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
+                ),
+            ],
+            np.array(6),
+            id=r"+/@((>./\ <. >./\.)-]) 0 1 0 2 1 0 1 3 2 1 2 1",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

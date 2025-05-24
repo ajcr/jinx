@@ -85,12 +85,14 @@ class Adverb:
     name: str
     monad: Monad | None = None
     dyad: Dyad | None = None
+    function: Callable[[Any, Any], Any] | None = None
 
 
 @dataclass
 class Conjunction:
     spelling: str
     name: str
+    function: Callable[[Any, Any], Any] | None = None
 
 
 @dataclass

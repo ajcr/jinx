@@ -5,10 +5,13 @@ from jinx.errors import LengthError
 from src.jinx.execution.application import (
     maybe_pad_with_fill_value,
     apply_dyad,
-    ensure_verb_implementation,
+    # ensure_verb_implementation,
 )
 from src.jinx.vocabulary import Array, DataType
-from src.jinx.execution.primitives import rank_conjunction
+from src.jinx.execution.primitives import (
+    rank_conjunction,
+    PRIMITIVE_MAP as PRIMITIVE_MAP_NP,
+)
 from src.jinx.primitives import PRIMITIVE_MAP
 
 
@@ -43,7 +46,8 @@ def test_maybe_pad_with_fill_value(arrays, expected):
 
 
 PLUS = PRIMITIVE_MAP["PLUS"]
-ensure_verb_implementation(PLUS)
+PLUS.monad.function = PRIMITIVE_MAP_NP["PLUS"][0]
+PLUS.dyad.function = PRIMITIVE_MAP_NP["PLUS"][1]
 PLUS_0_1 = rank_conjunction(
     PLUS, Array(DataType.Integer, implementation=np.array([0, 1]))
 )

@@ -22,6 +22,7 @@ import numba
 
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad, Noun
 from jinx.errors import DomainError, ValenceError, JIndexError
+from jinx.execution.application import _apply_dyad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
@@ -365,10 +366,12 @@ def slash_adverb(verb: Verb) -> Verb:
         monad = _reduce
         dyad = function.outer
 
-    elif callable(function):
+    else:
         # Slow path: dyad is not a ufunc.
-        # TODO: Try to find a way to get Numba to compile some examples
-        # such as for hooks, where the verbs in the hook are both ufuncs.
+        # The function is either callable, in which cases it is applied directly,
+        # or a Verb object that needs to be applied indirectly with _apply_dyad().
+        if isinstance(function, Verb):
+            function = functools.partial(_apply_dyad, verb)
 
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             return function(y, x)
@@ -381,7 +384,6 @@ def slash_adverb(verb: Verb) -> Verb:
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             x = np.atleast_1d(x)
             left_rank = min(x.ndim, verb.dyad.left_rank)
-
             if left_rank == 0:
                 x = x.ravel()
             else:
@@ -398,11 +400,6 @@ def slash_adverb(verb: Verb) -> Verb:
 
         monad = _reduce
         dyad = _outer
-
-    else:
-        raise NotImplementedError(
-            f"Adverb / cannot yet be applied to verb '{verb.spelling}'"
-        )
 
     if " " in verb.spelling:
         spelling = f"({verb.spelling})/"

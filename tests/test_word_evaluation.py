@@ -21,7 +21,7 @@ IDOT = PRIMITIVE_MAP["IDOT"]
 SLASH = PRIMITIVE_MAP["SLASH"]
 
 # Conjunctions
-RANK = Conjunction('"', "RANK")
+RANK = PRIMITIVE_MAP["RANK"]
 
 
 @pytest.mark.parametrize(
@@ -582,6 +582,29 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ],
             np.array(6),
             id=r"+/@((>./\ <. >./\.)-]) 0 1 0 2 1 0 1 3 2 1 2 1",
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["COMMA"],
+                PRIMITIVE_MAP["RANK"],
+                Atom(data_type=DataType.Integer, data=0),
+                RPAREN,
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["TILDE"],
+                Array(
+                    data_type=DataType.Integer,
+                    data=[0, 1, 2],
+                ),
+            ],
+            np.array(
+                [
+                    [[0, 0], [0, 1], [0, 2]],
+                    [[1, 0], [1, 1], [1, 2]],
+                    [[2, 0], [2, 1], [2, 2]],
+                ]
+            ),
+            id='(,"0)/~ 0 1 2',
         ),
     ],
 )

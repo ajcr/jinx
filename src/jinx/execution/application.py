@@ -13,7 +13,8 @@ import numpy as np
 from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad
 from jinx.errors import LengthError
 from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
-from jinx.execution.primitives import PRIMITIVE_MAP
+
+# from jinx.execution.primitives import PRIMITIVE_MAP
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
 
@@ -199,28 +200,14 @@ def find_common_frame_shape(
     return None
 
 
-# Applying a conjunction usually produces a verb (but not always).
-# Assume that it's just a verb for now.
 def apply_conjunction(
     verb_or_noun_1: Verb | Noun, conjunction: Conjunction, verb_or_noun_2: Verb | Noun
-) -> Verb:
-    f = PRIMITIVE_MAP[conjunction.name]
-    return f(verb_or_noun_1, verb_or_noun_2)
+) -> Verb | Noun:
+    return conjunction.function(verb_or_noun_1, verb_or_noun_2)
 
 
 def apply_adverb(verb_or_noun: Verb | Noun, adverb: Adverb) -> Verb:
-    if adverb.name in PRIMITIVE_MAP:
-        function = PRIMITIVE_MAP[adverb.name]
-    else:
-        raise NotImplementedError(f"Adverb '{adverb.spelling}' not supported")
-    return function(verb_or_noun)
-
-
-def ensure_verb_implementation(verb: Verb) -> None:
-    if verb.monad and verb.monad.function is None and verb.name in PRIMITIVE_MAP:
-        verb.monad.function = PRIMITIVE_MAP[verb.name][0]
-    if verb.dyad and verb.dyad.function is None and verb.name in PRIMITIVE_MAP:
-        verb.dyad.function = PRIMITIVE_MAP[verb.name][1]
+    return adverb.function(verb_or_noun)
 
 
 INFINITY = float("inf")

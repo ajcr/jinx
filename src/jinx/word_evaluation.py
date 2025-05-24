@@ -29,7 +29,6 @@ from jinx.execution.application import (
     apply_adverb,
     build_fork,
     build_hook,
-    ensure_verb_implementation,
 )
 from jinx.execution.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
@@ -37,6 +36,7 @@ from jinx.execution.printing import (
     atom_to_string,
     array_to_string,
 )
+from jinx.execution.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
 
@@ -103,8 +103,16 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
             ensure_noun_implementation(word)
 
     for primitive in PRIMITIVES:
+        if primitive.name not in PRIMITIVE_MAP:
+            continue
         if isinstance(primitive, Verb):
-            ensure_verb_implementation(primitive)
+            monad, dyad = PRIMITIVE_MAP[primitive.name]
+            if primitive.monad is not None:
+                primitive.monad.function = monad
+            if primitive.dyad is not None:
+                primitive.dyad.function = dyad
+        if isinstance(primitive, (Adverb, Conjunction)):
+            primitive.function = PRIMITIVE_MAP[primitive.name]
 
     # Verb obverses are converted from strings to Verb objects.
     for word in words:

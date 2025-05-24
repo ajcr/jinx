@@ -272,7 +272,7 @@ def squarerf_dyad(_: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def slashco_monad(y: np.ndarray) -> np.ndarray:
-    """/: monad: permutation sorting y in increasing order."""
+    """/: monad: permutation that sorts y in increasing order."""
     y = np.atleast_1d(y)
     if y.ndim == 1:
         return np.argsort(y, stable=True)
@@ -301,7 +301,7 @@ def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def bslashco_monad(y: np.ndarray) -> np.ndarray:
-    """/: monad: permutation sorting y in decreasing order."""
+    r"""\: monad: permutation that sorts y in decreasing order."""
     y = np.atleast_1d(y)
     if y.ndim == 1:
         # Stable sort in decreasing order.
@@ -314,7 +314,7 @@ def bslashco_monad(y: np.ndarray) -> np.ndarray:
 
 
 def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """/: monad: sort y in decreasing order."""
+    r"""\: dyad: sort y in decreasing order."""
     if not np.issubdtype(x.dtype, np.integer):
         raise JIndexError
 

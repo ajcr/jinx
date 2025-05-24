@@ -531,6 +531,31 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array(2),
             id="1 2 3 +/@:*:@:- 2 2 2",
         ),
+        # See: https://www.reddit.com/r/apljk/comments/1axf4tk/comment/kros5i9/
+        pytest.param(
+            [
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["AT"],
+                LPAREN,
+                PRIMITIVE_MAP["MINUS"],
+                PRIMITIVE_MAP["TILDE"],
+                PRIMITIVE_MAP["GTDOT"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["BSLASH"],
+                PRIMITIVE_MAP["LTDOT"],
+                PRIMITIVE_MAP["GTDOT"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["BSLASHDOT"],
+                RPAREN,
+                Array(
+                    data_type=DataType.Integer,
+                    data=[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
+                ),
+            ],
+            np.array(6),
+            id=r"+/@(-~ >./\ <. >./\.) 0 1 0 2 1 0 1 3 2 1 2 1",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

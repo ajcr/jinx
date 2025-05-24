@@ -216,13 +216,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb(), *_]
                 ):
                     edge, verb, adverb, *last = fragment
-
-                    if isinstance(edge, Adverb):
-                        # TODO: grab entire verb/noun phrase to the left of the adverb
-                        raise NotImplementedError("adverb application to adverb")
-
-                    else:
-                        result = apply_adverb(verb, adverb)
+                    result = apply_adverb(verb, adverb)
 
                     if edge == "(" and last == [")"] and level > 0:
                         return result

@@ -606,6 +606,23 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ),
             id='(,"0)/~ 0 1 2',
         ),
+        # Test case where left tine of fork is a noun rather than a verb.
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["NUMBER"],
+                PRIMITIVE_MAP["TILDE"],
+                Atom(data_type=DataType.Integer, data=2),
+                PRIMITIVE_MAP["BAR"],
+                PRIMITIVE_MAP["IDOT"],
+                PRIMITIVE_MAP["AT"],
+                PRIMITIVE_MAP["NUMBER"],
+                RPAREN,
+                Array(data_type=DataType.Integer, data=[3, 1, 4, 1, 5, 9, 2]),
+            ],
+            np.array([1, 1, 9]),
+            id='(#~ 2 | i.@#) 3 1 4 1 5 9 2',
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

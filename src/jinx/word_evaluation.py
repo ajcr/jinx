@@ -238,7 +238,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                 # 4. Conjunction
                 case (
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun()] |
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), _]
+                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), *_]
                 ):
                     edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
                     # TODO: find entire verb phrase on the left of the conjunction before applying the conjunction
@@ -256,12 +256,12 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     Verb(),
                 ):
                     edge, verb_or_noun_1, verb_2, verb_3 = fragment
-                    if not isinstance(verb_2, Verb):
+                    if not isinstance(verb_or_noun_1, Verb):
                         raise NotImplementedError("Fork currently implemented only for verb/verb/verb")
                     result = build_fork(verb_or_noun_1, verb_2, verb_3)
                     if edge == "(" and level > 0:
                         return result
-                    fragment[1:] = [result]
+                    fragment[1:4] = [result]
 
                 # 6. Hook/Adverb
                 case (

@@ -752,6 +752,115 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
+def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
+    """^: conjunction: power of verb."""
+
+    if isinstance(noun_or_verb, Verb):
+        raise NotImplementedError("^: conjunction with verb is not yet implemented")
+
+    if isinstance(noun_or_verb, Atom | Array):
+        exponent: Atom | Array = noun_or_verb
+
+    if exponent.implementation.size == 0:
+        raise DomainError(
+            f"^: requires non-empty exponent, got {exponent.implementation}"
+        )
+
+    # Special case (^:0) is ]
+    if (
+        np.isscalar(exponent.implementation) or exponent.implementation.shape == ()
+    ) and exponent == 0:
+        return Verb(
+            name="SQUARELF",
+            spelling="]",
+            monad=squarelf_monad,
+            dyad=squarelf_dyad,
+            obverse="]",
+        )
+
+    # Special case (^:1) is u
+    if (
+        np.isscalar(exponent.implementation) or exponent.implementation.shape == ()
+    ) and exponent == 1:
+        return u
+
+    if np.isinf(exponent.implementation).any():
+        raise NotImplementedError(f"^: with infinite exponent is not yet implemented")
+
+    if not np.issubdtype(exponent.implementation.dtype, np.integer):
+        raise DomainError(
+            f"^: requires integer exponent, got {exponent.implementation}"
+        )
+
+    def monad(y: np.ndarray) -> np.ndarray:
+        result = []
+        for atom in exponent.implementation.ravel().tolist():
+            if atom == 0:
+                result.append(y)
+                continue
+            elif atom > 0:
+                function = u.monad.function
+                exp = atom
+            else:  # atom < 0:
+                if not isinstance(u.obverse, Verb):
+                    raise DomainError(f"{u.spelling} has no obverse")
+                function = u.obverse.monad.function
+                exp = -atom
+
+            atom_result = y
+            for _ in range(exp):
+                atom_result = function(atom_result)
+
+            result.append(atom_result)
+
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        result = np.asarray(result)
+        return result.reshape(exponent.implementation.shape + result[0].shape)
+
+    def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        result = []
+        for atom in exponent.implementation.ravel().tolist():
+            if atom == 0:
+                result.append(y)
+                continue
+            elif atom > 0:
+                function = u.dyad.function
+                exp = atom
+            else:  # atom < 0:
+                if not isinstance(u.obverse, Verb):
+                    raise DomainError(f"{u.spelling} has no obverse")
+                function = u.obverse.dyad.function
+                exp = -atom
+
+            atom_result = y
+            for _ in range(exp):
+                atom_result = function(x, atom_result)
+
+            result.append(atom_result)
+
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        result = np.asarray(result)
+        return result.reshape(exponent.implementation.shape + result[0].shape)
+
+    u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
+
+    return Verb(
+        name=f"{u_spelling}^:{exponent.implementation}",
+        spelling=f"{u_spelling}^:{exponent.implementation}",
+        monad=Monad(
+            name=f"{u_spelling}^:{exponent.implementation}",
+            rank=INFINITY,
+            function=monad,
+        ),
+        dyad=Dyad(
+            name=f"{u_spelling}^:{exponent.implementation}",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            function=dyad,
+        ),
+    )
+
+
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
 # Use None for monadic or dyadic valences of the verb do not exist in J.
 PRIMITIVE_MAP = {
@@ -797,4 +906,5 @@ PRIMITIVE_MAP = {
     "ATCO": atco_conjunction,
     "AMPM": ampm_conjunction,
     "AMPDOTCO": ampdotco_conjunction,
+    "HATCO": hatco_conjunction,
 }

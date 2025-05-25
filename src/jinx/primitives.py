@@ -114,6 +114,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Logarithm", left_rank=0, right_rank=0, is_commutative=False),
         obverse="^",
     ),
+    Conjunction("^:", "HATCO"),
     Verb(
         "<.",
         "LTDOT",

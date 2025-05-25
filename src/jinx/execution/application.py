@@ -276,7 +276,7 @@ def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
         return g.dyad.function(a, b)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        if isinstance(f.monad.function, Verb):
+        if isinstance(f, Verb):
             a = f.dyad.function(x, y)
         else:
             a = f.implementation

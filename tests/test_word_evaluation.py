@@ -621,7 +621,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 Array(data_type=DataType.Integer, data=[3, 1, 4, 1, 5, 9, 2]),
             ],
             np.array([1, 1, 9]),
-            id='(#~ 2 | i.@#) 3 1 4 1 5 9 2',
+            id="(#~ 2 | i.@#) 3 1 4 1 5 9 2",
         ),
     ],
 )

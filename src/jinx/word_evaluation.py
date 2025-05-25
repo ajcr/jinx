@@ -241,8 +241,6 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), *_]
                 ):
                     edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
-                    # TODO: find entire verb phrase on the left of the conjunction before applying the conjunction
-                    # See: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
                     result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
                     if edge == "(" and last == [")"] and level > 0:
                         return result

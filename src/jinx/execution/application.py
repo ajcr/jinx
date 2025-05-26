@@ -227,12 +227,12 @@ def build_hook(f: Verb, g: Verb) -> Verb:
     """
 
     def _monad(y: np.ndarray) -> np.ndarray:
-        a = g.monad.function(y)
-        return f.dyad.function(y, a)
+        a = _apply_monad(g, y)
+        return _apply_dyad(f, y, a)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        a = g.monad.function(y)
-        return f.dyad.function(x, a)
+        a = _apply_monad(g, y)
+        return _apply_dyad(f, x, a)
 
     f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
     g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
@@ -269,19 +269,19 @@ def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
 
     def _monad(y: np.ndarray) -> np.ndarray:
         if isinstance(f, Verb):
-            a = f.monad.function(y)
+            a = _apply_monad(f, y)
         else:
             a = f.implementation
-        b = h.monad.function(y)
-        return g.dyad.function(a, b)
+        b = _apply_monad(h, y)
+        return _apply_dyad(g, a, b)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         if isinstance(f, Verb):
-            a = f.dyad.function(x, y)
+            a = _apply_dyad(f, x, y)
         else:
             a = f.implementation
-        b = h.dyad.function(x, y)
-        return g.dyad.function(a, b)
+        b = _apply_dyad(h, x, y)
+        return _apply_dyad(g, a, b)
 
     if isinstance(f, Verb):
         f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling

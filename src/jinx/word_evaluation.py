@@ -213,25 +213,24 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
 
                 # 3. Adverb
                 case (
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb()] | 
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb(), Adverb(), *_]
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb() | Noun(),
+                    Adverb(),
+                    *_,
                 ):
                     edge, verb, adverb, *last = fragment
                     result = apply_adverb(verb, adverb)
-
                     if edge == "(" and last == [")"] and level > 0:
                         return result
-
                     fragment[1:3] = [result]
-
-                case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Adverb():
-                    edge, noun, adverb = fragment
-                    raise NotImplementedError("adverb application to noun not implemented")
 
                 # 4. Conjunction
                 case (
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun()] |
-                    [None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Verb() | Noun(), Conjunction(), Verb() | Noun(), *_]
+                    None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(),
+                    Verb() | Noun(),
+                    Conjunction(),
+                    Verb() | Noun(),
+                    *_,
                 ):
                     edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
                     result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
@@ -284,7 +283,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
 
         # fmt: on
 
-    if len(fragment) > 2 and level > 0:
+    if len(fragment) > 2:
         raise EvaluationError("Unexecutable fragment")
 
     return fragment

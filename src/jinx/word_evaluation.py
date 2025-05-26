@@ -253,7 +253,10 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
 
                 # 6. Hook/Adverb
                 case (
-                    [None | "=." | "=:" | "(", Conjunction() | Adverb() | Verb() | Noun(), Conjunction() | Adverb() | Verb() | Noun()]
+                    None | "=." | "=:" | "(",
+                    Conjunction() | Adverb() | Verb() | Noun(),
+                    Conjunction() | Adverb() | Verb() | Noun(),
+                    *_,
                 ):
                     edge, cavn1, cavn2, *last = fragment
                     if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):

@@ -219,6 +219,14 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
     ),
     Verb(
+        ",.",
+        "COMMADOT",
+        monad=Monad(name="Ravel Items", rank=INFINITY),
+        dyad=Dyad(
+            name="Stitch", left_rank=INFINITY, right_rank=INFINITY, is_commutative=False
+        ),
+    ),
+    Verb(
         "|",
         "BAR",
         monad=Monad(name="Magnitude", rank=0),

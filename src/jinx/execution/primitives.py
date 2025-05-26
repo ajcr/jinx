@@ -20,8 +20,8 @@ import itertools
 import numpy as np
 import numba
 
-from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad, Noun
-from jinx.errors import DomainError, ValenceError, JIndexError
+from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
+from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
 from jinx.execution.application import _apply_dyad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
@@ -103,6 +103,71 @@ def comma_monad(y: np.ndarray) -> np.ndarray:
     return np.ravel(y)
 
 
+def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """, dyad: returns array containing the items of x followed by the items of y."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if _is_scalar(x):
+        x = np.full_like(y[:1], x[0])
+    elif _is_scalar(y):
+        y = np.full_like(x[:1], y[0])
+    else:
+        trailing_dims = [
+            max(xs, ys)
+            for xs, ys in itertools.zip_longest(
+                reversed(x.shape), reversed(y.shape), fillvalue=1
+            )
+        ]
+        trailing_dims.reverse()
+        trailing_dims = trailing_dims[1:]  # ignore dimension that we concatenate along
+
+        ndmin = max(x.ndim, y.ndim)
+        x = increase_ndim(x, ndmin)
+        y = increase_ndim(y, ndmin)
+
+        x = np.pad(
+            x,
+            [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)],
+        )
+        y = np.pad(
+            y,
+            [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
+        )
+
+    return np.concatenate([x, y], axis=0)
+
+
+def commadot_monad(y: np.ndarray) -> np.ndarray:
+    """,. monad: ravel items."""
+    y = np.atleast_1d(y)
+    return y.reshape(y.shape[0], -1)
+
+
+def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """,. dyad: join each item of x to each item of y."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if x.ndim > 1 and y.ndim > 1 and len(x) != len(y):
+        raise LengthError(
+            f"Shapes {x.shape} and {y.shape} have different numbers of items"
+        )
+
+    if x.shape == (1,):
+        x = np.repeat(x, y.shape[0], axis=0)
+
+    if y.shape == (1,):
+        y = np.repeat(y, x.shape[0], axis=0)
+
+    result = []
+    for x_item, y_item in zip(x, y, strict=True):
+        result.append(comma_dyad(x_item, y_item))
+
+    result = maybe_pad_with_fill_value(result, fill_value=0)
+    return np.asarray(result)
+
+
 @numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"], nopython=True)
 def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """| dyad: remainder when dividing y by x."""
@@ -144,41 +209,6 @@ def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
 def _is_scalar(x: np.ndarray) -> bool:
     """Check if the array is a scalar or has only one item."""
     return np.isscalar(x) or (x.ndim <= 1 and x.size == 1)
-
-
-def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """, dyad: returns array containing the items of x followed by the items of y."""
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-
-    if _is_scalar(x):
-        x = np.full_like(y[:1], x[0])
-    elif _is_scalar(y):
-        y = np.full_like(x[:1], y[0])
-    else:
-        trailing_dims = [
-            max(xs, ys)
-            for xs, ys in itertools.zip_longest(
-                reversed(x.shape), reversed(y.shape), fillvalue=1
-            )
-        ]
-        trailing_dims.reverse()
-        trailing_dims = trailing_dims[1:]  # ignore dimension that we concatenate along
-
-        ndmin = max(x.ndim, y.ndim)
-        x = increase_ndim(x, ndmin)
-        y = increase_ndim(y, ndmin)
-
-        x = np.pad(
-            x,
-            [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)],
-        )
-        y = np.pad(
-            y,
-            [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
-        )
-
-    return np.concatenate([x, y], axis=0)
 
 
 def tildedot_monad(y: np.ndarray) -> np.ndarray:
@@ -887,6 +917,7 @@ PRIMITIVE_MAP = {
     "TILDEDOT": (tildedot_monad, None),
     "TILDECO": (tildeco_monad, np.not_equal),
     "COMMA": (comma_monad, comma_dyad),
+    "COMMADOT": (commadot_monad, commadot_dyad),
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
     "BARCO": (np.transpose, barco_dyad),

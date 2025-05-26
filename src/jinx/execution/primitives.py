@@ -22,7 +22,7 @@ import numba
 
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
-from jinx.execution.application import _apply_dyad
+from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
@@ -401,10 +401,12 @@ def slash_adverb(verb: Verb) -> Verb:
         # The function is either callable, in which cases it is applied directly,
         # or a Verb object that needs to be applied indirectly with _apply_dyad().
         if isinstance(function, Verb):
-            function = functools.partial(_apply_dyad, verb)
+            func = functools.partial(_apply_dyad, verb)
+        else:
+            func = function
 
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return function(y, x)
+            return func(y, x)
 
         def _reduce(y: np.ndarray) -> np.ndarray:
             y = np.atleast_1d(y)
@@ -422,7 +424,7 @@ def slash_adverb(verb: Verb) -> Verb:
 
             table = []
             for x_item in x_reshaped:
-                row = function(x_item, y)
+                row = func(x_item, y)
                 table.append(row)
 
             table = maybe_pad_with_fill_value(table, fill_value=0)
@@ -581,28 +583,33 @@ def tilde_adverb(verb: Verb) -> Verb:
     )
 
 
-def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
-    rank = np.atleast_1d(noun.implementation)
+def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
+    rank = np.atleast_1d(rank)
+    if np.issubdtype(rank.dtype, np.floating):
+        if not np.isinf(rank).all():
+            raise DomainError(f"Rank must be an integer or infinity, got {rank.dtype}")
 
-    if not np.issubdtype(rank.dtype, np.integer):
-        raise DomainError(f"Rank must be an integer, got {rank.dtype}")
+    elif not np.issubdtype(rank.dtype, np.integer):
+        raise DomainError(f"Rank must be an integer or infinity, got {rank.dtype}")
 
     if rank.size > 3 or rank.ndim > 1:
         raise DomainError(
             f"Rank must be a scalar or 1D array of length <= 3, got {rank.ndim}D array with shape {rank.shape}"
         )
 
-    if rank.size == 1:
-        monad_rank = left_rank = right_rank = rank[0]
-        spelling = f'{verb.spelling}"{rank[0]}'
+    rank_list = [int(r) if not np.isinf(r) else INFINITY for r in rank.tolist()]
 
-    elif rank.size == 2:
-        left_rank, right_rank = rank
+    if len(rank_list) == 1:
+        monad_rank = left_rank = right_rank = rank_list[0]
+        spelling = f'{verb.spelling}"{rank_list[0]}'
+
+    elif len(rank_list) == 2:
+        left_rank, right_rank = rank_list
         monad_rank = right_rank
         spelling = f'{verb.spelling}"{left_rank} {right_rank}'
 
     else:
-        monad_rank, left_rank, right_rank = rank
+        monad_rank, left_rank, right_rank = rank_list
         spelling = f'{verb.spelling}"{monad_rank} {left_rank} {right_rank}'
 
     if verb.monad:
@@ -629,17 +636,25 @@ def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
     )
 
 
+def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
+    rank = np.atleast_1d(noun.implementation).tolist()
+    return _modify_rank(verb, rank)
+
+
 def at_conjunction(u: Verb, v: Verb) -> Verb:
-    """@ conjunction: compose verbs u and v, with the rank of the new verb dependent on v."""
+    """@ conjunction: compose verbs u and v, with u applied using the rank of v."""
+
+    # The verb u is to be applied using the rank of v.
+    u_rank_v = _modify_rank(u, v.monad.rank)
 
     def monad(y: np.ndarray) -> np.ndarray:
-        a = v.monad.function(y)
-        b = u.monad.function(a)
+        a = _apply_monad(v, y)
+        b = _apply_monad(u_rank_v, a)
         return b
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        a = v.dyad.function(x, y)
-        b = u.monad.function(a)
+        a = _apply_dyad(v, x, y)
+        b = _apply_monad(u_rank_v, a)
         return b
 
     u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
@@ -665,24 +680,32 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
 def atco_conjunction(u: Verb, v: Verb) -> Verb:
     """@: conjunction: compose verbs u and v, with the rank of the new verb as infinity."""
 
-    verb = at_conjunction(u, v)
+    def monad(y: np.ndarray) -> np.ndarray:
+        a = _apply_monad(v, y)
+        b = _apply_monad(u, a)
+        return b
+
+    def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        a = _apply_dyad(v, x, y)
+        b = _apply_monad(u, a)
+        return b
+
     u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
     v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
 
-    return dataclasses.replace(
-        verb,
+    return Verb(
         name=f"{u_spelling}@:{v_spelling}",
         spelling=f"{u_spelling}@:{v_spelling}",
-        monad=dataclasses.replace(
-            verb.monad,
+        monad=Monad(
             name=f"{u_spelling}@:{v_spelling}",
             rank=INFINITY,
+            function=monad,
         ),
-        dyad=dataclasses.replace(
-            verb.dyad,
+        dyad=Dyad(
             name=f"{u_spelling}@:{v_spelling}",
             left_rank=INFINITY,
             right_rank=INFINITY,
+            function=dyad,
         ),
     )
 

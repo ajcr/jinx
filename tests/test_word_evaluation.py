@@ -623,6 +623,20 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array([1, 1, 9]),
             id="(#~ 2 | i.@#) 3 1 4 1 5 9 2",
         ),
+        # Test case where u@v applies u at rank of v (i. has rank 1 by default
+        # but must be applied at rank 0, the rank of +).
+        pytest.param(
+            [
+                PRIMITIVE_MAP["IDOT"],
+                PRIMITIVE_MAP["AT"],
+                PRIMITIVE_MAP["PLUS"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["IDOT"],
+                Array(data_type=DataType.Integer, data=[2, 2]),
+            ],
+            np.array([[0, 1, 0, 0], [0, 1, 2, 3]]),
+            id="i.@+/ i. 2 2",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

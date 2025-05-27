@@ -739,14 +739,14 @@ def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> V
     elif isinstance(left, Verb) and isinstance(right, Verb):
         # Compose u&v, with the new verb having the right verb's monadic rank.
         def monad_(y: np.ndarray) -> np.ndarray:
-            a = right.monad.function(y)
-            b = left.monad.function(a)
+            a = _apply_monad(right, y)
+            b = _apply_monad(left, a)
             return b
 
         def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            ry = right.monad.function(y)
-            rx = right.monad.function(x)
-            return left.dyad.function(rx, ry)
+            ry = _apply_monad(right, y)
+            rx = _apply_monad(right, x)
+            return _apply_dyad(left, rx, ry)
 
         left_spelling = (
             left.spelling if " " not in left.spelling else f"({left.spelling})"
@@ -775,15 +775,15 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
         raise DomainError(f"{v.spelling} has no obverse")
 
     def _monad(y: np.ndarray) -> np.ndarray:
-        vy = v.monad.function(y)
-        uvy = u.monad.function(vy)
-        return v.obverse.monad.function(uvy)
+        vy = _apply_monad(v, vy)
+        uvy = _apply_monad(u, vy)
+        return _apply_monad(v.obverse, uvy)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        vy = v.monad.function(y)
-        vx = v.monad.function(x)
-        uvy = u.dyad.function(vx, vy)
-        return v.obverse.monad.function(uvy)
+        vy = _apply_monad(v, y)
+        vx = _apply_monad(v, x)
+        uvy = _apply_dyad(u, vx, vy)
+        return _apply_monad(v.obverse, uvy)
 
     v_spelling = v.spelling if " " not in v.spelling else f"({v.spelling})"
     u_spelling = u.spelling if " " not in u.spelling else f"({u.spelling})"
@@ -852,17 +852,17 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
                 result.append(y)
                 continue
             elif atom > 0:
-                function = u.monad.function
+                verb = u
                 exp = atom
             else:  # atom < 0:
                 if not isinstance(u.obverse, Verb):
                     raise DomainError(f"{u.spelling} has no obverse")
-                function = u.obverse.monad.function
+                verb = u.obverse
                 exp = -atom
 
             atom_result = y
             for _ in range(exp):
-                atom_result = function(atom_result)
+                atom_result = _apply_monad(verb, atom_result)
 
             result.append(atom_result)
 
@@ -877,17 +877,17 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
                 result.append(y)
                 continue
             elif atom > 0:
-                function = u.dyad.function
+                verb = u
                 exp = atom
             else:  # atom < 0:
                 if not isinstance(u.obverse, Verb):
                     raise DomainError(f"{u.spelling} has no obverse")
-                function = u.obverse.dyad.function
+                verb = u.obverse
                 exp = -atom
 
             atom_result = y
             for _ in range(exp):
-                atom_result = function(x, atom_result)
+                atom_result = _apply_dyad(verb, x, atom_result)
 
             result.append(atom_result)
 

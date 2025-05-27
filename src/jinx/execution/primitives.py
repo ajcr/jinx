@@ -775,7 +775,7 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
         raise DomainError(f"{v.spelling} has no obverse")
 
     def _monad(y: np.ndarray) -> np.ndarray:
-        vy = _apply_monad(v, vy)
+        vy = _apply_monad(v, y)
         uvy = _apply_monad(u, vy)
         return _apply_monad(v.obverse, uvy)
 

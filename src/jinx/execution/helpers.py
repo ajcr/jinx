@@ -24,3 +24,9 @@ def maybe_pad_with_fill_value(
         padded_arrays.append(padded_array)
 
     return padded_arrays
+
+
+def maybe_parenthesise_verb_spelling(spelling: str) -> str:
+    if spelling.startswith("(") and spelling.endswith(")"):
+        return spelling
+    return f"({spelling})" if " " in spelling else spelling

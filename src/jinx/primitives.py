@@ -23,6 +23,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Verb(
         "=",
         "EQ",
+        monad=Monad(name="Self-Classify", rank=INFINITY),
         dyad=Dyad(name="Equal", left_rank=0, right_rank=0, is_commutative=True),
     ),
     Copula("=.", "EQDOT"),

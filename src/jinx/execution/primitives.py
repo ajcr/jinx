@@ -27,6 +27,15 @@ from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
 
+def eq_monad(y: np.ndarray) -> np.ndarray:
+    nub = tildedot_monad(y)
+    result = []
+    for item in nub:
+        value = np.all(item == y, axis=tuple(range(1, y.ndim)))
+        result.append(value)
+    return np.asarray(result).view(np.int8)
+
+
 def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
     # N.B. np.reciprocal does not support integer types, use division instead.
@@ -918,7 +927,7 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
 # Use None for monadic or dyadic valences of the verb do not exist in J.
 PRIMITIVE_MAP = {
     # VERB: (MONAD, DYAD)
-    "EQ": (NotImplemented, np.equal),
+    "EQ": (eq_monad, np.equal),
     "MINUS": (np.negative, np.subtract),
     "MINUSDOT": (minusdot_monad, NotImplemented),
     "MINUSCO": (minusco_monad, minusco_dyad),

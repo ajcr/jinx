@@ -2,8 +2,6 @@
 
 A work-in-progress interpreter for the J programming language.
 
-Written in Python and NumPy, with the potential to execute via other Python array/tensor frameworks in future.
-
 Currently supports many features that are central to J, including:
 - Multidimensional arrays of integers and floats.
 - Many primitive verbs (e.g. `+`, `%:`, `,`, ...), adverbs (`/`, `~`, ...) and conjunctions (`"`, `@:`, ...).
@@ -11,7 +9,7 @@ Currently supports many features that are central to J, including:
 - Obverses.
 - Trains (hooks and forks).
 
-This allows some fairly sophisticated tacit expressions to be evaluated...
+This allows some fairly sophisticated tacit expressions to be evaluated.
 
 ## Examples
 
@@ -28,8 +26,14 @@ Start the interactive shell with `jinx`. As in the official J implementation, th
 0.721332
 ```
 
-## Motivation
+## Motivation / Warning
 
-This project is primarily a learning exercise: I want to improve my patchy understanding of J by implementing a useful subset of the language and its core concepts.
+This project is primarily a learning exercise. I want to improve my patchy understanding of J by straightforwardly implementing a useful subset of it. Understand how J code is evaluated. Nail down how rank works. And so on.
 
-It is also an attempt to prototype an interpreter for an array language that can be executed using Python's different array and tensor frameworks (NumPy, JAX, PyTorch, etc.) according to user's wishes. It is immensely satisfying to build complex expressions using a few symbols and, with no further effort, execute the expression over massive arrays of numbers on an accelerator.
+The code is my mental map of information grabbed from pages of language documentation, book chapters, and forum posts into something that resembles J. There are references to these sources scattered throughout the code.
+
+Recreating the sophistication and decades of attention to detail that have gone into making the official J interpreter so feature rich and performant is not the goal here. There will be bugs, missing parts and glaring performance gaps.
+
+But the advantage of this learn-by-making approach is that the wonderful concepts of the J language (and other APL dialects) have the potential to be mixed and matched with other tools and frameworks I know more about.
+
+For example, in this code the separation between "interpreting J code" and "actual execution on array-like objects" is very clearly separated. At the moment "array-like objects" and "execution" are NumPy arrays and methods, but could very easily be swapped out for PyTorch, JAX, or any other array framework. This sets up experiments in JIT compilation, execution on accelerators and other fun adventures.

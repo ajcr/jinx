@@ -652,12 +652,12 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
     # The verb u is to be applied using the rank of v.
     u_rank_v = _modify_rank(u, v.monad.rank)
 
-    def monad(y: np.ndarray) -> np.ndarray:
+    def _monad(y: np.ndarray) -> np.ndarray:
         a = _apply_monad(v, y)
         b = _apply_monad(u_rank_v, a)
         return b
 
-    def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         a = _apply_dyad(v, x, y)
         b = _apply_monad(u_rank_v, a)
         return b
@@ -665,20 +665,25 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
     u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
     v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
 
+    if v.dyad is None:
+        dyad = None
+    else:
+        dyad = Dyad(
+            name=f"{u_spelling}@{v_spelling}",
+            left_rank=v.dyad.left_rank,
+            right_rank=v.dyad.right_rank,
+            function=_dyad,
+        )
+
     return Verb(
         name=f"{u_spelling}@{v_spelling}",
         spelling=f"{u_spelling}@{v_spelling}",
         monad=Monad(
             name=f"{u_spelling}@{v_spelling}",
             rank=v.monad.rank,
-            function=monad,
+            function=_monad,
         ),
-        dyad=Dyad(
-            name=f"{u_spelling}@{v_spelling}",
-            left_rank=v.dyad.left_rank,
-            right_rank=v.dyad.right_rank,
-            function=dyad,
-        ),
+        dyad=dyad,
     )
 
 

@@ -56,6 +56,12 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="%:",
     ),
     Verb(
+        "*.",
+        "STARDOT",
+        monad=Monad(name="Length/Angle", rank=0),
+        dyad=Dyad(name="LCM (and)", left_rank=0, right_rank=0, is_commutative=True),
+    ),
+    Verb(
         "*:",
         "STARCO",
         monad=Monad(name="Square", rank=0),

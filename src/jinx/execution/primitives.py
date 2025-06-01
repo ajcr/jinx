@@ -85,6 +85,14 @@ def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return ~np.logical_or(x, y)
 
 
+def stardot_monad(y: np.ndarray) -> np.ndarray:
+    """*. monad: convert x-y coordinates to r-theta coordinates."""
+    y = np.atleast_1d(y)
+    r = np.abs(y)
+    theta = np.angle(y)
+    return np.concatenate([r, theta])
+
+
 @numba.vectorize(["int64(int64, int64)"], nopython=True)
 def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """*: dyad: not-and operation."""
@@ -928,6 +936,7 @@ PRIMITIVE_MAP = {
     "PLUSDOT": (plusdot_monad, np.gcd),
     "PLUSCO": (plusco_monad, plusco_dyad),
     "STAR": (np.sign, np.multiply),
+    "STARDOT": (stardot_monad, np.lcm),
     "STARCO": (np.square, starco_dyad),
     "PERCENT": (percent_monad, np.divide),
     "PERCENTCO": (np.sqrt, percentco_dyad),

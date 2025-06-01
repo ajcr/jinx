@@ -1,8 +1,7 @@
 """Methods implementing J primitives.
 
-Where possible, dyads are implemented as ufuncs (either NumPy ufuncs, or
-using the numba.vectorize decorator). This equips the dyads with efficient
-reduce, outer and accumulate methods over arrays.
+Where possible, dyads are implemented as ufuncs. This equips the dyads with
+efficient reduce, outer and accumulate methods over arrays.
 
 Specifically where a dyadic application of a verb has left and right rank both 0,
 this is equivalent to elementwise application of the verb to the arrays. This is
@@ -18,7 +17,6 @@ import functools
 import itertools
 
 import numpy as np
-import numba
 
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
@@ -45,7 +43,6 @@ def percent_monad(y: np.ndarray) -> np.ndarray:
     return 1 / y
 
 
-@numba.vectorize(["float64(int64, int64)", "float64(float64, float64)"], nopython=True)
 def percentco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.power(y, 1 / x)
 
@@ -77,7 +74,6 @@ def minusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(is_equal)
 
 
-@numba.vectorize(["int64(int64, int64)"], nopython=True)
 def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """+: dyad: not-or operation."""
     # N.B. This is not the same as the J implementation which forbids values
@@ -93,7 +89,6 @@ def stardot_monad(y: np.ndarray) -> np.ndarray:
     return np.concatenate([r, theta])
 
 
-@numba.vectorize(["int64(int64, int64)"], nopython=True)
 def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """*: dyad: not-and operation."""
     # N.B. This is not the same as the J implementation which forbids values
@@ -101,7 +96,6 @@ def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return ~np.logical_and(x, y)
 
 
-@numba.vectorize(["float64(float64, float64)"], nopython=True)
 def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """^. dyad: logarithm of y to the base x."""
     return np.log(y) / np.log(x)
@@ -188,7 +182,6 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(result)
 
 
-@numba.vectorize(["int64(int64, int64)", "float64(float64, float64)"], nopython=True)
 def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """| dyad: remainder when dividing y by x."""
     return np.mod(y, x)
@@ -396,24 +389,6 @@ def slash_adverb(verb: Verb) -> Verb:
 
     if is_ufunc(function) and verb.dyad.is_commutative:
         monad = function.reduce
-        dyad = function.outer
-
-    elif is_ufunc(function):
-        # Not commutative, but dyad has a reduce method.
-        # By swapping the arguments and applying it to the
-        # reversed array, we can get the same result.
-        @numba.vectorize(
-            ["int64(int64, int64)", "float64(float64, float64)"], nopython=True
-        )
-        def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return function(y, x)
-
-        def _reduce(y: np.ndarray) -> np.ndarray:
-            y = np.atleast_1d(y)
-            y = np.flip(y, axis=0)
-            return _dyad_arg_swap.reduce(y)
-
-        monad = _reduce
         dyad = function.outer
 
     else:

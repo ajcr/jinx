@@ -37,17 +37,17 @@ class DataType(Enum):
 
 @dataclass
 class Noun:
-    pass
+    is_boxed: bool = False
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Atom(Noun):
     data_type: DataType
     data: int | float | str | None = None
     implementation: Any = None
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Array(Noun):
     data_type: DataType
     data: list[int | float] | str | None = None

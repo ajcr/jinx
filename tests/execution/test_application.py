@@ -49,16 +49,16 @@ PLUS = PRIMITIVE_MAP["PLUS"]
 PLUS.monad.function = PRIMITIVE_MAP_NP["PLUS"][0]
 PLUS.dyad.function = PRIMITIVE_MAP_NP["PLUS"][1]
 PLUS_0_1 = rank_conjunction(
-    PLUS, Array(DataType.Integer, implementation=np.array([0, 1]))
+    PLUS, Array(data_type=DataType.Integer, implementation=np.array([0, 1]))
 )
 PLUS_1_0 = rank_conjunction(
-    PLUS, Array(DataType.Integer, implementation=np.array([1, 0]))
+    PLUS, Array(data_type=DataType.Integer, implementation=np.array([1, 0]))
 )
 PLUS_0_2 = rank_conjunction(
-    PLUS, Array(DataType.Integer, implementation=np.array([0, 2]))
+    PLUS, Array(data_type=DataType.Integer, implementation=np.array([0, 2]))
 )
 PLUS_1_2 = rank_conjunction(
-    PLUS, Array(DataType.Integer, implementation=np.array([1, 2]))
+    PLUS, Array(data_type=DataType.Integer, implementation=np.array([1, 2]))
 )
 
 
@@ -160,8 +160,8 @@ PLUS_1_2 = rank_conjunction(
 )
 def test_dyadic_application_using_plus(verb, left_array, right_array, expected):
     """Test the dyadic application of + to two arrays using different ranks."""
-    left_noun = Array(DataType.Integer, implementation=left_array)
-    right_noun = Array(DataType.Integer, implementation=right_array)
+    left_noun = Array(data_type=DataType.Integer, implementation=left_array)
+    right_noun = Array(data_type=DataType.Integer, implementation=right_array)
 
     result = apply_dyad(verb, left_noun, right_noun)
     assert np.array_equal(result.implementation, expected)
@@ -181,7 +181,7 @@ def test_dyadic_application_using_plus(verb, left_array, right_array, expected):
 def test_dyadic_application_using_plus_raises_length_error(
     verb, left_array, right_array
 ):
-    left_noun = Array(DataType.Integer, implementation=left_array)
-    right_noun = Array(DataType.Integer, implementation=right_array)
+    left_noun = Array(data_type=DataType.Integer, implementation=left_array)
+    right_noun = Array(data_type=DataType.Integer, implementation=right_array)
     with pytest.raises(LengthError):
         apply_dyad(verb, left_noun, right_noun)

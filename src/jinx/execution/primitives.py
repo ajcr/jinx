@@ -28,6 +28,9 @@ from jinx.execution.helpers import (
 )
 
 
+np.seterr(divide="ignore")
+
+
 def eq_monad(y: np.ndarray) -> np.ndarray:
     nub = tildedot_monad(y)
     result = []

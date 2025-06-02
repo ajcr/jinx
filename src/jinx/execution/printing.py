@@ -12,7 +12,6 @@ MAX_COLS = 100
 
 def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
     arr = np.atleast_1d(array.implementation)
-    dtype = arr.dtype
 
     if arr.shape[-1] > max_cols:
         arr = arr[..., :max_cols]
@@ -20,11 +19,11 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
     else:
         append_ellipsis = False
 
-    if np.issubdtype(dtype, np.floating):
+    if np.issubdtype(arr.dtype, np.floating):
         rounded = [format_float(n) for n in arr.ravel()]
         arr = np.asarray(rounded).reshape(arr.shape)
 
-    if np.issubdtype(dtype, np.bool_):
+    if np.issubdtype(arr.dtype, np.bool_):
         arr = arr.view(np.int8)
 
     arr_str = arr.astype(str)
@@ -70,8 +69,6 @@ def ndim_1_to_str(arr: np.ndarray, append_ellipsis: bool) -> str:
 
 
 def ndim_n_to_string(arr: np.ndarray, append_ellipsis: bool) -> str:
-    assert np.issubdtype(arr.dtype, np.character)
-
     if arr.ndim == 1:
         return ndim_1_to_str(arr, append_ellipsis)
 

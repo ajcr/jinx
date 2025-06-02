@@ -21,11 +21,9 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
         append_ellipsis = False
 
     if np.issubdtype(dtype, np.floating):
-        arr = array.implementation.ravel()
-        rounded = [format_float(n) for n in arr]
+        rounded = [format_float(n) for n in arr.ravel()]
         arr = np.asarray(rounded).reshape(arr.shape)
 
-    # If the array is a boolean array, convert it to int8 for printing.
     if np.issubdtype(dtype, np.bool_):
         arr = arr.view(np.int8)
 
@@ -38,6 +36,7 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
 
 
 def get_decimal_places(n: float) -> int:
+    n = abs(n)
     if n < 1:
         return 6
     if n < 10:
@@ -56,13 +55,11 @@ def get_decimal_places(n: float) -> int:
 def format_float(n: float) -> str:
     if np.isinf(n):
         return "__" if n < 0 else "_"
-    sign = "_" if n < 0 else ""
-    abs_n = abs(n)
-    if abs_n.is_integer():
-        return f"{sign}{int(abs_n)}"
-    decimal_places = get_decimal_places(abs_n)
+    if n.is_integer():
+        return f"{int(n)}"
+    decimal_places = get_decimal_places(n)
     rounded_n = round(n, decimal_places)
-    return f"{sign}{rounded_n}"
+    return f"{rounded_n}"
 
 
 def ndim_1_to_str(arr: np.ndarray, append_ellipsis: bool) -> str:
@@ -76,14 +73,14 @@ def ndim_n_to_string(arr: np.ndarray, append_ellipsis: bool) -> str:
     assert np.issubdtype(arr.dtype, np.character)
 
     if arr.ndim == 1:
-        return ndim_1_to_str(arr, append_ellipsis=append_ellipsis)
+        return ndim_1_to_str(arr, append_ellipsis)
 
     subarrays = []
     for subarr in arr:
         if subarr.ndim == 1:
-            subarrays.append(ndim_1_to_str(subarr, append_ellipsis=append_ellipsis))
+            subarrays.append(ndim_1_to_str(subarr, append_ellipsis))
         else:
-            subarrays.append(ndim_n_to_string(subarr, append_ellipsis=append_ellipsis))
+            subarrays.append(ndim_n_to_string(subarr, append_ellipsis))
 
     sep = os.linesep * (arr.ndim - 1)
     return sep.join(subarrays)

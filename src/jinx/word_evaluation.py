@@ -32,10 +32,7 @@ from jinx.execution.application import (
 )
 from jinx.execution.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
-from jinx.execution.printing import (
-    atom_to_string,
-    array_to_string,
-)
+from jinx.execution.printing import noun_to_string
 from jinx.execution.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
@@ -48,10 +45,8 @@ class EvaluationError(Exception):
 def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
     if isinstance(word, str):
         return word
-    if isinstance(word, Atom):
-        return atom_to_string(word)
-    elif isinstance(word, Array):
-        return array_to_string(word)
+    if isinstance(word, Atom | Array):
+        return noun_to_string(word)
     elif isinstance(word, (Verb, Conjunction)):
         return word.spelling
     elif isinstance(word, Adverb):

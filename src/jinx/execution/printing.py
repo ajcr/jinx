@@ -7,11 +7,6 @@ import numpy as np
 from jinx.vocabulary import Atom, Array
 
 
-def atom_to_string(atom: Atom) -> str:
-    n = atom.implementation
-    return format_float(n) if isinstance(n, float) else str(n)
-
-
 def rank_1_array_integer_to_string(
     arr: np.ndarray, justify: list[int], append_ellisis: bool = False
 ) -> str:
@@ -59,7 +54,7 @@ def rank_n_array_string(
 MAX_COLS = 100
 
 
-def array_to_string(array: Array, max_cols: int = MAX_COLS) -> str:
+def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
     arr = np.atleast_1d(array.implementation)
     ndim = arr.ndim
     dtype = arr.dtype
@@ -133,6 +128,7 @@ def float_array_to_string(array: Array) -> str:
     arr = array.implementation.ravel()
     rounded = [format_float(n) for n in arr]
     arr = np.asarray(rounded).reshape(array.implementation.shape)
+    arr = np.atleast_1d(arr)
 
     lengths = np.strings.str_len(arr)
     justify = np.max(lengths, axis=tuple(range(arr.ndim - 1)))

@@ -3,7 +3,7 @@ import numpy as np
 
 from src.jinx.vocabulary import Array, DataType
 
-from src.jinx.execution.printing import array_to_string
+from src.jinx.execution.printing import noun_to_string
 
 
 @pytest.mark.parametrize(
@@ -78,6 +78,6 @@ from src.jinx.execution.printing import array_to_string
         ),
     ],
 )
-def test_array_to_string(array, expected):
-    result = array_to_string(array, max_cols=5)
+def test_noun_to_string(array, expected):
+    result = noun_to_string(array, max_cols=5)
     assert result == expected

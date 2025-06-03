@@ -379,6 +379,49 @@ def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     raise NotImplementedError()
 
 
+def curlylfdot_monad(y: np.ndarray) -> np.ndarray:
+    """{. monad: returns the first item of y."""
+    y = np.atleast_1d(y)
+    if y.size == 0:
+        return np.array([])
+    return y[0]
+
+
+def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """{. dyad: the leading x items of y."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if len(x) > y.ndim:
+        raise LengthError(f"x has {len(x)} atoms but y has only {y.ndim} axes")
+
+    padding = []
+    slices = []
+
+    for dim, take in enumerate(x):
+        if take == 0:
+            raise NotImplementedError("Dimension with 0 items is not supported")
+        if take > y.shape[dim]:
+            padding.append((0, take - y.shape[dim]))
+            slices.append(slice(None))
+        elif take < -y.shape[dim]:
+            padding.append((-take - y.shape[dim], 0))
+            slices.append(slice(None))
+        elif take < 0:
+            padding.append((0, 0))
+            slices.append(slice(y.shape[dim] + take, None))
+        else:
+            padding.append((0, 0))
+            slices.append(slice(0, take))
+
+    if len(x) < y.ndim:
+        padding += [(0, 0)] * (y.ndim - len(x))
+
+    result = y[tuple(slices)]
+    result = np.pad(result, padding, mode="constant", constant_values=0)
+    return result
+
+
 INFINITY = float("inf")
 
 
@@ -939,6 +982,7 @@ PRIMITIVE_MAP = {
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     "SLASHCO": (slashco_monad, slashco_dyad),
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
+    "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,
     "BSLASH": bslash_adverb,

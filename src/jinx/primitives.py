@@ -310,6 +310,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="/:@|.",
     ),
     Conjunction("&.:", "AMPDOTCO"),
+    Verb(
+        "{.",
+        "CURLYLFDOT",
+        monad=Monad(name="Head", rank=INFINITY),
+        dyad=Dyad(
+            name="Take",
+            left_rank=1,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+        # obverse=",:",  # Not yet implemented
+    ),
 ]
 
 

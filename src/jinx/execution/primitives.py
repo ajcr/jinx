@@ -544,18 +544,19 @@ def bslashdot_adverb(verb: Verb) -> Verb:
 
 
 def tilde_adverb(verb: Verb) -> Verb:
-    function = verb.dyad.function
-    if function is None:
+    if verb.dyad.function is None:
         # Note: this differs from J which still allows the adverb to be applied
         # to a verb, but may raise an error when the new verb is applied to a noun
         # and the verb has no dyadic valence.
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
     def monad(y: np.ndarray) -> np.ndarray:
-        return function(y, y)
+        # replicate argument and apply verb dyadically
+        return _apply_dyad(verb, y, y)
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return function(y, x)
+        # swap the arguments and apply verb dyadically
+        return _apply_dyad(verb, y, x)
 
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
     spelling = f"{verb.spelling}~"

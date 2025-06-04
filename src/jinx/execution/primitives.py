@@ -81,7 +81,7 @@ def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """+: dyad: not-or operation."""
     # N.B. This is not the same as the J implementation which forbids values
     # outside of 0 and 1.
-    return ~np.logical_or(x, y)
+    return ~np.logical_or(x, y).view(np.int8)
 
 
 def stardot_monad(y: np.ndarray) -> np.ndarray:
@@ -96,7 +96,7 @@ def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """*: dyad: not-and operation."""
     # N.B. This is not the same as the J implementation which forbids values
     # outside of 0 and 1.
-    return ~np.logical_and(x, y)
+    return ~np.logical_and(x, y).view(np.int8)
 
 
 def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

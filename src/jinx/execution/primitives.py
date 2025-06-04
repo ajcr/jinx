@@ -280,6 +280,8 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 def idot_monad(y: np.ndarray) -> np.ndarray:
     """i. monad: returns increasing/decreasing sequence of integer wrapperd to shape y."""
     arr = np.atleast_1d(y)
+    if not np.issubdtype(y.dtype, np.integer):
+        raise DomainError(f"y has nonintegral value")
     shape = abs(arr)
     n = np.prod(shape)
     axes_to_flip = np.where(arr < 0)[0]

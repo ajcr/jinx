@@ -85,7 +85,6 @@ def build_verb_noun_phrase(
             result = apply_conjunction(words.pop(0), words.pop(0), words.pop(0))
             words = [result, *words]
         else:
-            breakpoint()
             raise EvaluationError("Unable to build verb/noun phrase")
     return result
 

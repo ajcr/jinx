@@ -33,11 +33,12 @@ class DataType(Enum):
     Integer = auto()
     Float = auto()
     Byte = auto()
+    Box = auto()
 
 
 @dataclass
 class Noun:
-    is_boxed: bool = False
+    pass
 
 
 @dataclass(kw_only=True)

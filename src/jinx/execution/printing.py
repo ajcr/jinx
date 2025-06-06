@@ -5,12 +5,17 @@ import os
 import numpy as np
 
 from jinx.vocabulary import Atom, Array
+from jinx.execution.conversion import is_box
 
 
 MAX_COLS = 100
 
 
 def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
+    # TODO: Print boxes like J prints boxes.
+    if is_box(array.implementation):
+        return f"Box({array.implementation})"
+
     arr = np.atleast_1d(array.implementation)
 
     if arr.shape[-1] > max_cols:

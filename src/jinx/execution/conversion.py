@@ -10,11 +10,22 @@ from jinx.vocabulary import (
 )
 
 
+box_dtype = np.dtype(np.object_, metadata={"type": "box"})
+
+
 DATATYPE_TO_NP_MAP = {
     DataType.Integer: np.int64,
     DataType.Float: np.float64,
     DataType.Byte: np.str_,
+    DataType.Box: box_dtype,
 }
+
+
+def is_box(array: np.ndarray) -> bool:
+    try:
+        return array.dtype.metadata["type"] == "box"
+    except (AttributeError, KeyError, TypeError):
+        return False
 
 
 def convert_noun_np(noun: Atom | Array) -> np.ndarray:
@@ -38,10 +49,14 @@ def infer_data_type(data):
         return DataType.Float
     if np.issubdtype(dtype, np.character):
         return DataType.Byte
+    if np.issubdtype(dtype, np.object_):
+        if is_box(data):
+            return DataType.Box
+
     raise NotImplementedError(f"Cannot handle NumPy dtype: {dtype}")
 
 
-def ndarray_or_scalar_to_noun(data) -> Noun:
+def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun:
     data_type = infer_data_type(data)
     if np.isscalar(data) or data.ndim == 0:
         return Atom(data_type=data_type, implementation=data)

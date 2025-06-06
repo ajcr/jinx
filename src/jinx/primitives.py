@@ -123,6 +123,13 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     ),
     Conjunction("^:", "HATCO"),
     Verb(
+        "<",
+        "LT",
+        monad=Monad(name="Box", rank=INFINITY),
+        dyad=Dyad(name="Less Than", left_rank=0, right_rank=0, is_commutative=False),
+        # obverse=">",  # Not yet implemented
+    ),
+    Verb(
         "<.",
         "LTDOT",
         monad=Monad(name="Floor", rank=0),

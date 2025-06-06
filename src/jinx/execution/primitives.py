@@ -21,7 +21,7 @@ import numpy as np
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
-from jinx.execution.conversion import is_ufunc
+from jinx.execution.conversion import is_ufunc, box_dtype
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
@@ -104,6 +104,15 @@ def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.log(y) / np.log(x)
 
 
+def lt_monad(y: np.ndarray) -> np.ndarray:
+    """< monad: box a noun."""
+    # Create empty array and set the first item to y to avoid NumPy
+    # creating a multi-dimensional array.
+    contents = np.empty(1, dtype=box_dtype)
+    contents[0] = y
+    return contents
+
+
 def ltco_monad(y: np.ndarray) -> np.ndarray:
     """<: monad: decrements the array."""
     return y - 1
@@ -152,6 +161,7 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
         )
 
+    # FIX: concatenate loses dtype metadata
     return np.concatenate([x, y], axis=0)
 
 
@@ -967,6 +977,7 @@ PRIMITIVE_MAP = {
     "HAT": (np.exp, np.power),
     "HATDOT": (np.log, hatdot_dyad),
     "DOLLAR": (dollar_monad, dollar_dyad),
+    "LT": (lt_monad, np.less),
     "LTDOT": (np.floor, np.minimum),
     "LTCO": (ltco_monad, np.less_equal),
     "GTDOT": (np.ceil, np.maximum),

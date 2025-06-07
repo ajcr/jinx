@@ -110,7 +110,7 @@ def lt_monad(y: np.ndarray) -> np.ndarray:
     # creating a multi-dimensional array.
     contents = np.empty(1, dtype=box_dtype)
     contents[0] = y
-    return contents
+    return contents.squeeze()
 
 
 def ltco_monad(y: np.ndarray) -> np.ndarray:

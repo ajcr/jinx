@@ -37,32 +37,32 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     if verb_rank < 0:
         verb_rank = max(0, noun_rank + verb_rank)
 
-    r = min(verb_rank, noun_rank)
+    rank = min(verb_rank, noun_rank)
 
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way
     # Apply the function directly here as an optimisation.
-    if r == 0 and is_ufunc(function):
+    if rank == 0 and is_ufunc(function):
         return function(arr)
 
     # Look at the shape of the array and the rank of the verb to
     # determine the frame and cell shape.
     #
-    # The trailing r axes define the cell shape and the preceding
+    # The trailing `rank` axes define the cell shape and the preceding
     # axes define the frame shape. E.g. for r=2:
     #
     #   arr.shape = (n0, n1, n2, n3, n4)
     #                ----------  ------
     #                ^ frame     ^ cell
     #
-    # If r=0, the frame shape is the same as the shape and the monad
+    # If rank=0, the frame shape is the same as the shape and the monad
     # applies to each atom of the array.
-    if r == 0:
+    if rank == 0:
         frame_shape = arr.shape
         arr_reshaped = arr.ravel()
     else:
-        cell_shape = arr.shape[-r:]
-        frame_shape = arr.shape[:-r]
+        cell_shape = arr.shape[-rank:]
+        frame_shape = arr.shape[:-rank]
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
     cells = [function(cell) for cell in arr_reshaped]

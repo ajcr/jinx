@@ -66,11 +66,8 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
     cells = [function(cell) for cell in arr_reshaped]
-    if len(cells) == 1 and np.isscalar(cells[0]):
-        result = cells[0]
-    else:
-        cells = maybe_pad_with_fill_value(cells)
-        result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
+    cells = maybe_pad_with_fill_value(cells)
+    result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
     return result
 
 

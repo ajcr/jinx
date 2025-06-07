@@ -2,12 +2,7 @@
 
 import numpy as np
 
-from jinx.vocabulary import (
-    Atom,
-    Array,
-    DataType,
-    Noun,
-)
+from jinx.vocabulary import Atom, Array, DataType, Noun
 
 
 box_dtype = np.dtype(np.object_, metadata={"type": "box"})

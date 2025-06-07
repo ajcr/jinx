@@ -49,7 +49,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     # determine the frame and cell shape.
     #
     # The trailing `rank` axes define the cell shape and the preceding
-    # axes define the frame shape. E.g. for r=2:
+    # axes define the frame shape. E.g. for rank=2:
     #
     #   arr.shape = (n0, n1, n2, n3, n4)
     #                ----------  ------
@@ -65,6 +65,9 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
         frame_shape = arr.shape[:-rank]
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
+    # Apply the function to each cell of the reshaped array, then add any
+    # padding needed to make all cells the same shape. Put the cells into
+    # the frame and return the result.
     cells = [function(cell) for cell in arr_reshaped]
     cells = maybe_pad_with_fill_value(cells)
     result = np.asarray(cells).reshape(frame_shape + cells[0].shape)

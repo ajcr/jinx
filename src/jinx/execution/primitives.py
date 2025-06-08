@@ -21,7 +21,7 @@ import numpy as np
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
-from jinx.execution.conversion import is_ufunc, box_dtype
+from jinx.execution.conversion import is_ufunc, box_dtype, is_box, asarray_boxsafe
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
@@ -111,6 +111,15 @@ def lt_monad(y: np.ndarray) -> np.ndarray:
     contents = np.empty(1, dtype=box_dtype)
     contents[0] = y
     return contents.squeeze()
+
+
+def gt_monad(y: np.ndarray) -> np.ndarray:
+    """< monad: open a boxed element or array of boxed elements."""
+    if not is_box(y):
+        return y
+    elements = y.ravel().tolist()
+    elements_padded = maybe_pad_with_fill_value(elements, fill_value=0)
+    return asarray_boxsafe(elements_padded)
 
 
 def ltco_monad(y: np.ndarray) -> np.ndarray:
@@ -980,6 +989,7 @@ PRIMITIVE_MAP = {
     "LT": (lt_monad, np.less),
     "LTDOT": (np.floor, np.minimum),
     "LTCO": (ltco_monad, np.less_equal),
+    "GT": (gt_monad, np.greater),
     "GTDOT": (np.ceil, np.maximum),
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, NotImplemented),

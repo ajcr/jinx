@@ -127,13 +127,20 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         "LT",
         monad=Monad(name="Box", rank=INFINITY),
         dyad=Dyad(name="Less Than", left_rank=0, right_rank=0, is_commutative=False),
-        # obverse=">",  # Not yet implemented
+        obverse=">",
     ),
     Verb(
         "<.",
         "LTDOT",
         monad=Monad(name="Floor", rank=0),
         dyad=Dyad(name="Min", left_rank=0, right_rank=0, is_commutative=True),
+    ),
+    Verb(
+        ">",
+        "GT",
+        monad=Monad(name="Open", rank=0),
+        dyad=Dyad(name="Larger Than", left_rank=0, right_rank=0, is_commutative=False),
+        obverse="<",
     ),
     Verb(
         ">.",

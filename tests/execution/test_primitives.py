@@ -1,10 +1,13 @@
 import pytest
 import numpy as np
 
+from src.jinx.execution.conversion import box_dtype
 from src.jinx.execution.primitives import (
     comma_dyad,
     dollar_dyad,
     dollar_monad,
+    gt_monad,
+    lt_monad,
     slashco_monad,
     bslashco_monad,
 )
@@ -206,3 +209,63 @@ def test_slashco_monad(y, expected):
 def test_bslashco_monad(y, expected):
     result = bslashco_monad(y)
     assert np.array_equal(result, expected)
+
+
+# Creating box arrays is awkward.
+BOX_1 = np.empty(1, dtype=box_dtype)
+BOX_1[0] = np.array(1)
+BOX_1 = BOX_1.squeeze()
+
+BOX_2 = np.empty(1, dtype=box_dtype)
+BOX_2[0] = np.array([1, 2, 3])
+BOX_2 = BOX_2.squeeze()
+
+
+@pytest.mark.parametrize(
+    "y, expected",
+    [
+        pytest.param(np.array(1), BOX_1, id="< 1"),
+        pytest.param(np.array([1, 2, 3]), BOX_2, id="< 1 2 3"),
+    ],
+)
+def test_lt_monad_box_containing_integer_array(y, expected):
+    result = lt_monad(y)
+    assert result.shape == expected.shape == ()
+    np.testing.assert_array_equal(result.item(), expected.item(), strict=True)
+
+
+def test_lt_monad_box_containing_box():
+    result = lt_monad(BOX_1)
+    assert result.shape == ()
+    assert result.dtype == box_dtype
+    # Two item() calls to get the array.
+    np.testing.assert_array_equal(result.item().item(), BOX_1.item(), strict=True)
+
+
+def test_gt_monad_unboxed_array():
+    y = np.array([1, 2, 3])
+    result = gt_monad(y)
+    np.testing.assert_array_equal(result, y, strict=True)
+
+
+def test_gt_monad_boxed_integer():
+    result = gt_monad(BOX_1)
+    assert result == BOX_1.item()
+
+
+def test_gt_monad_boxed_array():
+    result = gt_monad(BOX_2)
+    np.testing.assert_array_equal(result, BOX_2.item(), strict=True)
+
+
+def test_gt_monad_boxed_array_list():
+    # 1 ; 2 3 ; 4 5 6
+    boxed_list = np.empty(3, dtype=box_dtype)
+    boxed_list[0] = np.array([1])
+    boxed_list[1] = np.array([2, 3])
+    boxed_list[2] = np.array([4, 5, 6])
+
+    result = gt_monad(boxed_list)
+    expected = np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
+
+    np.testing.assert_array_equal(result, expected, strict=True)

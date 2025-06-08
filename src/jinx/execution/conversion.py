@@ -60,3 +60,17 @@ def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun:
 
 def is_ufunc(func: callable) -> bool:
     return isinstance(func, np.ufunc) or hasattr(func, "ufunc")
+
+
+def asarray_boxsafe(data: list | np.ndarray) -> np.ndarray:
+    """Convert item to a NumPy array using asarray.
+
+    If the item is a NumPy array with a 'box' dtype, or we have a list
+    with containing a single such array, return the array as we don't want
+    NumPy wraps to wrap this data in another 'array' layer.
+    """
+    if is_box(data):
+        return data
+    if len(data) == 1:
+        return data[0]
+    return np.asarray(data)

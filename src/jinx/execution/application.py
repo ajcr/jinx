@@ -16,6 +16,7 @@ from jinx.execution.conversion import (
     ndarray_or_scalar_to_noun,
     is_ufunc,
     asarray_boxsafe,
+    is_box,
 )
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
@@ -61,7 +62,10 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     #
     # If rank=0, the frame shape is the same as the shape and the monad
     # applies to each atom of the array.
-    if rank == 0:
+    if is_box(arr):
+        frame_shape = arr.shape
+        arr_reshaped = [arr]
+    elif rank == 0:
         frame_shape = arr.shape
         arr_reshaped = arr.ravel()
     else:

@@ -25,7 +25,7 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
         append_ellipsis = False
 
     if np.issubdtype(arr.dtype, np.floating):
-        rounded = [format_float(n) for n in arr.ravel()]
+        rounded = [format_float(n) for n in arr.ravel().tolist()]
         arr = np.asarray(rounded).reshape(arr.shape)
 
     if np.issubdtype(arr.dtype, np.bool_):

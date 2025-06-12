@@ -37,7 +37,7 @@ def eq_monad(y: np.ndarray) -> np.ndarray:
     for item in nub:
         value = np.all(item == y, axis=tuple(range(1, y.ndim)))
         result.append(value)
-    return np.asarray(result).view(np.int8)
+    return np.asarray(result).astype(np.int64)
 
 
 def percent_monad(y: np.ndarray) -> np.ndarray:
@@ -81,7 +81,7 @@ def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """+: dyad: not-or operation."""
     # N.B. This is not the same as the J implementation which forbids values
     # outside of 0 and 1.
-    return ~np.logical_or(x, y).view(np.int8)
+    return ~np.logical_or(x, y).astype(np.int64)
 
 
 def stardot_monad(y: np.ndarray) -> np.ndarray:
@@ -96,7 +96,7 @@ def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """*: dyad: not-and operation."""
     # N.B. This is not the same as the J implementation which forbids values
     # outside of 0 and 1.
-    return ~np.logical_and(x, y).view(np.int8)
+    return ~np.logical_and(x, y).astype(np.int64)
 
 
 def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -490,7 +490,7 @@ def slash_adverb(verb: Verb) -> Verb:
                 table.append(row)
 
             table = maybe_pad_with_fill_value(table, fill_value=0)
-            return np.asarray(table).reshape(x.shape + table[0].shape)
+            return asarray_boxsafe(table).reshape(x.shape + table[0].shape)
 
         monad = _reduce
         dyad = _outer

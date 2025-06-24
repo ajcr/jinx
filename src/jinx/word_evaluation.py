@@ -67,26 +67,27 @@ def evaluate_single_verb_sentence(sentence: str) -> Verb:
     return words[1]
 
 
-# TODO: clean up the code for building verb/noun phrases and evalating words.
-
-
 def build_verb_noun_phrase(
     words: list[Verb | Noun | Adverb | Conjunction],
 ) -> Verb | Noun:
-    assert len(words) > 0
-    if len(words) == 1:
-        return words[0]
-    words = words.copy()
+    """Build the verb or noun phrase from a list of words, or raise an error."""
     while len(words) > 1:
-        if isinstance(words[1], Adverb):
-            result = apply_adverb(words.pop(0), words.pop(0))
-            words = [result, *words]
-        elif isinstance(words[1], Conjunction):
-            result = apply_conjunction(words.pop(0), words.pop(0), words.pop(0))
-            words = [result, *words]
-        else:
-            raise EvaluationError("Unable to build verb/noun phrase")
-    return result
+        match words:
+            case [left, Adverb(), *remaining]:
+                result = apply_adverb(left, words[1])
+                words = [result, *remaining]
+
+            case [left, Conjunction(), right, *remaining]:
+                result = apply_conjunction(left, words[1], right)
+                words = [result, *remaining]
+
+            case _:
+                raise EvaluationError("Unable to build verb/noun phrase")
+
+    if isinstance(words[0], (Verb, Noun)):
+        return words[0]
+
+    raise EvaluationError("Unable to build verb/noun phrase")
 
 
 def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:

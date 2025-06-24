@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Atom, Array, DataType, Verb, Conjunction
+from jinx.vocabulary import Atom, Array, DataType, Verb
 from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP

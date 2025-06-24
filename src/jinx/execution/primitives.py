@@ -143,9 +143,9 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 
-    if _is_scalar(x):
+    if x.shape == (1,):
         x = np.full_like(y[:1], x[0])
-    elif _is_scalar(y):
+    elif y.shape == (1,):
         y = np.full_like(x[:1], y[0])
     else:
         trailing_dims = [
@@ -239,11 +239,6 @@ def barco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]
-
-
-def _is_scalar(x: np.ndarray) -> bool:
-    """Check if the array is a scalar or has only one item."""
-    return np.isscalar(x) or (x.ndim <= 1 and x.size == 1)
 
 
 def tildedot_monad(y: np.ndarray) -> np.ndarray:

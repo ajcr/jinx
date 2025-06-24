@@ -118,6 +118,44 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
     return _evaluate_words(words, level=level)
 
 
+def get_parts_to_left(
+    word: PartOfSpeechT, words: list[PartOfSpeechT | str], current_level: int
+) -> list[PartOfSpeechT]:
+    """Get the parts of speach to the left of the current word, modifying list of remaining words.
+
+    This method is called when the last word we encountered is an adverb or conjunction and
+    a verb or noun phrase is expected to the left of it.
+    """
+    parts_to_left = []
+
+    while words:
+        # A verb/noun phrase starts with a verb/noun which does not have a conjunction to its left.
+        if isinstance(word, Noun | Verb):
+            if not isinstance(words[-1], Conjunction):
+                parts_to_left = [word, *parts_to_left]
+                break
+            else:
+                conjunction = words.pop()
+                parts_to_left = [conjunction, word, *parts_to_left]
+
+        elif isinstance(word, Adverb | Conjunction):
+            parts_to_left = [word, *parts_to_left]
+
+        elif word == ")":
+            word = evaluate_words(words, level=current_level + 1)
+            continue
+
+        else:
+            break
+
+        if words:
+            word = words.pop()
+            if isinstance(word, (Punctuation, Copula)):
+                word = word.spelling
+
+    return parts_to_left
+
+
 def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
@@ -135,8 +173,6 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
         elif isinstance(word, (Punctuation, Copula)):
             word = word.spelling
 
-        # TODO: If word is a Name, lookup the Verb/Noun it refers to and add that.
-
         # If the next word closes a parenthesis, we need to evaluate the words inside it
         # first to get the next word to prepend to the fragment.
         if word == ")":
@@ -145,42 +181,13 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
         # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
         # entire verb/noun phrase to the left as the next word to prepend to the fragment.
         # Contrary to usual parsing and evaluation, the verb/noun phrase is evaluated left-to-right.
-        # fmt: off
         if fragment and isinstance(fragment[0], Adverb | Conjunction):
-            parts_to_left = []
-
-            while words:
-                # A verb/noun phrase starts with a verb/noun which does not have a conjunction to its left.
-                if isinstance(word, Noun | Verb):
-                    if not isinstance(words[-1], Conjunction):
-                        parts_to_left = [word, *parts_to_left]
-                        break
-                    else:
-                        conjunction = words.pop()
-                        parts_to_left = [conjunction, word, *parts_to_left]
-
-                elif isinstance(word, Adverb | Conjunction):
-                    parts_to_left = [word, *parts_to_left]
-
-                elif word == ")":
-                    word = evaluate_words(words, level=level + 1)
-                    continue
-
-                else:
-                    break
-
-                if words:
-                    word = words.pop()
-                    if isinstance(word, (Punctuation, Copula)):
-                        word = word.spelling
-
-            # evaluate the parts_to_left sequence (return single noun/verb)
-            if not parts_to_left:
-                continue
+            parts_to_left = get_parts_to_left(word, words, level)
             word = build_verb_noun_phrase(parts_to_left)
 
         fragment = [word, *fragment]
 
+        # fmt: off
         while True:
             match fragment:
 

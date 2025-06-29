@@ -2,12 +2,12 @@
 
 Given a sentence (a string of characters), form a list of its constituent words.
 
-Based on the description from 'An Implementation of J': https://www.jsoftware.com/ioj/iojSent.htm).
+Based on the description from 'An Implementation of J': https://www.jsoftware.com/ioj/iojSent.htm
 
 See also: https://code.jsoftware.com/wiki/Vocabulary/Words#WordFormation
 
-The terse naming of states and character classes has been preserved for the sake of consistency
-with the original description (except '9' is now 'NUMERIC').
+The terse naming of states and character classes has been preserved here for the sake of consistency
+with the source descriptions (except '9' is now 'NUMERIC').
 
 """
 

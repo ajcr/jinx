@@ -15,6 +15,7 @@ as their J counterparts.
 import dataclasses
 import functools
 import itertools
+import math
 
 import numpy as np
 
@@ -436,6 +437,25 @@ def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     result = y[tuple(slices)]
     result = np.pad(result, padding, mode="constant", constant_values=0)
     return result
+
+
+def bang_monad(y: np.ndarray) -> np.ndarray:
+    """! monad: returns y factorial (and more generally the gamma function of 1+y)."""
+    if isinstance(y, int) or np.issubdtype(y.dtype, np.integer) and y >= 0:
+        return np.asarray(math.factorial(y))
+    return np.asarray(math.gamma(1 + y))
+
+
+def bang_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """! dyad: returns y-Combinations-x."""
+    if (isinstance(y, int) or np.issubdtype(y.dtype, np.integer) and y >= 0) and (
+        isinstance(x, int) or np.issubdtype(x.dtype, np.integer) and x >= 0
+    ):
+        return np.asarray(math.comb(y, x))
+    x_ = bang_monad(x)
+    y_ = bang_monad(y)
+    x_y = bang_monad(y - x)
+    return np.asarray(y_ / x_ / x_y)
 
 
 INFINITY = float("inf")
@@ -1000,6 +1020,7 @@ PRIMITIVE_MAP = {
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     "SLASHCO": (slashco_monad, slashco_dyad),
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
+    "BANG": (bang_monad, bang_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,

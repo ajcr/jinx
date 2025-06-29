@@ -323,6 +323,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
         obverse="/:@|.",
     ),
+    Verb(
+        "!",
+        "BANG",
+        monad=Monad(name="Factorial", rank=0),
+        dyad=Dyad(
+            name="Out Of",
+            left_rank=0,
+            right_rank=0,
+            is_commutative=False,
+        ),
+    ),
     Conjunction("&.:", "AMPDOTCO"),
     Verb(
         "{.",

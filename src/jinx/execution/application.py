@@ -21,6 +21,17 @@ from jinx.execution.conversion import (
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
 
+def get_rank(verb_rank: int, noun_rank: int) -> int:
+    """Get the rank at which to apply the verb to the noun.
+
+    If the verb rank is negative, it means that the verb rank is subtracted
+    from the noun rank, to a minimum of 0.
+    """
+    if verb_rank < 0:
+        return max(0, noun_rank + verb_rank)
+    return min(verb_rank, noun_rank)
+
+
 def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
     arr = noun.implementation
 
@@ -37,12 +48,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     noun_rank = arr.ndim
     verb_rank = verb.monad.rank
 
-    # If the verb rank is negative, it means that the verb rank is subtracted
-    # from the operand rank, to a minimum of 0.
-    if verb_rank < 0:
-        verb_rank = max(0, noun_rank + verb_rank)
-
-    rank = min(verb_rank, noun_rank)
+    rank = get_rank(verb_rank, noun_rank)
 
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way
@@ -96,17 +102,8 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     else:
         function = verb.dyad.function
 
-    left_rank = verb.dyad.left_rank
-    right_rank = verb.dyad.right_rank
-
-    if left_rank < 0:
-        left_rank = max(0, left_arr.ndim + left_rank)
-
-    if right_rank < 0:
-        right_rank = max(0, right_arr.ndim + right_rank)
-
-    left_rank = min(left_arr.ndim, verb.dyad.left_rank)
-    right_rank = min(right_arr.ndim, verb.dyad.right_rank)
+    left_rank = get_rank(verb.dyad.left_rank, left_arr.ndim)
+    right_rank = get_rank(verb.dyad.right_rank, right_arr.ndim)
 
     # If the left and right ranks are both 0 and one of the arrays is a scalar,
     # apply the dyad directly as an optimisation.

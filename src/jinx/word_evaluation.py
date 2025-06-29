@@ -47,9 +47,7 @@ def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
         return word
     if isinstance(word, Atom | Array):
         return noun_to_string(word)
-    elif isinstance(word, (Verb, Conjunction)):
-        return word.spelling
-    elif isinstance(word, Adverb):
+    elif isinstance(word, Verb | Adverb | Conjunction):
         return word.spelling
     else:
         raise NotImplementedError(f"Cannot print word of type {type(word)}")

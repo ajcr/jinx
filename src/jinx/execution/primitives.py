@@ -491,21 +491,8 @@ def slash_adverb(verb: Verb) -> Verb:
             return functools.reduce(_dyad_arg_swap, y)
 
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            x = np.atleast_1d(x)
-            left_rank = min(x.ndim, verb.dyad.left_rank)
-            if left_rank == 0:
-                x_reshaped = x.ravel()
-            else:
-                x_cell_shape = x.shape[-left_rank:]
-                x_reshaped = x.reshape(-1, *x_cell_shape)
-
-            table = []
-            for x_item in x_reshaped:
-                row = func(x_item, y)
-                table.append(row)
-
-            table = maybe_pad_with_fill_value(table, fill_value=0)
-            return asarray_boxsafe(table).reshape(x.shape + table[0].shape)
+            verb_slash = _modify_rank(verb, [verb.dyad.left_rank, INFINITY])
+            return _apply_dyad(verb_slash, x, y)
 
         monad = _reduce
         dyad = _outer
@@ -656,7 +643,7 @@ def tilde_adverb(verb: Verb) -> Verb:
 def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
     rank = np.atleast_1d(rank)
     if np.issubdtype(rank.dtype, np.floating):
-        if not np.isinf(rank).all():
+        if not np.isinf(rank).any():
             raise DomainError(f"Rank must be an integer or infinity, got {rank.dtype}")
 
     elif not np.issubdtype(rank.dtype, np.integer):

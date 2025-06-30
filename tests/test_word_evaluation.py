@@ -637,6 +637,26 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array([[0, 1, 0, 0], [0, 1, 2, 3]]),
             id="i.@+/ i. 2 2",
         ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["BARCO"],
+                PRIMITIVE_MAP["BANG"],
+                PRIMITIVE_MAP["SLASH"],
+                PRIMITIVE_MAP["TILDE"],
+                PRIMITIVE_MAP["IDOT"],
+                Atom(data_type=DataType.Integer, data=5),
+            ],
+            np.array(
+                [
+                    [1, 0, 0, 0, 0],
+                    [1, 1, 0, 0, 0],
+                    [1, 2, 1, 0, 0],
+                    [1, 3, 3, 1, 0],
+                    [1, 4, 6, 4, 1],
+                ]
+            ),
+            id="|:!/~i.5",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

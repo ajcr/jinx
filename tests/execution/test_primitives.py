@@ -211,14 +211,8 @@ def test_bslashco_monad(y, expected):
     assert np.array_equal(result, expected)
 
 
-# Creating box arrays is awkward.
-BOX_1 = np.empty(1, dtype=box_dtype)
-BOX_1[0] = np.array(1)
-BOX_1 = BOX_1.squeeze()
-
-BOX_2 = np.empty(1, dtype=box_dtype)
-BOX_2[0] = np.array([1, 2, 3])
-BOX_2 = BOX_2.squeeze()
+BOX_1 = np.array([(1,)], dtype=box_dtype).squeeze()
+BOX_2 = np.array([(np.array([1, 2, 3]),)], dtype=box_dtype).squeeze()
 
 
 @pytest.mark.parametrize(
@@ -238,8 +232,7 @@ def test_lt_monad_box_containing_box():
     result = lt_monad(BOX_1)
     assert result.shape == ()
     assert result.dtype == box_dtype
-    # Two item() calls to get the array.
-    np.testing.assert_array_equal(result.item().item(), BOX_1.item(), strict=True)
+    np.testing.assert_array_equal(result.item()[0], BOX_1, strict=True)
 
 
 def test_gt_monad_unboxed_array():
@@ -260,12 +253,25 @@ def test_gt_monad_boxed_array():
 
 def test_gt_monad_boxed_array_list():
     # 1 ; 2 3 ; 4 5 6
-    boxed_list = np.empty(3, dtype=box_dtype)
-    boxed_list[0] = np.array([1])
-    boxed_list[1] = np.array([2, 3])
-    boxed_list[2] = np.array([4, 5, 6])
+    boxed_list = np.array(
+        [
+            (np.array([1]),),
+            (np.array([2, 3]),),
+            (np.array([4, 5, 6]),),
+        ],
+        dtype=box_dtype,
+    )
 
     result = gt_monad(boxed_list)
     expected = np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
 
     np.testing.assert_array_equal(result, expected, strict=True)
+
+
+def test_comma_dyad_joins_boxes():
+    result = comma_dyad(BOX_1, BOX_2)
+    expected = np.array([(BOX_1.item()[0],), (BOX_2.item()[0],)], dtype=box_dtype)
+    assert result.shape == expected.shape == (2,)
+    assert result.dtype == box_dtype
+    assert result[0][0] is expected[0].item()[0]
+    assert result[1][0] is expected[1].item()[0]

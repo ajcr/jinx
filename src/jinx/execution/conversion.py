@@ -5,7 +5,7 @@ import numpy as np
 from jinx.vocabulary import Atom, Array, DataType, Noun
 
 
-box_dtype = np.dtype(np.object_, metadata={"type": "box"})
+box_dtype = np.dtype([("content", "O")])
 
 
 DATATYPE_TO_NP_MAP = {
@@ -17,10 +17,7 @@ DATATYPE_TO_NP_MAP = {
 
 
 def is_box(array: np.ndarray) -> bool:
-    try:
-        return array.dtype.metadata["type"] == "box"
-    except (AttributeError, KeyError, TypeError):
-        return False
+    return array.dtype == box_dtype
 
 
 def convert_noun_np(noun: Atom | Array) -> np.ndarray:
@@ -44,9 +41,8 @@ def infer_data_type(data):
         return DataType.Float
     if np.issubdtype(dtype, np.character):
         return DataType.Byte
-    if np.issubdtype(dtype, np.object_):
-        if is_box(data):
-            return DataType.Box
+    if dtype == box_dtype:
+        return DataType.Box
 
     raise NotImplementedError(f"Cannot handle NumPy dtype: {dtype}")
 
@@ -60,17 +56,3 @@ def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun:
 
 def is_ufunc(func: callable) -> bool:
     return isinstance(func, np.ufunc) or hasattr(func, "ufunc")
-
-
-def asarray_boxsafe(data: list | np.ndarray) -> np.ndarray:
-    """Convert item to a NumPy array using asarray.
-
-    If the item is a NumPy array with a 'box' dtype, or we have a list
-    with containing a single such array, return the array as we don't want
-    NumPy wraps to wrap this data in another 'array' layer.
-    """
-    if is_box(data):
-        return data
-    if len(data) == 1:
-        return data[0]
-    return np.asarray(data)

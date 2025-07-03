@@ -22,7 +22,7 @@ import numpy as np
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
-from jinx.execution.conversion import is_ufunc, box_dtype, is_box, asarray_boxsafe
+from jinx.execution.conversion import is_ufunc, box_dtype, is_box
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
@@ -107,20 +107,16 @@ def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 def lt_monad(y: np.ndarray) -> np.ndarray:
     """< monad: box a noun."""
-    # Create empty array and set the first item to y to avoid NumPy
-    # creating a multi-dimensional array.
-    contents = np.empty(1, dtype=box_dtype)
-    contents[0] = y
-    return contents.squeeze()
+    return np.array([(y,)], dtype=box_dtype).squeeze()
 
 
 def gt_monad(y: np.ndarray) -> np.ndarray:
     """< monad: open a boxed element or array of boxed elements."""
     if not is_box(y):
         return y
-    elements = y.ravel().tolist()
+    elements = [np.asarray(item[0]) for item in y.ravel().tolist()]
     elements_padded = maybe_pad_with_fill_value(elements, fill_value=0)
-    return asarray_boxsafe(elements_padded)
+    return np.asarray(elements_padded)
 
 
 def ltco_monad(y: np.ndarray) -> np.ndarray:

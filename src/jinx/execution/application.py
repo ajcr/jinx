@@ -12,12 +12,7 @@ import numpy as np
 
 from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad, Atom, Array
 from jinx.errors import LengthError
-from jinx.execution.conversion import (
-    ndarray_or_scalar_to_noun,
-    is_ufunc,
-    asarray_boxsafe,
-    is_box,
-)
+from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
 
@@ -68,10 +63,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     #
     # If rank=0, the frame shape is the same as the shape and the monad
     # applies to each atom of the array.
-    if is_box(arr):
-        frame_shape = arr.shape
-        arr_reshaped = [arr]
-    elif rank == 0:
+    if rank == 0:
         frame_shape = arr.shape
         arr_reshaped = arr.ravel()
     else:
@@ -84,7 +76,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     # the frame and return the result.
     cells = [function(cell) for cell in arr_reshaped]
     cells = maybe_pad_with_fill_value(cells)
-    result = asarray_boxsafe(cells).reshape(frame_shape + cells[0].shape)
+    result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
     return result
 
 

@@ -277,8 +277,11 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         x_shape = tuple(x)
 
     if np.isscalar(y) or y.shape == ():
-        result = np.zeros(x_shape, dtype=x.dtype)
-        result[:] = y
+        if is_box(y):
+            result = np.array([y] * np.prod(x_shape), dtype=box_dtype).reshape(x_shape)
+        else:
+            result = np.empty(x_shape, dtype=x.dtype)
+            result[:] = y
         return result
 
     output_shape = x_shape + y.shape[1:]

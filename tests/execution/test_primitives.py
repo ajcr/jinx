@@ -248,7 +248,7 @@ def test_gt_monad_boxed_integer():
 
 def test_gt_monad_boxed_array():
     result = gt_monad(BOX_2)
-    np.testing.assert_array_equal(result, BOX_2.item(), strict=True)
+    np.testing.assert_array_equal(result, BOX_2.item()[0], strict=True)
 
 
 def test_gt_monad_boxed_array_list():

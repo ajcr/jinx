@@ -657,6 +657,18 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ),
             id="|:!/~i.5",
         ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["GT"],
+                PRIMITIVE_MAP["LT"],
+                PRIMITIVE_MAP["RANK"],
+                Atom(data_type=DataType.Integer, data=0),
+                PRIMITIVE_MAP["SQUARERF"],
+                Array(data_type=DataType.Integer, data=[8, 6, 4, 3, 2]),
+            ],
+            np.array([8, 6, 4, 3, 2]),
+            id='> <"0 ] 8 6 4 3 2',
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

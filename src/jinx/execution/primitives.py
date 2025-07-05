@@ -116,7 +116,7 @@ def gt_monad(y: np.ndarray) -> np.ndarray:
         return y
     elements = [np.asarray(item[0]) for item in y.ravel().tolist()]
     elements_padded = maybe_pad_with_fill_value(elements, fill_value=0)
-    return np.asarray(elements_padded)
+    return np.asarray(elements_padded).squeeze()
 
 
 def ltco_monad(y: np.ndarray) -> np.ndarray:
@@ -271,12 +271,12 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
         raise DomainError(f"Invalid shape: {x}")
 
-    if np.isscalar(x) or x.size == 1:
+    if np.isscalar(x) or x.shape == ():
         x_shape = (np.squeeze(x),)
     else:
         x_shape = tuple(x)
 
-    if np.isscalar(y) or y.size == 1:
+    if np.isscalar(y) or y.shape == ():
         result = np.zeros(x_shape, dtype=x.dtype)
         result[:] = y
         return result

@@ -24,6 +24,8 @@ from jinx.errors import DomainError, ValenceError, JIndexError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.conversion import is_ufunc, box_dtype, is_box
 from jinx.execution.helpers import (
+    increase_ndim,
+    maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )
@@ -167,7 +169,6 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
         )
 
-    # FIX: concatenate loses dtype metadata
     return np.concatenate([x, y], axis=0)
 
 
@@ -231,11 +232,6 @@ def barco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         if i not in x:
             first.append(i)
     return np.transpose(y, axes=first + x.tolist())
-
-
-def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
-    idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
-    return y[idx]
 
 
 def tildedot_monad(y: np.ndarray) -> np.ndarray:
@@ -455,6 +451,35 @@ def bang_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     y_ = bang_monad(y)
     x_y = bang_monad(y - x)
     return np.asarray(y_ / x_ / x_y)
+
+
+def semi_monad(y: np.ndarray) -> np.ndarray:
+    """; monad: remove one level of boxing from a noun."""
+    if not is_box(y):
+        return y
+
+    y = y.ravel()
+    items = [item[0] for item in y.tolist()]
+
+    is_all_boxed = all(is_box(item) for item in items)
+    is_all_not_boxed = all(not is_box(item) for item in items)
+    if not is_all_boxed and not is_all_not_boxed:
+        raise DomainError("Contents are incompatible: numeric and boxed")
+
+    items = maybe_pad_by_duplicating_atoms(items)
+    return np.concatenate(items, axis=0)
+
+
+def semi_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """; dyad: link two nouns into a box."""
+    if not is_box(x):
+        x = lt_monad(x)
+    if not is_box(y):
+        y = lt_monad(y)
+
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    return np.concatenate([x, y], axis=0)
 
 
 INFINITY = float("inf")
@@ -1008,6 +1033,7 @@ PRIMITIVE_MAP = {
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
     "BANG": (bang_monad, bang_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
+    "SEMI": (semi_monad, semi_dyad),
     # ADVERB: adverb
     "SLASH": slash_adverb,
     "BSLASH": bslash_adverb,

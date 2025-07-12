@@ -347,6 +347,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
         # obverse=",:",  # Not yet implemented
     ),
+    Verb(
+        ";",
+        "SEMI",
+        monad=Monad(name="Raze", rank=INFINITY),
+        dyad=Dyad(
+            name="LINK",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+    ),
 ]
 
 

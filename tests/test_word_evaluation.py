@@ -669,6 +669,53 @@ def test_word_evaluation_hook_correct_result(words, expected):
             np.array([8, 6, 4, 3, 2]),
             id='> <"0 ] 8 6 4 3 2',
         ),
+        pytest.param(
+            [
+                PRIMITIVE_MAP["SEMI"],
+                LPAREN,
+                PRIMITIVE_MAP["IDOT"],
+                Array(data_type=DataType.Integer, data=[3, 2, 3]),
+                RPAREN,
+                PRIMITIVE_MAP["SEMI"],
+                LPAREN,
+                PRIMITIVE_MAP["IDOT"],
+                Array(data_type=DataType.Integer, data=[2, 1]),
+                RPAREN,
+                PRIMITIVE_MAP["SEMI"],
+                Atom(data_type=DataType.Integer, data=6),
+                PRIMITIVE_MAP["SEMI"],
+                Array(data_type=DataType.Integer, data=[9, 2]),
+            ],
+            np.array(
+                [
+                    [
+                        [0, 1, 2],
+                        [3, 4, 5],
+                    ],
+                    [
+                        [6, 7, 8],
+                        [9, 10, 11],
+                    ],
+                    [
+                        [12, 13, 14],
+                        [15, 16, 17],
+                    ],
+                    [
+                        [0, 0, 0],
+                        [1, 0, 0],
+                    ],
+                    [
+                        [6, 6, 6],
+                        [6, 6, 6],
+                    ],
+                    [
+                        [9, 2, 0],
+                        [0, 0, 0],
+                    ],
+                ],
+            ),
+            id=";(i. 3 2 3);(i. 2 1);6;9 2",
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

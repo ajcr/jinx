@@ -1,11 +1,14 @@
 """Helper methods for manipulating arrays."""
 
+import itertools
+
 import numpy as np
 
 
 def maybe_pad_with_fill_value(
     arrays: list[np.ndarray], fill_value: int = 0
 ) -> list[np.ndarray]:
+    """Pad arrays to the same shape with a fill value."""
     shapes = [arr.shape for arr in arrays]
     if len(set(shapes)) == 1:
         return arrays
@@ -26,7 +29,49 @@ def maybe_pad_with_fill_value(
     return padded_arrays
 
 
+def maybe_pad_by_duplicating_atoms(
+    arrays: list[np.ndarray], fill_value: int = 0
+) -> list[np.ndarray]:
+    """Pad arrays to the same shape, duplicating atoms to fill the required shape.
+
+    Fill values are used to pad arrays of larger shapes.
+    """
+    arrays = [np.atleast_1d(arr) for arr in arrays]
+    reversed_shape_iters = [reversed(arr.shape) for arr in arrays]
+    ndim = max(arr.ndim for arr in arrays)
+
+    trailing_dims = [
+        max(shape)
+        for shape in itertools.zip_longest(*reversed_shape_iters, fillvalue=1)
+    ]
+    trailing_dims.reverse()
+    trailing_dims = trailing_dims[1:]  # ignore dimension that we will concatenate along
+
+    padded_arrays = []
+
+    for arr in arrays:
+        if arr.shape == (1,):
+            padded = np.full((1,) + tuple(trailing_dims), arr[0], dtype=arr.dtype)
+
+        else:
+            arr = increase_ndim(arr, ndim)
+            padded = np.pad(
+                arr,
+                [(0, 0)] + [(0, d - s) for s, d in zip(arr.shape[1:], trailing_dims)],
+                constant_values=fill_value,
+            )
+
+        padded_arrays.append(padded)
+
+    return padded_arrays
+
+
 def maybe_parenthesise_verb_spelling(spelling: str) -> str:
     if spelling.startswith("(") and spelling.endswith(")"):
         return spelling
     return f"({spelling})" if " " in spelling else spelling
+
+
+def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
+    idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
+    return y[idx]

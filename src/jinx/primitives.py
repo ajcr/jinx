@@ -335,6 +335,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
     ),
     Conjunction("&.:", "AMPDOTCO"),
+    Conjunction("&.", "AMPDOT"),
     Verb(
         "{.",
         "CURLYLFDOT",

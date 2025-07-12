@@ -884,6 +884,12 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
+def ampdot_conjunction(u: Verb, v: Verb) -> Verb:
+    """&. conjunction: u&.v is equivalent to (u&.:v)"mv , where mv is the monadic rank of v."""
+    verb = ampdotco_conjunction(u, v)
+    return _modify_rank(verb, v.monad.rank)
+
+
 def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
     """^: conjunction: power of verb."""
 
@@ -1044,6 +1050,7 @@ PRIMITIVE_MAP = {
     "AT": at_conjunction,
     "ATCO": atco_conjunction,
     "AMPM": ampm_conjunction,
+    "AMPDOT": ampdot_conjunction,
     "AMPDOTCO": ampdotco_conjunction,
     "HATCO": hatco_conjunction,
 }

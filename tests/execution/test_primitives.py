@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from src.jinx.execution.conversion import box_dtype
-from src.jinx.execution.primitives import (
+from src.jinx.execution.verbs import (
     comma_dyad,
     dollar_dyad,
     dollar_monad,

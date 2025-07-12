@@ -5,13 +5,12 @@ from jinx.errors import LengthError
 from src.jinx.execution.application import (
     maybe_pad_with_fill_value,
     apply_dyad,
-    # ensure_verb_implementation,
 )
 from src.jinx.vocabulary import Array, DataType
 from src.jinx.execution.primitives import (
-    rank_conjunction,
     PRIMITIVE_MAP as PRIMITIVE_MAP_NP,
 )
+from src.jinx.execution.conjunctions import rank_conjunction
 from src.jinx.primitives import PRIMITIVE_MAP
 
 

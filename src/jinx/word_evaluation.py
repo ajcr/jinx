@@ -67,7 +67,7 @@ def evaluate_single_verb_sentence(sentence: str) -> Verb:
 
 def build_verb_noun_phrase(
     words: list[Verb | Noun | Adverb | Conjunction],
-) -> Verb | Noun:
+) -> Verb | Noun | None:
     """Build the verb or noun phrase from a list of words, or raise an error."""
     while len(words) > 1:
         match words:
@@ -82,7 +82,10 @@ def build_verb_noun_phrase(
             case _:
                 raise EvaluationError("Unable to build verb/noun phrase")
 
-    if isinstance(words[0], (Verb, Noun)):
+    if not words:
+        return None
+
+    if isinstance(words[0], Verb | Noun):
         return words[0]
 
     raise EvaluationError("Unable to build verb/noun phrase")

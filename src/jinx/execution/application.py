@@ -40,10 +40,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     else:
         function = verb.monad.function
 
-    noun_rank = arr.ndim
-    verb_rank = verb.monad.rank
-
-    rank = get_rank(verb_rank, noun_rank)
+    rank = get_rank(verb.monad.rank, arr.ndim)
 
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way

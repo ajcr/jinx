@@ -27,6 +27,13 @@ def get_rank(verb_rank: int, noun_rank: int) -> int:
     return min(verb_rank, noun_rank)
 
 
+def fill_and_assemble(
+    cells: list[np.ndarray], frame_shape: tuple[int, ...]
+) -> np.ndarray:
+    cells = maybe_pad_with_fill_value(cells)
+    return np.asarray(cells).reshape(frame_shape + cells[0].shape)
+
+
 def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
     arr = noun.implementation
 
@@ -68,13 +75,8 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
         frame_shape = arr.shape[:-rank]
         arr_reshaped = arr.reshape(-1, *cell_shape)
 
-    # Apply the function to each cell of the reshaped array, then add any
-    # padding needed to make all cells the same shape. Put the cells into
-    # the frame and return the result.
     cells = [function(cell) for cell in arr_reshaped]
-    cells = maybe_pad_with_fill_value(cells)
-    result = np.asarray(cells).reshape(frame_shape + cells[0].shape)
-    return result
+    return fill_and_assemble(cells, frame_shape)
 
 
 def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
@@ -123,9 +125,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
                 left_arr_reshaped, right_arr_reshaped, strict=True
             )
         ]
-        cells = maybe_pad_with_fill_value(cells)
-        result = np.asarray(cells).reshape(left_frame_shape + cells[0].shape)
-        return result
+        return fill_and_assemble(cells, left_frame_shape)
 
     # Otherwise we need to find the common frame shape. One of the frame shapes must
     # be a prefix of the other, otherwise it's not possible to apply the dyad.

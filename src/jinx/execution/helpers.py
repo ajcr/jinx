@@ -13,13 +13,13 @@ def maybe_pad_with_fill_value(
     if len(set(shapes)) == 1:
         return arrays
 
-    if len({len(shape) for shape in shapes}) != 1:
-        raise NotImplementedError("Cannot pad arrays of different ranks")
-
-    dims = [max(dim) for dim in zip(*shapes)]
+    dims = [max(dim) for dim in itertools.zip_longest(*shapes, fillvalue=1)]
     padded_arrays = []
 
     for arr in arrays:
+        if arr.shape == () or np.isscalar(arr):
+            arr = np.atleast_1d(arr)
+
         pad_widths = [(0, dim - shape) for shape, dim in zip(arr.shape, dims)]
         padded_array = np.pad(
             arr, pad_widths, mode="constant", constant_values=fill_value

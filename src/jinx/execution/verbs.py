@@ -108,7 +108,7 @@ def lt_monad(y: np.ndarray) -> np.ndarray:
 
 
 def gt_monad(y: np.ndarray) -> np.ndarray:
-    """< monad: open a boxed element or array of boxed elements."""
+    """> monad: open a boxed element or array of boxed elements."""
     if not is_box(y):
         return y
     elements = [np.asarray(item[0]) for item in y.ravel().tolist()]

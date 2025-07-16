@@ -294,6 +294,20 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
     return np.flip(result, axes_to_flip)
 
 
+def icapdot_monad(y: np.ndarray) -> np.ndarray:
+    """I. monad: return indexes of every 1 in the Boolean list y."""
+    arr = np.atleast_1d(y)
+    if not np.issubdtype(y.dtype, np.integer):
+        raise DomainError("y has nonintegral value")
+
+    if np.any(arr < 0):
+        raise DomainError("y has negative values")
+
+    indexes = np.where(arr)[0]
+    nonzero = arr[indexes]
+    return np.repeat(indexes, nonzero)
+
+
 def number_monad(y: np.ndarray) -> np.ndarray:
     """# monad: count number of items in y."""
     if np.isscalar(y) or y.shape == ():
@@ -503,6 +517,7 @@ VERB_MAP = {
     "GTDOT": (np.ceil, np.maximum),
     "GTCO": (gtco_monad, np.greater_equal),
     "IDOT": (idot_monad, NotImplemented),
+    "ICAPDOT": (icapdot_monad, NotImplemented),
     "TILDEDOT": (tildedot_monad, None),
     "TILDECO": (tildeco_monad, np.not_equal),
     "COMMA": (comma_monad, comma_dyad),

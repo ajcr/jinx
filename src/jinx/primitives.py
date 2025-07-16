@@ -208,6 +208,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             is_commutative=False,
         ),
     ),
+    Verb(
+        "I.",
+        "ICAPDOT",
+        monad=Monad(name="Indices", rank=1),
+        dyad=Dyad(
+            name="Interval Index",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+        obverse="(+/ @:(=/ i.@>:@(>./)@(0&,)))",
+    ),
     Adverb(
         "/",
         "SLASH",

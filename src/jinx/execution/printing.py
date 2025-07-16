@@ -86,3 +86,34 @@ def ndim_n_to_string(arr: np.ndarray, append_ellipsis: bool) -> str:
 
     sep = os.linesep * (arr.ndim - 1)
     return sep.join(subarrays)
+
+
+def infer_print_height(array: np.ndarray) -> int:
+    """Infer the height of the printed array."""
+    if array.ndim <= 1:
+        return 1
+
+    shape = list(array.shape[:-1])
+    height = 1
+    sep = 0
+
+    while shape:
+        dim = shape.pop()
+        height *= dim
+        height += (dim - 1) * sep
+        sep += 1
+
+    return height
+
+
+BOX_TOP_LEFT = "┌"
+BOX_TOP_RIGHT = "┐"
+BOX_BOTTOM_LEFT = "└"
+BOX_BOTTOM_RIGHT = "┘"
+BOX_HORIZONTAL = "─"
+BOX_VERTICAL = "│"
+BOX_T = "┬"
+BOX_T_90 = "┤"
+BOX_T_180 = "┴"
+BOX_T_270 = "├"
+BOX_CROSS = "┼"

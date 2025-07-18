@@ -26,6 +26,9 @@ class Shell(cmd.Cmd):
         except BaseJError as e:
             print(e, file=sys.stderr)
 
+    def do_EOF(self, _):
+        return True
+
 
 def main():
     try:

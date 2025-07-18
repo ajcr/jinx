@@ -28,7 +28,10 @@ class Shell(cmd.Cmd):
 
 
 def main():
-    Shell().cmdloop()
+    try:
+        Shell().cmdloop()
+    except EOFError:
+        return None
 
 
 if __name__ == "__main__":

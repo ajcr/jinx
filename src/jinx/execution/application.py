@@ -11,7 +11,7 @@ import functools
 import numpy as np
 
 from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad, Atom, Array
-from jinx.errors import LengthError
+from jinx.errors import LengthError, ValenceError, JinxNotImplementedError
 from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value
 
@@ -42,6 +42,13 @@ def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
 
 
 def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
+    if verb.monad is None or verb.monad.function is None:
+        raise ValenceError(f"Verb {verb.spelling} has no monadic valence.")
+    if verb.monad.function is NotImplemented:
+        raise JinxNotImplementedError(
+            f"Verb {verb.spelling} monad function is not yet implemented in Jinx."
+        )
+
     if isinstance(verb.monad.function, Verb):
         function = functools.partial(_apply_monad, verb.monad.function)
     else:
@@ -88,6 +95,13 @@ def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
 
 
 def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.ndarray:
+    if verb.dyad is None or verb.dyad.function is None:
+        raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
+    if verb.dyad.function is NotImplemented:
+        raise JinxNotImplementedError(
+            f"Verb {verb.spelling} dyad function is not yet implemented."
+        )
+
     if isinstance(verb.dyad.function, Verb):
         function = functools.partial(_apply_dyad, verb.dyad.function)
     else:

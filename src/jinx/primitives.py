@@ -293,6 +293,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         dyad=Dyad(name="Copy", left_rank=1, right_rank=INFINITY, is_commutative=False),
     ),
     Verb(
+        "#.",
+        "NUMBERDOT",
+        monad=Monad(name="Base 2", rank=1),
+        dyad=Dyad(
+            name="Base",
+            left_rank=1,
+            right_rank=1,
+            is_commutative=False,
+        ),
+        # obverse="#:",  # Not yet implemented
+    ),
+    Verb(
         "[",
         "SQUARELF",
         monad=Monad(name="Same", rank=INFINITY),

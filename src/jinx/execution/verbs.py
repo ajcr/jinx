@@ -320,6 +320,30 @@ def number_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.repeat(y, x, axis=0)
 
 
+def numberdot_monad(y: np.ndarray) -> np.ndarray:
+    """#. monad: return corresponding number of a binary numeral."""
+    y = np.atleast_1d(y)
+    weights = 2 ** np.arange(y.size, dtype=np.int64)[::-1]
+    return np.dot(y, weights)
+
+
+def numberdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """#. monad: generalizes #.y to bases other than 2 (including mixed bases)."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if 1 < len(x) != len(y):
+        raise LengthError(
+            f"Error executing dyad #. shapes {len(x)} and {len(y)} do not conform"
+        )
+
+    if len(x) == 1:
+        x = np.full_like(y, x[0], dtype=np.int64)
+
+    weights = np.multiply.accumulate(x[1:][::-1])[::-1]
+    return np.dot(y[:-1], weights) + y[-1]
+
+
 def squarelf_monad(y: np.ndarray) -> np.ndarray:
     """[ monad: returns the whole array."""
     return y
@@ -526,6 +550,7 @@ VERB_MAP = {
     "BARDOT": (np.flip, bardot_dyad),
     "BARCO": (np.transpose, barco_dyad),
     "NUMBER": (number_monad, number_dyad),
+    "NUMBERDOT": (numberdot_monad, numberdot_dyad),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     "SLASHCO": (slashco_monad, slashco_dyad),

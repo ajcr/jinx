@@ -282,6 +282,7 @@ def test_comma_dyad_joins_boxes():
     ["y", "expected"],
     [
         pytest.param(np.array(0), np.array([0]), id="#: 0"),
+        pytest.param(np.array(-2), np.array([1, 0]), id="#: _2"),
         pytest.param(np.array(5), np.array([1, 0, 1]), id="#: 5"),
         pytest.param(np.array([4]), np.array([1, 0, 0]), id="#: 4"),
         pytest.param(np.array(-7), np.array([0, 0, 1]), id="#: _7"),

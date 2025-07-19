@@ -356,15 +356,15 @@ def numberco_monad(y: np.ndarray) -> np.ndarray:
     else:
         is_y_floating = False
 
+    if np.all(y == 0):
+        max_bits = 1
+    else:
+        max_bits = np.floor(np.log2(np.max(np.abs(y)))).astype(int) + 1
+
     # Convert negative numbers to two's complement form.
     # They become positive, and then the bits are inverted.
     is_negative = y < 0
     y[is_negative] = ~y[is_negative]
-
-    if np.all(y == 0):
-        max_bits = 1
-    else:
-        max_bits = np.floor(np.log2(np.max(y))).astype(int) + 1
 
     remainders = []
 

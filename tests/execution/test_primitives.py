@@ -10,6 +10,7 @@ from src.jinx.execution.verbs import (
     lt_monad,
     slashco_monad,
     bslashco_monad,
+    numberco_monad,
 )
 
 
@@ -275,3 +276,36 @@ def test_comma_dyad_joins_boxes():
     assert result.dtype == box_dtype
     assert result[0][0] is expected[0].item()[0]
     assert result[1][0] is expected[1].item()[0]
+
+
+@pytest.mark.parametrize(
+    ["y", "expected"],
+    [
+        pytest.param(np.array(0), np.array([0]), id="#: 0"),
+        pytest.param(np.array(5), np.array([1, 0, 1]), id="#: 5"),
+        pytest.param(np.array([4]), np.array([1, 0, 0]), id="#: 4"),
+        pytest.param(np.array(-7), np.array([0, 0, 1]), id="#: _7"),
+        pytest.param(np.array(-8.1), np.array([0, 1, 1, 1.9]), id="#: _8.1"),
+        pytest.param(np.array(5.32), np.array([1, 0, 1.32]), id="#: 5.32"),
+        pytest.param(
+            np.array([1, 2, 3]),
+            np.array([[0, 1], [1, 0], [1, 1]]),
+            id="#: 1 2 3",
+        ),
+        pytest.param(
+            np.array([[3, -6], [0, 9]]),
+            np.array([[[0, 0, 1, 1], [1, 0, 1, 0]], [[0, 0, 0, 0], [1, 0, 0, 1]]]),
+            id="#: (2 2 $ 3 _6 0 9)",
+        ),
+        pytest.param(
+            np.array([[[4.2, -1.1]], [[4.2, -1.1]]]),
+            np.array([[[[1, 0, 0.2], [1, 1, 0.9]]], [[[1, 0, 0.2], [1, 1, 0.9]]]]),
+            id="#: (2 1 2 $ 4.2, _1.1)",
+        ),
+    ],
+)
+def test_numberco_monad(y, expected):
+    result = numberco_monad(y)
+    assert result.shape == expected.shape
+    assert result.dtype == expected.dtype
+    assert np.allclose(result, expected)

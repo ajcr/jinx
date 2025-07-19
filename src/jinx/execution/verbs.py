@@ -344,6 +344,48 @@ def numberdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.dot(y[:-1], weights) + y[-1]
 
 
+def numberco_monad(y: np.ndarray) -> np.ndarray:
+    """#: monad: return the binary expansion of y as a boolean list."""
+    y = np.atleast_1d(y)
+
+    if np.issubdtype(y.dtype, np.floating):
+        is_y_floating = True
+        floor_y = np.floor(y)
+        fractional_part = y - floor_y
+        y = floor_y.astype(np.int64)
+    else:
+        is_y_floating = False
+
+    # Convert negative numbers to two's complement form.
+    # They become positive, and then the bits are inverted.
+    is_negative = y < 0
+    y[is_negative] = ~y[is_negative]
+
+    if np.all(y == 0):
+        max_bits = 1
+    else:
+        max_bits = np.floor(np.log2(np.max(y))).astype(int) + 1
+
+    remainders = []
+
+    for _ in range(max_bits):
+        bits = y % 2
+        y >>= 1
+        remainders.append(bits)
+
+    result = np.stack(remainders[::-1], axis=-1)
+    result[is_negative] = 1 - result[is_negative]
+
+    if is_y_floating:
+        result = result.astype(np.float64)
+        result[..., -1] += fractional_part
+
+    if result.ndim > 1 and result.shape[0] == 1:
+        result = result.reshape(result.shape[1:])
+
+    return result
+
+
 def squarelf_monad(y: np.ndarray) -> np.ndarray:
     """[ monad: returns the whole array."""
     return y
@@ -551,6 +593,7 @@ VERB_MAP = {
     "BARCO": (np.transpose, barco_dyad),
     "NUMBER": (number_monad, number_dyad),
     "NUMBERDOT": (numberdot_monad, numberdot_dyad),
+    "NUMBERCO": (numberco_monad, NotImplemented),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),
     "SLASHCO": (slashco_monad, slashco_dyad),

@@ -302,7 +302,19 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             right_rank=1,
             is_commutative=False,
         ),
-        # obverse="#:",  # Not yet implemented
+        obverse="#:",
+    ),
+    Verb(
+        "#:",
+        "NUMBERCO",
+        monad=Monad(name="Antibase 2", rank=INFINITY),
+        dyad=Dyad(
+            name="Antibase",
+            left_rank=1,
+            right_rank=0,
+            is_commutative=False,
+        ),
+        obverse="#.",
     ),
     Verb(
         "[",

@@ -297,7 +297,7 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
 def icapdot_monad(y: np.ndarray) -> np.ndarray:
     """I. monad: return indexes of every 1 in the Boolean list y."""
     arr = np.atleast_1d(y)
-    if not np.issubdtype(y.dtype, np.integer):
+    if not (np.issubdtype(y.dtype, np.integer) or np.issubdtype(y.dtype, np.bool_)):
         raise DomainError("y has nonintegral value")
 
     if np.any(arr < 0):

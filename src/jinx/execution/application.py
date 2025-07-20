@@ -244,7 +244,6 @@ def build_hook(f: Verb, g: Verb) -> Verb:
 
     f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
     g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
-
     spelling = f"{f_spelling} {g_spelling}"
 
     return Verb(
@@ -276,6 +275,10 @@ def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
     """
 
     def _monad(y: np.ndarray) -> np.ndarray:
+        if isinstance(f, Verb) and f.spelling == "[:":
+            hy = _apply_monad(h, y)
+            return _apply_monad(g, hy)
+
         if isinstance(f, Verb):
             a = _apply_monad(f, y)
         else:
@@ -284,6 +287,10 @@ def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
         return _apply_dyad(g, a, b)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        if isinstance(f, Verb) and f.spelling == "[:":
+            hy = _apply_dyad(h, x, y)
+            return _apply_monad(g, hy)
+
         if isinstance(f, Verb):
             a = _apply_dyad(f, x, y)
         else:
@@ -295,9 +302,9 @@ def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
         f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
     else:
         f_spelling = f.implementation
+
     g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
     h_spelling = f"({h.spelling})" if " " in h.spelling else h.spelling
-
     spelling = f"{f_spelling} {g_spelling} {h_spelling}"
 
     return Verb(

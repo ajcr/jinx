@@ -17,7 +17,7 @@ import math
 
 import numpy as np
 
-from jinx.errors import DomainError, JIndexError, LengthError
+from jinx.errors import DomainError, JIndexError, LengthError, ValenceError
 from jinx.execution.conversion import box_dtype, is_box
 from jinx.execution.helpers import (
     increase_ndim,
@@ -399,6 +399,16 @@ def squarelf_dyad(x: np.ndarray, _: np.ndarray) -> np.ndarray:
 squarerf_monad = squarelf_monad
 
 
+def squarerfco_monad(y: np.ndarray) -> np.ndarray:
+    """[: monad: raise a ValenceError."""
+    raise ValenceError("[: must be part of a capped fork.")
+
+
+def squarerfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """[: dyad: raise a ValenceError."""
+    raise ValenceError("[: must be part of a capped fork.")
+
+
 def squarerf_dyad(_: np.ndarray, y: np.ndarray) -> np.ndarray:
     """] dyad: returns y."""
     return y
@@ -596,6 +606,7 @@ VERB_MAP = {
     "NUMBERCO": (numberco_monad, NotImplemented),
     "SQUARELF": (squarelf_monad, squarelf_dyad),
     "SQUARERF": (squarerf_monad, squarerf_dyad),
+    "SQUARERFCO": (squarerfco_monad, squarerfco_dyad),
     "SLASHCO": (slashco_monad, slashco_dyad),
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
     "BANG": (bang_monad, bang_dyad),

@@ -326,6 +326,11 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="[",
     ),
     Verb(
+        "[:",
+        "SQUARELFCO",
+        monad=Monad(name="Cap", rank=INFINITY),
+    ),
+    Verb(
         "]",
         "SQUARERF",
         monad=Monad(name="Same", rank=INFINITY),

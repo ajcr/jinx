@@ -202,7 +202,10 @@ def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
     # In J, '0 | y' is y, not 0.
-    return np.where(x, np.mod(y, x), y)[0]
+    result = np.where(x, np.mod(y, x), y)
+    if result.ndim == 1 and result.shape[0] == 1:
+        return result[0]
+    return result
 
 
 def bardot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

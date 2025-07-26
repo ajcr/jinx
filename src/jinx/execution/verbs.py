@@ -277,7 +277,7 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         if is_box(y):
             result = np.array([y] * np.prod(x_shape), dtype=box_dtype).reshape(x_shape)
         else:
-            result = np.empty(x_shape, dtype=x.dtype)
+            result = np.empty(x_shape, dtype=y.dtype)
             result[:] = y
         return result
 

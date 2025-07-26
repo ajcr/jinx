@@ -81,7 +81,7 @@ def spell_quoted(word: Word) -> Atom | Array:
     data = word.value[1:-1]
     if len(data) <= 1:
         return Atom(data_type=DataType.Byte, data=data)
-    return Array(data_type=DataType.Byte, data=data)
+    return Array(data_type=DataType.Byte, data=list(data))
 
 
 PRIMITIVE_MAP = {primitive.spelling: primitive for primitive in PRIMITIVES}

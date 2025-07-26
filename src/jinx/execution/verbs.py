@@ -199,7 +199,10 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """| dyad: remainder when dividing y by x."""
-    return np.mod(y, x)
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    # In J, '0 | y' is y, not 0.
+    return np.where(x, np.mod(y, x), y)[0]
 
 
 def bardot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

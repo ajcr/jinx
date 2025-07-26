@@ -7,7 +7,7 @@ import numpy as np
 
 from jinx.vocabulary import Verb, Monad, Dyad
 from jinx.errors import DomainError, ValenceError
-from jinx.execution.application import _apply_dyad
+from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
@@ -85,7 +85,7 @@ def bslash_adverb(verb: Verb) -> Verb:
             y = np.atleast_1d(y)
             result = []
             for i in range(1, len(y) + 1):
-                result.append(verb.monad.function(y[:i]))
+                result.append(_apply_monad(verb, y[:i]))
             result = maybe_pad_with_fill_value(result, fill_value=0)
             return np.asarray(result)
 
@@ -106,7 +106,7 @@ def bslash_adverb(verb: Verb) -> Verb:
 
         result = []
         for window in windows:
-            result.append(verb.monad.function(window))
+            result.append(_apply_monad(verb, window))
         result = maybe_pad_with_fill_value(result, fill_value=0)
         return np.asarray(result)
 
@@ -122,13 +122,24 @@ def bslash_adverb(verb: Verb) -> Verb:
 
 
 def bslashdot_adverb(verb: Verb) -> Verb:
-    def monad_(y: np.ndarray) -> np.ndarray:
-        y = np.atleast_1d(y)
-        result = []
-        for i in range(len(y)):
-            result.append(verb.monad.function(y[i:]))
-        result = maybe_pad_with_fill_value(result, fill_value=0)
-        return np.asarray(result)
+    SPECIAL_MONAD = {
+        "+/": lambda x: np.add.accumulate(x[::-1])[::-1],
+        "*/": lambda x: np.multiply.accumulate(x[::-1])[::-1],
+        "<./": lambda x: np.minimum.accumulate(x[::-1])[::-1],
+        ">./": lambda x: np.maximum.accumulate(x[::-1])[::-1],
+    }
+
+    if verb.spelling in SPECIAL_MONAD:
+        monad_ = SPECIAL_MONAD[verb.spelling]
+    else:
+
+        def monad_(y: np.ndarray) -> np.ndarray:
+            y = np.atleast_1d(y)
+            result = []
+            for i in range(len(y)):
+                result.append(_apply_monad(verb, y[i:]))
+            result = maybe_pad_with_fill_value(result, fill_value=0)
+            return np.asarray(result)
 
     def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         if not np.issubdtype(x.dtype, np.integer):
@@ -151,7 +162,7 @@ def bslashdot_adverb(verb: Verb) -> Verb:
 
         result = []
         for window in windows:
-            result.append(verb.monad.function(window))
+            result.append(_apply_monad(verb, window))
         result = maybe_pad_with_fill_value(result, fill_value=0)
         return np.asarray(result)
 

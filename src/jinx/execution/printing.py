@@ -28,10 +28,10 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
         rounded = [format_float(n) for n in arr.ravel().tolist()]
         arr = np.asarray(rounded).reshape(arr.shape)
 
-    if np.issubdtype(arr.dtype, np.bool_):
+    elif np.issubdtype(arr.dtype, np.bool_):
         arr = arr.view(np.int8)
 
-    if np.issubdtype(arr.dtype, np.str_):
+    elif np.issubdtype(arr.dtype, np.str_):
         width = arr.shape[-1]
         arr = arr.view(f"<U{width}")
 

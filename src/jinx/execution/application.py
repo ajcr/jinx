@@ -13,7 +13,7 @@ import numpy as np
 from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad, Atom, Array
 from jinx.errors import LengthError, ValenceError, JinxNotImplementedError
 from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
-from jinx.execution.helpers import maybe_pad_with_fill_value
+from jinx.execution.helpers import maybe_pad_with_fill_value, is_ufunc_based
 
 
 def get_rank(verb_rank: int, noun_rank: int) -> int:
@@ -59,7 +59,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     # If the verb rank is 0 it applies to each atom of the array.
     # NumPy's unary ufuncs are typically designed to work this way
     # Apply the function directly here as an optimisation.
-    if rank == 0 and is_ufunc(function):
+    if rank == 0 and (is_ufunc(function) or is_ufunc_based(function)):
         return function(arr)
 
     # Look at the shape of the array and the rank of the verb to
@@ -114,7 +114,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     # apply the dyad directly as an optimisation.
     if (
         left_rank == right_rank == 0
-        and is_ufunc(function)
+        and (is_ufunc(function) or is_ufunc_based(function))
         and (left_arr.ndim == 0 or right_arr.ndim == 0)
     ):
         return function(left_arr, right_arr)

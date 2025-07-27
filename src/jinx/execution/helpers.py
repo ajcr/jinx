@@ -1,6 +1,7 @@
 """Helper methods for manipulating arrays."""
 
 import itertools
+from typing import Callable, Any
 
 import numpy as np
 
@@ -75,3 +76,20 @@ def maybe_parenthesise_verb_spelling(spelling: str) -> str:
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]
+
+
+def mark_ufunc_based(function: Callable[..., Any]) -> bool:
+    """Mark a function as a ufunc-based function.
+
+    This is used to identify functions that are typically composed of ufuncs
+    and can be applied directly to NumPy arrays by the verb-application methods.
+
+    This greatly speeds up application of some verbs.
+    """
+    function._is_ufunc_based = True
+    return function
+
+
+def is_ufunc_based(function: Callable[..., Any]) -> bool:
+    """Check if a function is a ufunc-based function."""
+    return getattr(function, "_is_ufunc_based", False)

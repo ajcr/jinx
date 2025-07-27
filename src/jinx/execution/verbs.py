@@ -23,6 +23,7 @@ from jinx.execution.helpers import (
     increase_ndim,
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
+    mark_ufunc_based,
 )
 
 
@@ -38,12 +39,14 @@ def eq_monad(y: np.ndarray) -> np.ndarray:
     return np.asarray(result).astype(np.int64)
 
 
+@mark_ufunc_based
 def percent_monad(y: np.ndarray) -> np.ndarray:
     """% monad: returns the reciprocal of the array."""
     # N.B. np.reciprocal does not support integer types, use division instead.
     return 1 / y
 
 
+@mark_ufunc_based
 def percentco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.power(y, 1 / x)
 
@@ -54,16 +57,19 @@ def plusdot_monad(y: np.ndarray) -> np.ndarray:
     return np.concatenate([np.real(y), np.imag(y)], axis=-1)
 
 
+@mark_ufunc_based
 def plusco_monad(y: np.ndarray) -> np.ndarray:
     """+: monad: double the values in the array."""
     return 2 * y
 
 
+@mark_ufunc_based
 def minusdot_monad(y: np.ndarray) -> np.ndarray:
     """-.: monad: returns 1 - y."""
     return 1 - y
 
 
+@mark_ufunc_based
 def minusco_monad(y: np.ndarray) -> np.ndarray:
     """-: monad: halve the values in the array."""
     return y / 2
@@ -75,6 +81,7 @@ def minusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(is_equal)
 
 
+@mark_ufunc_based
 def plusco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """+: dyad: not-or operation."""
     # N.B. This is not the same as the J implementation which forbids values
@@ -90,6 +97,7 @@ def stardot_monad(y: np.ndarray) -> np.ndarray:
     return np.concatenate([r, theta])
 
 
+@mark_ufunc_based
 def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """*: dyad: not-and operation."""
     # N.B. This is not the same as the J implementation which forbids values
@@ -97,6 +105,7 @@ def starco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return ~np.logical_and(x, y).astype(np.int64)
 
 
+@mark_ufunc_based
 def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """^. dyad: logarithm of y to the base x."""
     return np.log(y) / np.log(x)
@@ -116,11 +125,13 @@ def gt_monad(y: np.ndarray) -> np.ndarray:
     return np.asarray(elements_padded).squeeze()
 
 
+@mark_ufunc_based
 def ltco_monad(y: np.ndarray) -> np.ndarray:
     """<: monad: decrements the array."""
     return y - 1
 
 
+@mark_ufunc_based
 def gtco_monad(y: np.ndarray) -> np.ndarray:
     """>: monad: increments the array."""
     return y + 1
@@ -197,6 +208,7 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(result)
 
 
+@mark_ufunc_based
 def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """| dyad: remainder when dividing y by x."""
     x = np.atleast_1d(x)
@@ -392,11 +404,13 @@ def numberco_monad(y: np.ndarray) -> np.ndarray:
     return result
 
 
+@mark_ufunc_based
 def squarelf_monad(y: np.ndarray) -> np.ndarray:
     """[ monad: returns the whole array."""
     return y
 
 
+@mark_ufunc_based
 def squarelf_dyad(x: np.ndarray, _: np.ndarray) -> np.ndarray:
     """[ dyad: returns x."""
     return x

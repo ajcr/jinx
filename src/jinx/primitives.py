@@ -340,6 +340,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="]",
     ),
     Conjunction("&", "AMPM"),
+    Adverb(
+        "/.",
+        "SLASHDOT",
+        monad=Monad(name="Oblique", rank=INFINITY),
+        dyad=Dyad(
+            name="Key",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+    ),
     Verb(
         "/:",
         "SLASHCO",

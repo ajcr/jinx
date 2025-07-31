@@ -6,7 +6,7 @@ import functools
 import numpy as np
 
 from jinx.vocabulary import Verb, Monad, Dyad
-from jinx.errors import DomainError, ValenceError
+from jinx.errors import DomainError, ValenceError, JinxNotImplementedError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import (
@@ -262,8 +262,44 @@ def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
     )
 
 
+def slashdot_adverb(verb: Verb) -> Verb:
+    def monad(y: np.ndarray) -> np.ndarray:
+        y = np.atleast_1d(y)
+
+        if y.ndim == 1:
+            result = [_apply_monad(verb, item) for item in y]
+        elif y.ndim <= 3:
+            result = []
+            for offset in range(1 - y.shape[0], y.shape[1]):
+                item = np.diagonal(y[::-1], offset).T[::-1]
+                result.append(_apply_monad(verb, item))
+        else:
+            JinxNotImplementedError(
+                f"Monad {verb.spelling} dooes not yet support array rank > 3."
+            )
+
+        result = maybe_pad_with_fill_value(result, fill_value=0)
+        return np.asarray(result)
+
+    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
+    spelling = f"{verb.spelling}/."
+
+    return Verb(
+        name=spelling,
+        spelling=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad),
+        dyad=Dyad(
+            name=spelling,
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            function=NotImplemented,
+        ),
+    )
+
+
 ADVERB_MAP = {
     "SLASH": slash_adverb,
+    "SLASHDOT": slashdot_adverb,
     "BSLASH": bslash_adverb,
     "BSLASHDOT": bslashdot_adverb,
     "TILDE": tilde_adverb,

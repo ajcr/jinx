@@ -29,6 +29,9 @@ class Shell(cmd.Cmd):
     def do_EOF(self, _):
         return True
 
+    def do_help(self, line):
+        return self.default("?" + line)
+
 
 def main():
     try:

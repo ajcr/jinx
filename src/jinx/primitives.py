@@ -411,6 +411,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             is_commutative=False,
         ),
     ),
+    Verb(
+        "?",
+        "QUERY",
+        monad=Monad(name="Roll", rank=0),
+        dyad=Dyad(
+            name="Deal",
+            left_rank=0,
+            right_rank=0,
+            is_commutative=False,
+        ),
+    ),
 ]
 
 

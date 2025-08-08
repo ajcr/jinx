@@ -14,6 +14,7 @@ as their J counterparts.
 
 import itertools
 import math
+import random
 
 import numpy as np
 
@@ -587,6 +588,41 @@ def semi_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.concatenate([x, y], axis=0)
 
 
+def query_monad(y: np.ndarray) -> np.ndarray:
+    """? monad: generates a random number uniformly distributed in a range determined by integer y."""
+    if not np.issubdtype(y.dtype, np.integer) or y < 0:
+        raise DomainError("y must be a positive integer")
+
+    if y == 0:
+        result = random.random()
+
+    elif y == 1:
+        result = 0
+
+    elif y == 2:
+        result = random.choice([0, 1])
+
+    else:
+        result = random.randint(0, y)
+
+    return np.asarray(result)
+
+
+def query_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """? dyad: select x items at random from list i.y."""
+    if not np.issubdtype(y.dtype, np.integer) or y < 0:
+        raise DomainError("y must be a positive integer")
+
+    if not np.issubdtype(x.dtype, np.integer) or x < 0:
+        raise DomainError("x must be a positive integer")
+
+    if x == 0:
+        # This should return "empty" but Jinx does not have a concept of empty.
+        return np.asarray(0)
+
+    return np.random.choice(y, size=x, replace=False)
+
+
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
 # Use None for monadic or dyadic valences of the verb do not exist in J.
 VERB_MAP = {
@@ -632,4 +668,5 @@ VERB_MAP = {
     "BANG": (bang_monad, bang_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
     "SEMI": (semi_monad, semi_dyad),
+    "QUERY": (query_monad, query_dyad),
 }

@@ -6,7 +6,7 @@ import functools
 import numpy as np
 
 from jinx.vocabulary import Verb, Monad, Dyad
-from jinx.errors import DomainError, ValenceError, JinxNotImplementedError, LengthError
+from jinx.errors import DomainError, ValenceError, JinxNotImplementedError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import (

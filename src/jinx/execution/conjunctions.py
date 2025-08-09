@@ -276,7 +276,7 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
         return u
 
     if np.isinf(exponent.implementation).any():
-        raise NotImplementedError(f"^: with infinite exponent is not yet implemented")
+        raise NotImplementedError("^: with infinite exponent is not yet implemented")
 
     if not np.issubdtype(exponent.implementation.dtype, np.integer):
         raise DomainError(

@@ -52,7 +52,7 @@ def maybe_pad_by_duplicating_atoms(
 
     for arr in arrays:
         if arr.shape == (1,):
-            padded = np.full((1,) + tuple(trailing_dims), arr[0], dtype=arr.dtype)
+            padded = np.full((1, *trailing_dims), arr[0], dtype=arr.dtype)
 
         else:
             arr = increase_ndim(arr, ndim)

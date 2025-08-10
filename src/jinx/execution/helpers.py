@@ -6,8 +6,18 @@ from typing import Callable, Any
 import numpy as np
 
 
+def get_fill_value(array: np.ndarray) -> int | str:
+    """Get the fill value for an array."""
+    if np.issubdtype(array.dtype, np.number):
+        return 0
+    elif np.issubdtype(array.dtype, np.str_):
+        return " "
+    raise NotImplementedError(f"Fill value for dtype {array.dtype} is not known.")
+
+
 def maybe_pad_with_fill_value(
-    arrays: list[np.ndarray], fill_value: int = 0
+    arrays: list[np.ndarray],
+    fill_value: Any = None,
 ) -> list[np.ndarray]:
     """Pad arrays to the same shape with a fill value."""
     shapes = [arr.shape for arr in arrays]
@@ -22,6 +32,7 @@ def maybe_pad_with_fill_value(
             arr = np.atleast_1d(arr)
 
         pad_widths = [(0, dim - shape) for shape, dim in zip(arr.shape, dims)]
+        fill_value = fill_value if fill_value is not None else get_fill_value(arr)
         padded_array = np.pad(
             arr, pad_widths, mode="constant", constant_values=fill_value
         )
@@ -32,7 +43,7 @@ def maybe_pad_with_fill_value(
 
 def maybe_pad_by_duplicating_atoms(
     arrays: list[np.ndarray],
-    fill_value: int = 0,
+    fill_value: Any = None,
     ignore_first_dim: bool = True,
 ) -> list[np.ndarray]:
     """Pad arrays to the same shape, duplicating atoms to fill the required shape.
@@ -72,6 +83,7 @@ def maybe_pad_by_duplicating_atoms(
             else:
                 padding = [(0, d - s) for s, d in zip(arr.shape, trailing_dims)]
 
+            fill_value = fill_value if fill_value is not None else get_fill_value(arr)
             padded = np.pad(arr, padding, constant_values=fill_value)
 
         padded_arrays.append(padded)

@@ -21,6 +21,7 @@ import numpy as np
 from jinx.errors import DomainError, JIndexError, LengthError, ValenceError
 from jinx.execution.conversion import box_dtype, is_box
 from jinx.execution.helpers import (
+    get_fill_value,
     increase_ndim,
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
@@ -122,7 +123,7 @@ def gt_monad(y: np.ndarray) -> np.ndarray:
     if not is_box(y):
         return y
     elements = [np.asarray(item[0]) for item in y.ravel().tolist()]
-    elements_padded = maybe_pad_with_fill_value(elements, fill_value=0)
+    elements_padded = maybe_pad_with_fill_value(elements)
     return np.asarray(elements_padded).squeeze()
 
 
@@ -170,10 +171,12 @@ def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         x = np.pad(
             x,
             [(0, 0)] + [(0, d - s) for s, d in zip(x.shape[1:], trailing_dims)],
+            constant_values=get_fill_value(x),
         )
         y = np.pad(
             y,
             [(0, 0)] + [(0, d - s) for s, d in zip(y.shape[1:], trailing_dims)],
+            constant_values=get_fill_value(y),
         )
 
     return np.concatenate([x, y], axis=0)
@@ -205,7 +208,7 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     for x_item, y_item in zip(x, y, strict=True):
         result.append(comma_dyad(x_item, y_item))
 
-    result = maybe_pad_with_fill_value(result, fill_value=0)
+    result = maybe_pad_with_fill_value(result)
     return np.asarray(result)
 
 
@@ -218,7 +221,7 @@ def commaco_monad(y: np.ndarray) -> np.ndarray:
 
 def commaco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """,: dyad: create a two item array from x and y."""
-    items = maybe_pad_by_duplicating_atoms([x, y], fill_value=0, ignore_first_dim=False)
+    items = maybe_pad_by_duplicating_atoms([x, y], ignore_first_dim=False)
     return np.asarray(items)
 
 
@@ -585,7 +588,7 @@ def semi_monad(y: np.ndarray) -> np.ndarray:
     if not is_all_boxed and not is_all_not_boxed:
         raise DomainError("Contents are incompatible: numeric and boxed")
 
-    items = maybe_pad_by_duplicating_atoms(items, ignore_first_dim=True, fill_value=0)
+    items = maybe_pad_by_duplicating_atoms(items, ignore_first_dim=True)
     return np.concatenate(items, axis=0)
 
 

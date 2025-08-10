@@ -34,7 +34,7 @@ from src.jinx.execution.helpers import (
     ],
 )
 def test_maybe_pad_with_fill_value(arrays, expected):
-    result = maybe_pad_with_fill_value(arrays, fill_value=0)
+    result = maybe_pad_with_fill_value(arrays)
     assert len(result) == len(expected)
     for arr, expected in zip(result, expected):
         np.testing.assert_array_equal(arr, expected)
@@ -81,9 +81,7 @@ def test_maybe_pad_with_fill_value(arrays, expected):
     ],
 )
 def test_maybe_pad_by_duplicating_atoms(arrays, expected):
-    result = maybe_pad_by_duplicating_atoms(
-        arrays, fill_value=0, ignore_first_dim=False
-    )
+    result = maybe_pad_by_duplicating_atoms(arrays, ignore_first_dim=False)
     assert len(result) == len(expected)
     for arr, exp in zip(result, expected):
         np.testing.assert_array_equal(arr, exp)
@@ -130,7 +128,7 @@ def test_maybe_pad_by_duplicating_atoms(arrays, expected):
     ],
 )
 def test_maybe_pad_by_duplicating_atoms_ignore_first_dim(arrays, expected):
-    result = maybe_pad_by_duplicating_atoms(arrays, fill_value=0, ignore_first_dim=True)
+    result = maybe_pad_by_duplicating_atoms(arrays, ignore_first_dim=True)
     assert len(result) == len(expected)
     for arr, exp in zip(result, expected):
         np.testing.assert_array_equal(arr, exp)

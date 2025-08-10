@@ -209,6 +209,19 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(result)
 
 
+def commaco_monad(y: np.ndarray) -> np.ndarray:
+    """,: monad: create array with rank 1 more than rank of y."""
+    if np.isscalar(y) or y.shape == ():
+        return np.array([y])
+    return y[np.newaxis, :]
+
+
+def commaco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """,: dyad: create a two item array from x and y."""
+    items = maybe_pad_by_duplicating_atoms([x, y], fill_value=0, ignore_first_dim=False)
+    return np.asarray(items)
+
+
 @mark_ufunc_based
 def bar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """| dyad: remainder when dividing y by x."""
@@ -305,7 +318,7 @@ def idot_monad(y: np.ndarray) -> np.ndarray:
     """i. monad: returns increasing/decreasing sequence of integer wrapperd to shape y."""
     arr = np.atleast_1d(y)
     if not np.issubdtype(y.dtype, np.integer):
-        raise DomainError(f"y has nonintegral value")
+        raise DomainError("y has nonintegral value")
     shape = abs(arr)
     n = np.prod(shape)
     axes_to_flip = np.where(arr < 0)[0]
@@ -572,7 +585,7 @@ def semi_monad(y: np.ndarray) -> np.ndarray:
     if not is_all_boxed and not is_all_not_boxed:
         raise DomainError("Contents are incompatible: numeric and boxed")
 
-    items = maybe_pad_by_duplicating_atoms(items)
+    items = maybe_pad_by_duplicating_atoms(items, ignore_first_dim=True, fill_value=0)
     return np.concatenate(items, axis=0)
 
 
@@ -654,6 +667,7 @@ VERB_MAP = {
     "TILDECO": (tildeco_monad, np.not_equal),
     "COMMA": (comma_monad, comma_dyad),
     "COMMADOT": (commadot_monad, commadot_dyad),
+    "COMMACO": (commaco_monad, commaco_dyad),
     "BAR": (np.abs, bar_dyad),
     "BARDOT": (np.flip, bardot_dyad),
     "BARCO": (np.transpose, barco_dyad),

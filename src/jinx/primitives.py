@@ -260,6 +260,18 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
     ),
     Verb(
+        ",:",
+        "COMMACO",
+        monad=Monad(name="Itemize", rank=INFINITY),
+        dyad=Dyad(
+            name="Laminate",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+        obverse="{.",
+    ),
+    Verb(
         "|",
         "BAR",
         monad=Monad(name="Magnitude", rank=0),
@@ -398,7 +410,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             right_rank=INFINITY,
             is_commutative=False,
         ),
-        # obverse=",:",  # Not yet implemented
+        obverse=",:",
     ),
     Verb(
         ";",

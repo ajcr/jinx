@@ -11,6 +11,7 @@ from src.jinx.execution.verbs import (
     slashco_monad,
     bslashco_monad,
     numberco_monad,
+    commaco_dyad,
 )
 
 
@@ -310,3 +311,37 @@ def test_numberco_monad(y, expected):
     assert result.shape == expected.shape
     assert result.dtype == expected.dtype
     assert np.allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    "x, y, expected",
+    [
+        pytest.param(np.array(1), np.array(2), np.array([[1], [2]]), id="1 ,: 2"),
+        pytest.param(
+            np.array([1, 2]), np.array(3), np.array([[1, 2], [3, 3]]), id="1 2 ,: 3"
+        ),
+        pytest.param(
+            np.array([1, 2]),
+            np.array([3, 4]),
+            np.array([[1, 2], [3, 4]]),
+            id="1 2 ,: 3 4",
+        ),
+        pytest.param(
+            np.array([[1, 2], [3, 4]]),
+            np.array([5, 6]),
+            np.array([[[1, 2], [3, 4]], [[5, 6], [0, 0]]]),
+            id="(i.2 2) ,: (5 6)",
+        ),
+        pytest.param(
+            np.array([[0, 1, 2], [3, 4, 5]]),
+            np.array([[0, 1], [2, 3], [4, 5]]),
+            np.array(
+                [[[0, 1, 2], [3, 4, 5], [0, 0, 0]], [[0, 1, 0], [2, 3, 0], [4, 5, 0]]]
+            ),
+            id="(i. 2 3) ,: (i. 3 2)",
+        ),
+    ],
+)
+def test_commaco_dyad(x, y, expected):
+    result = commaco_dyad(x, y)
+    np.testing.assert_array_equal(result, expected, strict=True)

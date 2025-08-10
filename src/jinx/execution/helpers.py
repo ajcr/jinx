@@ -31,39 +31,52 @@ def maybe_pad_with_fill_value(
 
 
 def maybe_pad_by_duplicating_atoms(
-    arrays: list[np.ndarray], fill_value: int = 0
+    arrays: list[np.ndarray],
+    fill_value: int = 0,
+    ignore_first_dim: bool = True,
 ) -> list[np.ndarray]:
     """Pad arrays to the same shape, duplicating atoms to fill the required shape.
 
     Fill values are used to pad arrays of larger shapes.
     """
+    is_atom = [np.isscalar(arr) or arr.ndim == 0 for arr in arrays]
     arrays = [np.atleast_1d(arr) for arr in arrays]
-    reversed_shape_iters = [reversed(arr.shape) for arr in arrays]
+
     ndim = max(arr.ndim for arr in arrays)
+    if ndim == 1:
+        ignore_first_dim = False
+
+    reversed_shapes = [arr.shape[::-1] for arr in arrays]
 
     trailing_dims = [
-        max(shape)
-        for shape in itertools.zip_longest(*reversed_shape_iters, fillvalue=1)
+        max(shape) for shape in itertools.zip_longest(*reversed_shapes, fillvalue=1)
     ]
     trailing_dims.reverse()
-    trailing_dims = trailing_dims[1:]  # ignore dimension that we will concatenate along
+
+    if ignore_first_dim:
+        trailing_dims = trailing_dims[1:] or trailing_dims
 
     padded_arrays = []
 
-    for arr in arrays:
-        if arr.shape == (1,):
-            padded = np.full((1, *trailing_dims), arr[0], dtype=arr.dtype)
+    for arr, is_atom_ in zip(arrays, is_atom):
+        if is_atom_:
+            padded = np.full(trailing_dims, arr, dtype=arr.dtype)
 
         else:
             arr = increase_ndim(arr, ndim)
-            padded = np.pad(
-                arr,
-                [(0, 0)] + [(0, d - s) for s, d in zip(arr.shape[1:], trailing_dims)],
-                constant_values=fill_value,
-            )
+
+            if ignore_first_dim:
+                padding = [(0, 0)] + [
+                    (0, d - s) for s, d in zip(arr.shape[1:], trailing_dims)
+                ]
+            else:
+                padding = [(0, d - s) for s, d in zip(arr.shape, trailing_dims)]
+
+            padded = np.pad(arr, padding, constant_values=fill_value)
 
         padded_arrays.append(padded)
 
+    padded_arrays = [increase_ndim(arr, ndim) for arr in padded_arrays]
     return padded_arrays
 
 

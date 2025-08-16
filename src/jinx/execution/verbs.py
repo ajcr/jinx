@@ -605,6 +605,12 @@ def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return result
 
 
+def curlyrtco_monad(y: np.ndarray) -> np.ndarray:
+    """}: monad: drop last item of y."""
+    y = np.atleast_1d(y)
+    return y[:-1] if y.size > 0 else np.array([], dtype=y.dtype)
+
+
 def bang_monad(y: np.ndarray) -> np.ndarray:
     """! monad: returns y factorial (and more generally the gamma function of 1+y)."""
     if isinstance(y, int) or np.issubdtype(y.dtype, np.integer) and y >= 0:
@@ -734,6 +740,7 @@ VERB_MAP = {
     "BANG": (bang_monad, bang_dyad),
     "CURLYLF": (NotImplemented, curlylf_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
+    "CURLYRTCO": (curlyrtco_monad, None),
     "SEMI": (semi_monad, semi_dyad),
     "QUERY": (query_monad, query_dyad),
 }

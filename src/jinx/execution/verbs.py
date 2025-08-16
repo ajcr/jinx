@@ -605,6 +605,13 @@ def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return result
 
 
+def curlylfco_monad(y: np.ndarray) -> np.ndarray:
+    """{: monad: return last item of y."""
+    if np.isscalar(y) or y.shape == ():
+        return np.asarray(y)
+    return y[-1]
+
+
 def curlyrtco_monad(y: np.ndarray) -> np.ndarray:
     """}: monad: drop last item of y."""
     y = np.atleast_1d(y)
@@ -740,6 +747,7 @@ VERB_MAP = {
     "BANG": (bang_monad, bang_dyad),
     "CURLYLF": (NotImplemented, curlylf_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
+    "CURLYLFCO": (curlylfco_monad, None),
     "CURLYRTCO": (curlyrtco_monad, None),
     "SEMI": (semi_monad, semi_dyad),
     "QUERY": (query_monad, query_dyad),

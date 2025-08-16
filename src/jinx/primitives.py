@@ -424,11 +424,16 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse=",:",
     ),
     Verb(
+        "{:",
+        "CURLYLFCO",
+        monad=Monad(name="Tail", rank=INFINITY),
+        dyad=None,
+    ),
+    Verb(
         "}:",
         "CURLYRTCO",
         monad=Monad(name="Curtail", rank=INFINITY),
         dyad=None,
-        obverse=",:",
     ),
     Verb(
         ";",

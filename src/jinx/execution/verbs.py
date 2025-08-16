@@ -513,6 +513,55 @@ def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     raise NotImplementedError()
 
 
+def curlylf_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """{ dyad: select item with index x from array y."""
+    y = np.atleast_1d(y)
+
+    if not is_box(x):
+        if not np.issubdtype(x.dtype, np.integer):
+            raise DomainError("{ dyad: x must be an integer")
+        try:
+            return y[x]
+        except IndexError:
+            raise JIndexError(
+                f"{{ dyad: x {x} is out of bounds for y with shape {y.shape}"
+            ) from None
+
+    x_inner = gt_monad(x)
+
+    if len(x_inner) > y.ndim:
+        raise LengthError(
+            f"{{ dyad: selector is overlong x has length {len(x_inner)} but rank of y is only {y.ndim}"
+        )
+
+    if not is_box(x_inner):
+        if not np.issubdtype(x_inner.dtype, np.integer):
+            raise DomainError("{ dyad: indices must be integers")
+        try:
+            return y[tuple(x_inner)]
+        except IndexError:
+            raise JIndexError(
+                f"{{ dyad: x {x_inner} is out of bounds for y with shape {y.shape}"
+            ) from None
+
+    x_inner_inner = gt_monad(x_inner)
+
+    if len(x_inner_inner) > y.ndim:
+        raise LengthError(
+            f"{{ dyad: selector is overlong x has length {len(x_inner_inner)} but rank of y is only {y.ndim}"
+        )
+
+    if not all(np.issubdtype(item.dtype, np.integer) for item in x_inner_inner):
+        raise DomainError("{ dyad: indices must be integers")
+
+    try:
+        return y[np.ix_(*x_inner_inner)]
+    except IndexError:
+        raise JIndexError(
+            f"{{ dyad: x {x_inner} is out of bounds for y with shape {y.shape}"
+        ) from None
+
+
 def curlylfdot_monad(y: np.ndarray) -> np.ndarray:
     """{. monad: returns the first item of y."""
     y = np.atleast_1d(y)
@@ -683,6 +732,7 @@ VERB_MAP = {
     "SLASHCO": (slashco_monad, slashco_dyad),
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
     "BANG": (bang_monad, bang_dyad),
+    "CURLYLF": (NotImplemented, curlylf_dyad),
     "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
     "SEMI": (semi_monad, semi_dyad),
     "QUERY": (query_monad, query_dyad),

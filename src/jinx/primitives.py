@@ -401,6 +401,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
     Conjunction("&.:", "AMPDOTCO"),
     Conjunction("&.", "AMPDOT"),
     Verb(
+        "{",
+        "CURLYLF",
+        monad=Monad(name="Catalog", rank=1),
+        dyad=Dyad(
+            name="From",
+            left_rank=0,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+    ),
+    Verb(
         "{.",
         "CURLYLFDOT",
         monad=Monad(name="Head", rank=INFINITY),

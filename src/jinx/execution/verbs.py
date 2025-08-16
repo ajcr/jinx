@@ -27,6 +27,7 @@ from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
     mark_ufunc_based,
 )
+from jinx.word_formation import form_words
 
 
 np.seterr(divide="ignore")
@@ -666,6 +667,15 @@ def semi_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.concatenate([x, y], axis=0)
 
 
+def semico_monad(y: np.ndarray) -> np.ndarray:
+    """;: monad: partition string into boxed words according to J's rules for word formation."""
+    if not np.issubdtype(y.dtype, np.str_):
+        raise DomainError(";: monad: y must be a string")
+    string = "".join(y)
+    words = [word.value for word in form_words(string)]
+    return np.array(words, dtype=box_dtype)
+
+
 def query_monad(y: np.ndarray) -> np.ndarray:
     """? monad: generates a random number uniformly distributed in a range determined by integer y."""
     if not np.issubdtype(y.dtype, np.integer) or y < 0:
@@ -750,5 +760,6 @@ VERB_MAP = {
     "CURLYLFCO": (curlylfco_monad, None),
     "CURLYRTCO": (curlyrtco_monad, None),
     "SEMI": (semi_monad, semi_dyad),
+    "SEMICO": (semico_monad, NotImplemented),
     "QUERY": (query_monad, query_dyad),
 }

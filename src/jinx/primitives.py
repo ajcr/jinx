@@ -457,6 +457,17 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             is_commutative=False,
         ),
     ),
+    Verb(
+        ";:",
+        "SEMICO",
+        monad=Monad(name="Words", rank=1),
+        dyad=Dyad(
+            name="Sequential Machine",
+            left_rank=INFINITY,
+            right_rank=INFINITY,
+            is_commutative=False,
+        ),
+    ),
 ]
 
 

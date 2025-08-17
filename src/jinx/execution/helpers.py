@@ -122,5 +122,9 @@ def is_ufunc_based(function: Callable[..., Any]) -> bool:
 
 def is_same_array(x: np.ndarray, y: np.ndarray) -> bool:
     """Check if two arrays are the same, even if `x is y` is `False` avoiding
-    comparison of the array values."""
-    return x.base is y.base and x.shape == y.shape and x.strides == y.strides
+    comparison of the array values.
+
+    The arrays are the same if they have the same memory address, shape, strides
+    and dtype.
+    """
+    return x.__array_interface__ == y.__array_interface__

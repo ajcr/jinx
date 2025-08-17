@@ -478,8 +478,8 @@ def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         idx = slashco_monad(y)
         return y[idx]
 
-    # Need to implement '(/: y) { x'
-    raise NotImplementedError()
+    idx = slashco_monad(y)
+    return x[idx]
 
 
 def bslashco_monad(y: np.ndarray) -> np.ndarray:
@@ -511,8 +511,8 @@ def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         idx = bslashco_monad(y)
         return y[idx]
 
-    # Need to implement '(\: y) { x'
-    raise NotImplementedError()
+    idx = bslashco_monad(y)
+    return x[idx]
 
 
 def curlylf_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

@@ -118,3 +118,8 @@ def mark_ufunc_based(function: Callable[..., Any]) -> bool:
 def is_ufunc_based(function: Callable[..., Any]) -> bool:
     """Check if a function is a ufunc-based function."""
     return getattr(function, "_is_ufunc_based", False)
+
+
+def is_same_array(x: np.ndarray, y: np.ndarray) -> bool:
+    """Check if two arrays are the same object, even if `x is y` is False."""
+    return x.base is y.base and x.shape == y.shape and x.strides == y.strides

@@ -23,6 +23,7 @@ from jinx.execution.conversion import box_dtype, is_box
 from jinx.execution.helpers import (
     get_fill_value,
     increase_ndim,
+    is_same_array,
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
     mark_ufunc_based,
@@ -470,7 +471,7 @@ def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     y = np.atleast_1d(y)
 
-    if x is y:
+    if is_same_array(x, y):
         # This handles /:~
         if x.ndim == 1:
             return np.sort(y, kind="stable")
@@ -501,7 +502,7 @@ def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     y = np.atleast_1d(y)
 
-    if x is y:
+    if is_same_array(x, y):
         # This handles \:~
         if x.ndim == 1:
             # Not technically correct (see comment on monad above), but

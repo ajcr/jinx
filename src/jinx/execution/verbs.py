@@ -709,7 +709,8 @@ def query_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         # This should return "empty" but Jinx does not have a concept of empty.
         return np.asarray(0)
 
-    return np.random.choice(y, size=x, replace=False)
+    rng = np.random.default_rng()
+    return rng.choice(y, size=x, replace=False)
 
 
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.

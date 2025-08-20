@@ -49,9 +49,8 @@ Start the interactive shell with `jinx`. As is usual in J, the shell prompt is f
 ## Motivation / Warnings
 
 Key parts of J not yet implemented in Jinx yet, but might be in future. These include:
-- Boxes (the `<` and `>` verbs work, but not other verbs).
 - Locales.
-- Array types other than floats and integers.
+- Array types other than floats, integers and and strings.
 - Numerous primitives (verbs, conjunctions).
 - Control words.
 

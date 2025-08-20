@@ -1,5 +1,6 @@
 """Methods for printing nouns (arrays, atoms)."""
 
+import itertools
 import os
 
 import numpy as np
@@ -11,12 +12,19 @@ from jinx.execution.conversion import is_box
 MAX_COLS = 100
 
 
-def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
-    # TODO: Print boxes like J prints boxes.
-    if is_box(array.implementation):
-        return f"Box({array.implementation})"
+def noun_to_string(noun: Atom | Array, max_cols: int = MAX_COLS) -> str:
+    """Convert a noun (Atom or Array) to a string representation."""
+    arr = noun.implementation
+    rows = array_to_rows(arr, max_cols=max_cols)
+    return os.linesep.join(rows)
 
-    arr = np.atleast_1d(array.implementation)
+
+def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
+    """Convert an array to a list of strings for printing."""
+    if is_box(arr):
+        return box_to_rows(arr)
+
+    arr = np.atleast_1d(arr)
 
     if arr.shape[-1] > max_cols:
         arr = arr[..., :max_cols]
@@ -40,8 +48,7 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
     lengths = np.strings.str_len(arr_str)
     justify = np.max(lengths, axis=tuple(range(arr.ndim - 1)))
     arr_str = np.strings.rjust(arr_str, justify)
-    rows = ndim_n_to_rows(arr_str, append_ellipsis=append_ellipsis)
-    return os.linesep.join(rows)
+    return ndim_n_to_rows(arr_str, append_ellipsis=append_ellipsis)
 
 
 def get_decimal_places(n: float) -> int:
@@ -93,32 +100,55 @@ def ndim_n_to_rows(arr: np.ndarray, append_ellipsis: bool) -> list[str]:
     return rows
 
 
-def infer_print_height(array: np.ndarray) -> int:
-    """Infer the height of the printed array."""
-    if array.ndim <= 1:
-        return 1
+def box_2D_to_rows(box: list[list[str]], widths: list[int]) -> list[str]:
+    """Convert a 2D box (list of list of strings) to a list of strings for printing."""
+    rows = [box_top_line(widths=widths)]
+    for n, box_row in enumerate(box):
+        for row_item_row in itertools.zip_longest(*box_row, fillvalue=""):
+            vals = [val.ljust(width) for val, width in zip(row_item_row, widths)]
+            row = "│" + "│".join(vals) + "│"
+            rows.append(row)
 
-    shape = list(array.shape[:-1])
-    height = 1
-    sep = 0
+        if n < len(box) - 1:
+            rows.append(box_row_divider_line(widths=widths))
 
-    while shape:
-        dim = shape.pop()
-        height *= dim
-        height += (dim - 1) * sep
-        sep += 1
-
-    return height
+    rows.append(box_bottom_line(widths=widths))
+    return rows
 
 
-BOX_TOP_LEFT = "┌"
-BOX_TOP_RIGHT = "┐"
-BOX_BOTTOM_LEFT = "└"
-BOX_BOTTOM_RIGHT = "┘"
-BOX_HORIZONTAL = "─"
-BOX_VERTICAL = "│"
-BOX_T = "┬"
-BOX_T_90 = "┤"
-BOX_T_180 = "┴"
-BOX_T_270 = "├"
-BOX_CROSS = "┼"
+def box_to_rows(box: np.ndarray) -> list[str]:
+    """Convert a box to a list of strings for printing."""
+    box_items = [item[0] for item in box.ravel()]
+    items_as_rows = [array_to_rows(item) for item in box_items]
+
+    box = np.atleast_1d(box)
+
+    row_groups = list(itertools.batched(items_as_rows, box.shape[-1], strict=True))
+    if box.ndim >= 2:
+        row_groups = list(itertools.batched(row_groups, box.shape[-2], strict=True))
+
+    item_widths = np.array([len(rows[0]) for rows in items_as_rows]).reshape(box.shape)
+    widths = np.max(item_widths, axis=tuple(range(box.ndim - 1))).tolist()
+
+    if box.ndim == 1:
+        return box_2D_to_rows(row_groups, widths)
+
+    if box.ndim == 2:
+        return box_2D_to_rows(row_groups[0], widths)
+
+    raise NotImplementedError("Printing box with > 2 dimensions is not implemented.")
+
+
+def box_top_line(widths: list[int]) -> str:
+    """Return the top line of a box."""
+    return "┌" + "┬".join(["─" * width for width in widths]) + "┐"
+
+
+def box_bottom_line(widths: list[int]) -> str:
+    """Return the bottom line of a box."""
+    return "└" + "┴".join(["─" * width for width in widths]) + "┘"
+
+
+def box_row_divider_line(widths: list[int]) -> str:
+    """Return the divider line of a box."""
+    return "├" + "┼".join(["─" * width for width in widths]) + "┤"

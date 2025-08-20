@@ -40,7 +40,8 @@ def noun_to_string(array: Atom | Array, max_cols: int = MAX_COLS) -> str:
     lengths = np.strings.str_len(arr_str)
     justify = np.max(lengths, axis=tuple(range(arr.ndim - 1)))
     arr_str = np.strings.rjust(arr_str, justify)
-    return ndim_n_to_string(arr_str, append_ellipsis=append_ellipsis)
+    rows = ndim_n_to_rows(arr_str, append_ellipsis=append_ellipsis)
+    return os.linesep.join(rows)
 
 
 def get_decimal_places(n: float) -> int:
@@ -77,19 +78,19 @@ def ndim_1_to_str(arr: np.ndarray, append_ellipsis: bool) -> str:
     return result
 
 
-def ndim_n_to_string(arr: np.ndarray, append_ellipsis: bool) -> str:
+def ndim_n_to_rows(arr: np.ndarray, append_ellipsis: bool) -> list[str]:
     if arr.ndim == 1:
-        return ndim_1_to_str(arr, append_ellipsis)
+        return [ndim_1_to_str(arr, append_ellipsis)]
 
-    subarrays = []
-    for subarr in arr:
-        if subarr.ndim == 1:
-            subarrays.append(ndim_1_to_str(subarr, append_ellipsis))
+    rows = []
+    for n, item in enumerate(arr):
+        if item.ndim == 1:
+            rows.append(ndim_1_to_str(item, append_ellipsis))
         else:
-            subarrays.append(ndim_n_to_string(subarr, append_ellipsis))
-
-    sep = os.linesep * (arr.ndim - 1)
-    return sep.join(subarrays)
+            rows.extend(ndim_n_to_rows(item, append_ellipsis))
+            if n < len(arr) - 1:
+                rows.extend([""] * (arr.ndim - 2))
+    return rows
 
 
 def infer_print_height(array: np.ndarray) -> int:

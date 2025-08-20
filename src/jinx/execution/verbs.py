@@ -658,8 +658,7 @@ def semi_monad(y: np.ndarray) -> np.ndarray:
 
 def semi_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """; dyad: link two nouns into a box."""
-    if not is_box(x):
-        x = lt_monad(x)
+    x = lt_monad(x)
     if not is_box(y):
         y = lt_monad(y)
 

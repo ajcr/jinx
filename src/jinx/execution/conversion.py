@@ -1,5 +1,7 @@
 """Methods for converting to and from NumPy arrays."""
 
+from typing import Any
+
 import numpy as np
 
 from jinx.vocabulary import Atom, Array, DataType, Noun
@@ -31,8 +33,8 @@ DATATYPE_TO_NP_MAP = {
 }
 
 
-def is_box(array: np.ndarray) -> bool:
-    return array.dtype == box_dtype
+def is_box(obj: Any) -> bool:
+    return getattr(obj, "dtype", None) == box_dtype
 
 
 def convert_noun_np(noun: Atom | Array) -> np.ndarray:

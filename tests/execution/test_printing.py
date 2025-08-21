@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 
 from src.jinx.vocabulary import Array, DataType
-
 from src.jinx.execution.printing import noun_to_string
+from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
 
 
 @pytest.mark.parametrize(
@@ -79,5 +79,65 @@ from src.jinx.execution.printing import noun_to_string
     ],
 )
 def test_noun_to_string(array, expected):
+    result = noun_to_string(array, max_cols=5)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "array, expected",
+    [
+        pytest.param(
+            Array(data_type=DataType.Box, implementation=lt_monad(np.array(9))),
+            "┌─┐\n│9│\n└─┘",
+            id="<9",
+        ),
+        pytest.param(
+            Array(data_type=DataType.Box, implementation=lt_monad(np.array([9]))),
+            "┌─┐\n│9│\n└─┘",
+            id="<9",
+        ),
+        pytest.param(
+            Array(
+                data_type=DataType.Box, implementation=lt_monad(lt_monad(np.array(3)))
+            ),
+            "┌───┐\n│┌─┐│\n││3││\n│└─┘│\n└───┘",
+            id="<<3",
+        ),
+        pytest.param(
+            Array(
+                data_type=DataType.Box,
+                implementation=semi_dyad(lt_monad(np.array(3)), np.array(5)),
+            ),
+            "┌───┬─┐\n│┌─┐│5│\n││3││ │\n│└─┘│ │\n└───┴─┘",
+            id="(<3);5",
+        ),
+        pytest.param(
+            Array(
+                data_type=DataType.Box,
+                implementation=dollar_dyad(
+                    np.array([2, 2]),
+                    semi_dyad(
+                        np.array(1000),
+                        semi_dyad(np.array(1), semi_dyad(np.array(10), np.array(100))),
+                    ),
+                ),
+            ),
+            "┌────┬───┐\n│1000│1  │\n├────┼───┤\n│10  │100│\n└────┴───┘",
+            id="2 2 $ 1000;1;10;100",
+        ),
+        pytest.param(
+            Array(
+                data_type=DataType.Box,
+                implementation=semi_dyad(
+                    np.array(list("alpha")),
+                    semi_dyad(np.array(list("bravo")), np.array(list("charlie"))),
+                ),
+            ),
+            "┌─────┬─────┬───────┐\n│alpha│bravo│charlie│\n└─────┴─────┴───────┘",
+            id="'alpha' ; 'bravo' ; 'charlie'",
+        ),
+    ],
+)
+def test_boxed_noun_to_string(array, expected):
     result = noun_to_string(array, max_cols=5)
     assert result == expected

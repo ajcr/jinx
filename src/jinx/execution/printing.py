@@ -144,11 +144,11 @@ def box_top_line(widths: list[int]) -> str:
     return "┌" + "┬".join(["─" * width for width in widths]) + "┐"
 
 
-def box_bottom_line(widths: list[int]) -> str:
-    """Return the bottom line of a box."""
-    return "└" + "┴".join(["─" * width for width in widths]) + "┘"
-
-
 def box_row_divider_line(widths: list[int]) -> str:
     """Return the divider line of a box."""
     return "├" + "┼".join(["─" * width for width in widths]) + "┤"
+
+
+def box_bottom_line(widths: list[int]) -> str:
+    """Return the bottom line of a box."""
+    return "└" + "┴".join(["─" * width for width in widths]) + "┘"

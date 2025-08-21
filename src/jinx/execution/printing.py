@@ -21,10 +21,10 @@ def noun_to_string(noun: Atom | Array, max_cols: int = MAX_COLS) -> str:
 
 def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     """Convert an array to a list of strings for printing."""
+    arr = np.atleast_1d(arr)
+
     if is_box(arr):
         return box_to_rows(arr)
-
-    arr = np.atleast_1d(arr)
 
     if arr.shape[-1] > max_cols:
         arr = arr[..., :max_cols]
@@ -120,8 +120,6 @@ def box_to_rows(box: np.ndarray) -> list[str]:
     """Convert a box to a list of strings for printing."""
     box_items = [item[0] for item in box.ravel()]
     items_as_rows = [array_to_rows(item) for item in box_items]
-
-    box = np.atleast_1d(box)
 
     row_groups = list(itertools.batched(items_as_rows, box.shape[-1], strict=True))
     if box.ndim >= 2:

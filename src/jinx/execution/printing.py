@@ -39,12 +39,15 @@ def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     elif np.issubdtype(arr.dtype, np.bool_):
         arr = arr.view(np.int8)
 
-    elif np.issubdtype(arr.dtype, np.str_):
+    elif np.issubdtype(arr.dtype, np.str_) and arr.dtype.itemsize == arr.dtype.alignment:
         width = arr.shape[-1]
-        arr = arr.view(f"<U{width}")
+        arr = arr.view(f"{arr.dtype.byteorder}{arr.dtype.kind}{width}")
 
     arr_str = arr.astype(str)
-    arr_str = np.strings.replace(arr_str, "-", "_")
+
+    if np.issubdtype(arr.dtype, np.number):
+        arr_str = np.strings.replace(arr_str, "-", "_")
+
     lengths = np.strings.str_len(arr_str)
     justify = np.max(lengths, axis=tuple(range(arr.ndim - 1)))
     arr_str = np.strings.rjust(arr_str, justify)

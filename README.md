@@ -1,19 +1,17 @@
 # Jinx
 
-A work-in-progress interpreter for the J programming language.
+A work-in-progress interpreter for the J programming language, built on top of NumPy.
 
-Currently supports many features that are central to J, including:
+Supports many features that are central to J, including:
 - Multidimensional arrays of integers and floats.
 - Many primitive verbs (e.g. `+`, `%:`, `,`, ...), adverbs (`/`, `~`, ...) and conjunctions (`"`, `@:`, ...).
 - Correct monadic and dyadic application of verbs of different ranks.
 - Obverses.
-- Verb trains (hooks and forks).
-
-This allows some fairly complicated tacit expressions to be evaluated.
+- Trains (hooks and forks).
 
 ## Examples
 
-Start the interactive shell with `jinx`. As is usual in J, the shell prompt is four spaces, so commands appear indented.
+Start the interactive shell with `jinx`. The shell prompt is four spaces, so commands appear indented.
 
 - The "trapping rainwater" problem (solution from [here](https://mmapped.blog/posts/04-square-joy-trapped-rain-water)):
 ```j
@@ -45,23 +43,30 @@ Start the interactive shell with `jinx`. As is usual in J, the shell prompt is f
 31  1  3  5  7  9 11 13 15 17
 19 21 23 25 27 29 31 33 35 37
 ```
+- Building and printing nested boxes containing heterogenous datatypes:
+```j
+    (<<'abc'),(<(<'de'),(<<4 ] i. 5 2)),(<(<"0]%i. 2 2 3))
+┌─────┬──────────┬────────────────────────────┐
+│┌───┐│┌──┬─────┐│┌────────┬────────┬────────┐│
+││abc│││de│┌───┐│││_       │1       │0.5     ││
+│└───┘││  ││0 1│││├────────┼────────┼────────┤│
+│     ││  ││2 3││││0.333333│0.25    │0.2     ││
+│     ││  ││4 5│││└────────┴────────┴────────┘│
+│     ││  ││6 7│││                            │
+│     ││  ││8 9│││┌────────┬────────┬────────┐│
+│     ││  │└───┘│││0.166667│0.142857│0.125   ││
+│     │└──┴─────┘│├────────┼────────┼────────┤│
+│     │          ││0.111111│0.1     │0.090909││
+│     │          │└────────┴────────┴────────┘│
+└─────┴──────────┴────────────────────────────┘
+```
 
-## Motivation / Warnings
+## Warning
+
+This project is an ongoing learning exercise. There will be bugs, missing features and performance quirks.
 
 Key parts of J not yet implemented in Jinx yet, but might be in future. These include:
 - Locales.
 - Array types other than floats, integers and and strings.
 - Numerous primitives (verbs, conjunctions).
 - Control words.
-
-Above all, this project is an ongoing learning exercise.
-
-I want to continue to improve my patchy understanding of J by straightforwardly implementing useful subsets of it. Understand how J code is evaluated. Nail down how rank works. And so on.
-
-This means that the code is my mental map of information grabbed from pages of language documentation, book chapters, and forum posts into something that resembles J. You can find references to these sources scattered throughout the code.
-
-Recreating the sophistication and decades of attention to detail that have gone into making the official J interpreter so feature rich and performant is not the goal here. There will be bugs, missing parts and glaring performance gaps.
-
-But the advantage of this learn-by-making approach is that the wonderful concepts of the J language (and other APL dialects) have the potential to be mixed and matched with other tools and frameworks I know more about.
-
-For example, in this code the separation between "interpreting J code" and "actual execution on array-like objects" is very clearly separated. At the moment "array-like objects" and "execution" are NumPy arrays and methods, but could very easily be swapped out for PyTorch, JAX, or any other array-centric framework. This sets up experiments in JIT compilation, execution on accelerators and other fun adventures.

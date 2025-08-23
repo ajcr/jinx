@@ -353,7 +353,7 @@ def number_monad(y: np.ndarray) -> np.ndarray:
 
 
 def number_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """# monad: copy items in y exactly x times."""
+    """# dyad: copy items in y exactly x times."""
     return np.repeat(y, x, axis=0)
 
 
@@ -365,7 +365,7 @@ def numberdot_monad(y: np.ndarray) -> np.ndarray:
 
 
 def numberdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """#. monad: generalizes #.y to bases other than 2 (including mixed bases)."""
+    """#. dyad: generalizes #.y to bases other than 2 (including mixed bases)."""
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 

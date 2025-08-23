@@ -39,7 +39,9 @@ def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     elif np.issubdtype(arr.dtype, np.bool_):
         arr = arr.view(np.int8)
 
-    elif np.issubdtype(arr.dtype, np.str_) and arr.dtype.itemsize == arr.dtype.alignment:
+    elif (
+        np.issubdtype(arr.dtype, np.str_) and arr.dtype.itemsize == arr.dtype.alignment
+    ):
         width = arr.shape[-1]
         arr = arr.view(f"{arr.dtype.byteorder}{arr.dtype.kind}{width}")
 
@@ -103,7 +105,7 @@ def ndim_n_to_rows(arr: np.ndarray, append_ellipsis: bool) -> list[str]:
     return rows
 
 
-def box_2D_to_rows(box: list[list[str]], widths: list[int]) -> list[str]:
+def box_1D_or_2D_to_rows(box: list[list[str]], widths: list[int]) -> list[str]:
     """Convert a 2D box (list of list of strings) to a list of strings for printing."""
     rows = [box_top_line(widths=widths)]
     for n, box_row in enumerate(box):
@@ -132,24 +134,39 @@ def box_to_rows(box: np.ndarray) -> list[str]:
     widths = np.max(item_widths, axis=tuple(range(box.ndim - 1))).tolist()
 
     if box.ndim == 1:
-        return box_2D_to_rows(row_groups, widths)
+        return box_1D_or_2D_to_rows(row_groups, widths)
 
     if box.ndim == 2:
-        return box_2D_to_rows(row_groups[0], widths)
+        return box_1D_or_2D_to_rows(row_groups[0], widths)
 
-    raise NotImplementedError("Printing box with > 2 dimensions is not implemented.")
+    boxes = [box_1D_or_2D_to_rows(rows, widths) for rows in row_groups]
+    leading_dims = list(box.shape[:-2])
+
+    while leading_dims:
+        boxes = list(itertools.batched(boxes, leading_dims.pop(), strict=True))
+
+    rows = []
+
+    def flatten_to_rows(box_list, gap_size):
+        for n, bxs in enumerate(box_list):
+            if isinstance(bxs, str):
+                rows.append(bxs)
+            else:
+                flatten_to_rows(bxs, gap_size - 1)
+            if n < len(box_list) - 1:
+                rows.extend([""] * gap_size)
+
+    flatten_to_rows(boxes[0], box.ndim - 2)
+    return rows
 
 
 def box_top_line(widths: list[int]) -> str:
-    """Return the top line of a box."""
     return "┌" + "┬".join(["─" * width for width in widths]) + "┐"
 
 
 def box_row_divider_line(widths: list[int]) -> str:
-    """Return the divider line of a box."""
     return "├" + "┼".join(["─" * width for width in widths]) + "┤"
 
 
 def box_bottom_line(widths: list[int]) -> str:
-    """Return the bottom line of a box."""
     return "└" + "┴".join(["─" * width for width in widths]) + "┘"

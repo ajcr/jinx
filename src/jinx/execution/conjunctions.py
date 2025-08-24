@@ -159,7 +159,6 @@ def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> V
         spelling = f"{left.implementation}&{verb_spelling}"
         monad = Monad(name=spelling, rank=right.dyad.right_rank, function=function)
         dyad = None
-        obverse = None
 
     elif isinstance(left, Verb) and isinstance(right, Atom | Array):
         # functools.partial cannot be used to apply to right argument of ufuncs
@@ -172,8 +171,6 @@ def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> V
         spelling = f"{verb_spelling}&{right.implementation}"
         monad = Monad(name=spelling, rank=left.dyad.left_rank, function=function)
         dyad = None
-        if left.spelling in ...:
-            obverse = None
 
     elif isinstance(left, Verb) and isinstance(right, Verb):
         # Compose u&v, with the new verb having the right verb's monadic rank.
@@ -198,11 +195,8 @@ def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> V
             right_rank=right.monad.rank,
             function=dyad_,
         )
-        obverse = None
 
-    return Verb(
-        name=spelling, spelling=spelling, monad=monad, dyad=dyad, obverse=obverse
-    )
+    return Verb(name=spelling, spelling=spelling, monad=monad, dyad=dyad)
 
 
 def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:

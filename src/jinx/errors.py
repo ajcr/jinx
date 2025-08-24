@@ -21,10 +21,6 @@ class JIndexError(BaseJError):
     pass
 
 
-class JValueError(BaseJError):
-    pass
-
-
 class SpellingError(BaseJError):
     pass
 

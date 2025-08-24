@@ -30,7 +30,6 @@ from jinx.execution.application import (
     build_fork,
     build_hook,
 )
-from jinx.errors import JValueError
 from jinx.execution.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
 from jinx.execution.printing import noun_to_string
@@ -50,8 +49,6 @@ def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
         return noun_to_string(word)
     elif isinstance(word, Verb | Adverb | Conjunction):
         return word.spelling
-    elif isinstance(word, Name):
-        return ""
     else:
         raise NotImplementedError(f"Cannot print word of type {type(word)}")
 
@@ -94,7 +91,7 @@ def build_verb_noun_phrase(
     raise EvaluationError("Unable to build verb/noun phrase")
 
 
-def evaluate_words(words: list[PartOfSpeechT], level: int = 0, variables: dict[Name, PartOfSpeechT] | None = None) -> list[PartOfSpeechT]:
+def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     # Ensure noun and verb implementations are set according to the chosen execution
     # framework (this is just NumPy for now).
     for word in words:
@@ -119,7 +116,7 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0, variables: dict[N
             verb = evaluate_single_verb_sentence(word.obverse)
             word.obverse = verb
 
-    return _evaluate_words(words, level=level, variables=variables)
+    return _evaluate_words(words, level=level)
 
 
 def get_parts_to_left(
@@ -160,30 +157,7 @@ def get_parts_to_left(
     return parts_to_left
 
 
-def _fragment_name_to_parts_of_speech(
-    fragment: list[PartOfSpeechT | str], variables: dict[Name, PartOfSpeechT]
-) -> list[PartOfSpeechT]:
-    new_fragment = []
-    for word in fragment:
-        if isinstance(word, Name):
-            if word.spelling in variables:
-                new_fragment.append(variables[word.spelling])
-            else:
-                # raise JValueError(f"Value error: {word.spelling}")
-                new_fragment.append(word.spelling)
-        else:
-            new_fragment.append(word)
-    return new_fragment
-
-
-def _evaluate_words(
-    words: list[PartOfSpeechT],
-    level: int = 0,
-    variables: dict[Name, PartOfSpeechT] | None = None,
-) -> list[PartOfSpeechT]:
-    if variables is None:
-        variables = {}
-
+def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
     if words[0] is not None:
@@ -203,7 +177,7 @@ def _evaluate_words(
         # If the next word closes a parenthesis, we need to evaluate the words inside it
         # first to get the next word to prepend to the fragment.
         if word == ")":
-            word = evaluate_words(words, level=level + 1, variables=variables)
+            word = evaluate_words(words, level=level + 1)
 
         # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
         # entire verb/noun phrase to the left as the next word to prepend to the fragment.
@@ -216,11 +190,6 @@ def _evaluate_words(
 
         # fmt: off
         while True:
-
-            # Replace any variables in the fragment with their values.
-            # TODO: name the variable something else - want to look up the variable value each time.
-            fragment = _fragment_name_to_parts_of_speech(fragment, variables)
-
             match fragment:
 
                 # 0. Monad
@@ -302,10 +271,8 @@ def _evaluate_words(
                     fragment[1:] = [result]
 
                 # 7. Is
-                case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), *_:
-                    name, _, cavn, *last = fragment
-                    variables[name] = cavn
-                    fragment = [name, *last]
+                case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), _:
+                    raise NotImplementedError("copula")
 
                 # 8. Parentheses
                 # Differs from the J source as it does not match ")" and instead checks

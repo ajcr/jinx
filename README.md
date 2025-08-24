@@ -45,11 +45,7 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 ```
 - Building and printing nested boxes containing heterogenous datatypes:
 ```j
-<<<<<<< Updated upstream
     (<<'abc'),(<(<'de',.'fg'),(<<i. 5 2)),(<(<"0 ] % i. 2 2 3))
-=======
-    (<<'abc'),(<(<'de'),(<<i. 5 2)),(<(<"0 ] % i. 2 2 3))
->>>>>>> Stashed changes
 ┌─────┬──────────┬────────────────────────────┐
 │┌───┐│┌──┬─────┐│┌────────┬────────┬────────┐│
 ││abc│││df│┌───┐│││_       │1       │0.5     ││

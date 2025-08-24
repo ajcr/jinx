@@ -65,8 +65,9 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 
 This project is an ongoing learning exercise. There will be bugs, missing features and performance quirks.
 
-Key parts of J not yet implemented in Jinx yet, but might be in future. These include:
+Some key parts of J are not currently implemented in Jinx, but might be in future. These include:
 - Locales.
+- Definitions and direct definitions (using `{{ ... }}`).
 - Array types other than floats, integers and and strings.
-- Numerous primitives (verbs, conjunctions).
+- Executing scripts.
 - Control words.

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Atom, Array, DataType, Verb
+from jinx.vocabulary import Atom, Array, DataType, Verb, Name
 from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
@@ -757,3 +757,89 @@ def test_word_evaluation_build_verb(words, expected):
     assert len(result) == 2
     assert isinstance(result[1], Verb)
     assert result[1].spelling == expected
+
+
+@pytest.mark.parametrize(
+    "words, assignment, expected",
+    [
+        pytest.param(
+            [
+                Name(spelling="a"),
+                PRIMITIVE_MAP["EQDOT"],
+                Atom(data_type=DataType.Integer, data=3),
+            ],
+            Atom(data_type=DataType.Integer, data=3, implementation=np.int64(3)),
+            Name(spelling="a"),
+            id="a =: 3",
+        ),
+        pytest.param(
+            [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], Name(spelling="b")],
+            Name(spelling="b"),
+            Name(spelling="a"),
+            id="a =: b",
+        ),
+    ],
+)
+def test_word_evaluation_with_single_assignment(words, assignment, expected):
+    variables = {}
+    result = evaluate_words(words, variables=variables)
+    assert variables["a"] == assignment
+    assert len(result) == 2
+    assert result[1] == expected
+
+
+def test_word_evaluation_with_reassignment():
+    variables = {}
+
+    # a =: 3
+    words = [
+        Name(spelling="a"),
+        PRIMITIVE_MAP["EQDOT"],
+        Atom(data_type=DataType.Integer, data=3),
+    ]
+    result = evaluate_words(words, variables=variables)
+
+    assert variables["a"] == Atom(
+        data_type=DataType.Integer, data=3, implementation=np.int64(3)
+    )
+    assert result[1] == Name(spelling="a")
+
+    # a =: +
+    words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], PRIMITIVE_MAP["PLUS"]]
+    result = evaluate_words(words, variables=variables)
+
+    assert variables["a"] == PRIMITIVE_MAP["PLUS"]
+    assert result[1] == Name(spelling="a")
+
+
+def test_word_evaluation_with_single_name_as_verb():
+    variables = {"a": PRIMITIVE_MAP["PLUS"]}
+    words = [
+        Atom(data_type=DataType.Integer, data=2),
+        Name(spelling="a"),
+        Atom(data_type=DataType.Integer, data=3),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 5
+
+
+def test_word_evaluation_with_single_name_as_adverb():
+    variables = {"a": PRIMITIVE_MAP["SLASH"]}
+    words = [
+        PRIMITIVE_MAP["PLUS"],
+        Name(spelling="a"),
+        Array(data_type=DataType.Integer, data=[3, 5, 7]),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 15
+
+
+def test_word_evaluation_with_names_as_verb_and_adverb():
+    variables = {"a": PRIMITIVE_MAP["PLUS"], "b": PRIMITIVE_MAP["SLASH"]}
+    words = [
+        Name(spelling="a"),
+        Name(spelling="b"),
+        Array(data_type=DataType.Integer, data=[3, 5, 7]),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 15

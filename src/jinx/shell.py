@@ -10,6 +10,10 @@ from jinx.word_evaluation import evaluate_words, print_words
 class Shell(cmd.Cmd):
     prompt = "    "
 
+    def __init__(self):
+        super().__init__()
+        self.variables = {}
+
     def do_exit(self, _):
         return True
 
@@ -21,7 +25,7 @@ class Shell(cmd.Cmd):
             print(e, file=sys.stderr)
             return
         try:
-            words = evaluate_words(words)
+            words = evaluate_words(words, self.variables)
             print_words(words)
         except BaseJError as e:
             print(e, file=sys.stderr)

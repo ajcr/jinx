@@ -54,13 +54,15 @@ def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
 
 
 def print_words(words: list[PartOfSpeechT]) -> None:
-    print(" ".join(str_(word) for word in words if word is not None))
+    value = " ".join(str_(word) for word in words if word is not None)
+    if value:
+        print(value)
 
 
-def evaluate_single_verb_sentence(sentence: str) -> Verb:
+def evaluate_single_verb_sentence(sentence: str, variables) -> Verb:
     tokens = form_words(sentence)
     words = spell_words(tokens)
-    words = _evaluate_words(words)
+    words = _evaluate_words(words, variables)
     assert len(words) == 2 and isinstance(words[1], Verb)
     return words[1]
 
@@ -91,7 +93,14 @@ def build_verb_noun_phrase(
     raise EvaluationError("Unable to build verb/noun phrase")
 
 
-def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
+def evaluate_words(
+    words: list[PartOfSpeechT],
+    variables: dict[str, PartOfSpeechT] | None = None,
+    level: int = 0,
+) -> list[PartOfSpeechT]:
+    if variables is None:
+        variables = {}
+
     # Ensure noun and verb implementations are set according to the chosen execution
     # framework (this is just NumPy for now).
     for word in words:
@@ -113,10 +122,10 @@ def evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpe
     # Verb obverses are converted from strings to Verb objects.
     for word in words:
         if isinstance(word, Verb) and isinstance(word.obverse, str):
-            verb = evaluate_single_verb_sentence(word.obverse)
+            verb = evaluate_single_verb_sentence(word.obverse, variables)
             word.obverse = verb
 
-    return _evaluate_words(words, level=level)
+    return _evaluate_words(words, variables, level=level)
 
 
 def get_parts_to_left(
@@ -157,7 +166,9 @@ def get_parts_to_left(
     return parts_to_left
 
 
-def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSpeechT]:
+def _evaluate_words(
+    words: list[PartOfSpeechT], variables, level: int = 0
+) -> list[PartOfSpeechT]:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
     if words[0] is not None:
@@ -177,7 +188,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
         # If the next word closes a parenthesis, we need to evaluate the words inside it
         # first to get the next word to prepend to the fragment.
         if word == ")":
-            word = evaluate_words(words, level=level + 1)
+            word = evaluate_words(words, variables, level=level + 1)
 
         # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
         # entire verb/noun phrase to the left as the next word to prepend to the fragment.
@@ -190,11 +201,26 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
 
         # fmt: off
         while True:
+
+            # 7. Is
+            # This case (assignment) is checked separately, before names are substituted with their values.
+            # For now we treat =. and =: the same.
             match fragment:
+                case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun() | Name(), *_:
+                    name, _, cavn, *last = fragment
+                    variables[name.spelling] = cavn
+                    fragment = [name, *last]
+                    continue
+
+            # Substitute variable names with their values and do pattern matching. If a match occurs
+            # the original fragment (list of unsubstituted names) is modified.
+            fragment_ = [variables.get(word.spelling, word) if isinstance(word, Name) else word for word in fragment]
+
+            match fragment_:
 
                 # 0. Monad
                 case None | "=." | "=:" | "(", Verb(), Noun():
-                    edge, verb, noun = fragment
+                    edge, verb, noun = fragment_
                     result = apply_monad(verb, noun)
                     if edge == "(" and level > 0:
                         return result
@@ -202,13 +228,13 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
 
                 # 1. Monad
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Adverb() | Verb(), Verb(), Noun():
-                    edge, _, verb, noun = fragment
+                    edge, _, verb, noun = fragment_
                     result = apply_monad(verb, noun)
                     fragment[2:] = [result]
 
                 # 2. Dyad
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Verb(), Noun():
-                    edge, noun, verb, noun_2 = fragment
+                    edge, noun, verb, noun_2 = fragment_
                     result = apply_dyad(verb, noun, noun_2)
                     if edge == "(" and level > 0:
                         return result
@@ -221,7 +247,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     Adverb(),
                     *_,
                 ):
-                    edge, verb, adverb, *last = fragment
+                    edge, verb, adverb, *last = fragment_
                     result = apply_adverb(verb, adverb)
                     if edge == "(" and last == [")"] and level > 0:
                         return result
@@ -235,7 +261,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     Verb() | Noun(),
                     *_,
                 ):
-                    edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment
+                    edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment_
                     result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
                     if edge == "(" and last == [")"] and level > 0:
                         return result
@@ -248,7 +274,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     Verb(),
                     Verb(),
                 ):
-                    edge, verb_or_noun_1, verb_2, verb_3 = fragment
+                    edge, verb_or_noun_1, verb_2, verb_3 = fragment_
                     result = build_fork(verb_or_noun_1, verb_2, verb_3)
                     if edge == "(" and level > 0:
                         return result
@@ -261,7 +287,7 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                     Conjunction() | Adverb() | Verb() | Noun(),
                     *_,
                 ):
-                    edge, cavn1, cavn2, *last = fragment
+                    edge, cavn1, cavn2, *last = fragment_
                     if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):
                         result = build_hook(cavn1, cavn2)
                     else:
@@ -270,15 +296,11 @@ def _evaluate_words(words: list[PartOfSpeechT], level: int = 0) -> list[PartOfSp
                         return result
                     fragment[1:] = [result]
 
-                # 7. Is
-                case Name(), "=." | "=:", Conjunction() | Adverb() | Verb() | Noun(), _:
-                    raise NotImplementedError("copula")
-
                 # 8. Parentheses
                 # Differs from the J source as it does not match ")" and instead checks
                 # the level to ensure that "(" is balanced.
                 case ["(", Conjunction() | Adverb() | Verb() | Noun()]:
-                    _, cavn = fragment
+                    _, cavn = fragment_
                     if level > 0:
                         return cavn
                     raise EvaluationError("Unbalanced parentheses")

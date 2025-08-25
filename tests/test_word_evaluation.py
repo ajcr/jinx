@@ -824,6 +824,8 @@ def test_word_evaluation_with_single_name_as_verb():
 
 
 def test_word_evaluation_with_single_name_as_adverb():
+    # a =: /
+    # a 3 5 7
     variables = {"a": PRIMITIVE_MAP["SLASH"]}
     words = [
         PRIMITIVE_MAP["PLUS"],
@@ -834,7 +836,24 @@ def test_word_evaluation_with_single_name_as_adverb():
     assert result[1].implementation == 15
 
 
+def test_word_evaluation_with_name_to_name_to_verb():
+    # a =: b
+    # b =: +
+    # 2 a 7
+    variables = {"a": Name(spelling="b"), "b": PRIMITIVE_MAP["PLUS"]}
+    words = [
+        Atom(data_type=DataType.Integer, data=2),
+        Name(spelling="a"),
+        Atom(data_type=DataType.Integer, data=7),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 9
+
+
 def test_word_evaluation_with_names_as_verb_and_adverb():
+    # a =: +
+    # b =: /
+    # a b 3 5 7
     variables = {"a": PRIMITIVE_MAP["PLUS"], "b": PRIMITIVE_MAP["SLASH"]}
     words = [
         Name(spelling="a"),
@@ -843,3 +862,31 @@ def test_word_evaluation_with_names_as_verb_and_adverb():
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 15
+
+
+def test_word_evaluation_with_name_assigned_to_itself():
+    # a =: a
+    variables = {}
+    words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], Name(spelling="a")]
+    result = evaluate_words(words, variables=variables)
+    assert variables["a"] == Name(spelling="a")
+    assert result[1] == Name(spelling="a")
+
+
+def test_word_evaluation_with_name_assigned_to_name_to_verb():
+    # a =: b
+    # b =: c
+    # c =: +
+    # 7 a 11
+    variables = {
+        "a": Name(spelling="b"),
+        "b": Name(spelling="c"),
+        "c": PRIMITIVE_MAP["PLUS"],
+    }
+    words = [
+        Atom(data_type=DataType.Integer, data=7),
+        Name(spelling="a"),
+        Atom(data_type=DataType.Integer, data=11),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 18

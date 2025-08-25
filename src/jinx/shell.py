@@ -26,7 +26,7 @@ class Shell(cmd.Cmd):
             return
         try:
             words = evaluate_words(words, self.variables)
-            print_words(words)
+            print_words(words, self.variables)
         except BaseJError as e:
             print(e, file=sys.stderr)
 

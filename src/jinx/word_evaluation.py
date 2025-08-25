@@ -49,17 +49,27 @@ def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
         return noun_to_string(word)
     elif isinstance(word, Verb | Adverb | Conjunction):
         return word.spelling
+    elif isinstance(word, Name):
+        return word.spelling
     else:
         raise NotImplementedError(f"Cannot print word of type {type(word)}")
 
 
-def print_words(words: list[PartOfSpeechT]) -> None:
-    value = " ".join(str_(word) for word in words if word is not None)
+def print_words(
+    words: list[PartOfSpeechT], variables: dict[str, PartOfSpeechT]
+) -> None:
+    value = " ".join(
+        str_(variables[word.spelling]) if isinstance(word, Name) else str_(word)
+        for word in words
+        if word is not None
+    )
     if value:
         print(value)
 
 
-def evaluate_single_verb_sentence(sentence: str, variables) -> Verb:
+def evaluate_single_verb_sentence(
+    sentence: str, variables: dict[str, PartOfSpeechT]
+) -> Verb:
     tokens = form_words(sentence)
     words = spell_words(tokens)
     words = _evaluate_words(words, variables)
@@ -166,6 +176,26 @@ def get_parts_to_left(
     return parts_to_left
 
 
+def name_lookup(name: Name, variables: dict[str, PartOfSpeechT]) -> PartOfSpeechT:
+    """Find the Verb/Adverb/Conjunction/Noun that name is assigned to.
+
+    If we encounter a cycle of names, return the original name.
+    """
+    original_name = name
+    visited = set()
+    while True:
+        var = name.spelling
+        visited.add(var)
+        if var not in variables:
+            return name
+        assignment = variables[var]
+        if not isinstance(assignment, Name):
+            return assignment
+        name = assignment
+        if name.spelling in visited:
+            return original_name
+
+
 def _evaluate_words(
     words: list[PartOfSpeechT], variables, level: int = 0
 ) -> list[PartOfSpeechT]:
@@ -214,7 +244,7 @@ def _evaluate_words(
 
             # Substitute variable names with their values and do pattern matching. If a match occurs
             # the original fragment (list of unsubstituted names) is modified.
-            fragment_ = [variables.get(word.spelling, word) if isinstance(word, Name) else word for word in fragment]
+            fragment_ = [name_lookup(word, variables) if isinstance(word, Name) else word for word in fragment]
 
             match fragment_:
 

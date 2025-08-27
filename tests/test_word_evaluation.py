@@ -890,3 +890,20 @@ def test_word_evaluation_with_name_assigned_to_name_to_verb():
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 18
+
+
+def test_word_evaluation_with_name_assigned_in_expression():
+    # 8 (a =: +) 13
+    variables = {}
+    words = [
+        Atom(data_type=DataType.Integer, data=8),
+        LPAREN,
+        Name(spelling="a"),
+        PRIMITIVE_MAP["EQDOT"],
+        PRIMITIVE_MAP["PLUS"],
+        RPAREN,
+        Atom(data_type=DataType.Integer, data=13),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 21
+    assert variables["a"] == PRIMITIVE_MAP["PLUS"]

@@ -32,6 +32,7 @@ from jinx.execution.application import (
 )
 from jinx.execution.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
+from jinx.errors import JinxNotImplementedError
 from jinx.execution.printing import noun_to_string
 from jinx.execution.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
@@ -326,7 +327,7 @@ def _evaluate_words(
                     if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):
                         result = build_hook(cavn1, cavn2)
                     else:
-                        raise NotImplementedError("Only VV is implemented for hook/adverb matching")
+                        raise JinxNotImplementedError("Only VV is implemented for hook/adverb matching")
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]

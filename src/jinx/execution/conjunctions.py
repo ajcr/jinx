@@ -6,7 +6,7 @@ import functools
 import numpy as np
 
 from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
-from jinx.errors import DomainError
+from jinx.errors import DomainError, JinxNotImplementedError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
@@ -247,7 +247,7 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
     """^: conjunction: power of verb."""
 
     if isinstance(noun_or_verb, Verb):
-        raise NotImplementedError("^: conjunction with verb is not yet implemented")
+        raise JinxNotImplementedError("^: conjunction with verb is not yet implemented")
 
     if isinstance(noun_or_verb, Atom | Array):
         exponent: Atom | Array = noun_or_verb
@@ -276,7 +276,9 @@ def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
         return u
 
     if np.isinf(exponent.implementation).any():
-        raise NotImplementedError("^: with infinite exponent is not yet implemented")
+        raise JinxNotImplementedError(
+            "^: with infinite exponent is not yet implemented"
+        )
 
     if not np.issubdtype(exponent.implementation.dtype, np.integer):
         raise DomainError(

@@ -176,23 +176,28 @@ def get_parts_to_left(
     return parts_to_left
 
 
-def name_lookup(name: Name, variables: dict[str, PartOfSpeechT]) -> PartOfSpeechT:
-    """Find the Verb/Adverb/Conjunction/Noun that name is assigned to.
+def resolve_word(
+    word: PartOfSpeechT, variables: dict[str, PartOfSpeechT]
+) -> PartOfSpeechT:
+    """Find the Verb/Adverb/Conjunction/Noun that a name is assigned to.
 
     If we encounter a cycle of names, return the original name.
     """
-    original_name = name
+    if not isinstance(word, Name):
+        return word
+
+    original_name = word
     visited = set()
     while True:
-        var = name.spelling
+        var = word.spelling
         visited.add(var)
         if var not in variables:
-            return name
+            return word
         assignment = variables[var]
         if not isinstance(assignment, Name):
             return assignment
-        name = assignment
-        if name.spelling in visited:
+        word = assignment
+        if word.spelling in visited:
             return original_name
 
 
@@ -244,7 +249,7 @@ def _evaluate_words(
 
             # Substitute variable names with their values and do pattern matching. If a match occurs
             # the original fragment (list of unsubstituted names) is modified.
-            fragment_ = [name_lookup(word, variables) if isinstance(word, Name) else word for word in fragment]
+            fragment_ = [resolve_word(word, variables) for word in fragment]
 
             match fragment_:
 

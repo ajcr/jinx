@@ -466,9 +466,6 @@ def slashco_monad(y: np.ndarray) -> np.ndarray:
 
 def slashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """/: monad: sort y in increasing order."""
-    if not np.issubdtype(x.dtype, np.integer):
-        raise JIndexError
-
     y = np.atleast_1d(y)
 
     if is_same_array(x, y):
@@ -497,9 +494,6 @@ def bslashco_monad(y: np.ndarray) -> np.ndarray:
 
 def bslashco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     r"""\: dyad: sort y in decreasing order."""
-    if not np.issubdtype(x.dtype, np.integer):
-        raise JIndexError
-
     y = np.atleast_1d(y)
 
     if is_same_array(x, y):

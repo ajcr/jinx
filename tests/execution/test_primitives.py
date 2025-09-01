@@ -4,6 +4,7 @@ import numpy as np
 from src.jinx.execution.conversion import box_dtype
 from src.jinx.execution.verbs import (
     comma_dyad,
+    commadot_dyad,
     dollar_dyad,
     dollar_monad,
     gt_monad,
@@ -344,4 +345,30 @@ def test_numberco_monad(y, expected):
 )
 def test_commaco_dyad(x, y, expected):
     result = commaco_dyad(x, y)
+    np.testing.assert_array_equal(result, expected, strict=True)
+
+
+@pytest.mark.parametrize(
+    "x, y, expected",
+    [
+        pytest.param(np.array(1), np.array(2), np.array([1, 2]), id="1 ,. 2"),
+        pytest.param(
+            np.array([1, 2]), np.array(3), np.array([[1, 3], [2, 3]]), id="1 2 ,. 3"
+        ),
+        pytest.param(
+            np.array([1, 2]),
+            np.array([3, 4]),
+            np.array([[1, 3], [2, 4]]),
+            id="1 2 ,. 3 4",
+        ),
+        pytest.param(
+            np.array([[1, 2], [3, 4]]),
+            np.array([5, 6]),
+            np.array([[1, 2, 5], [3, 4, 6]]),
+            id="(>:i.2 2) ,. (5 6)",
+        ),
+    ],
+)
+def test_commadot_dyad(x, y, expected):
+    result = commadot_dyad(x, y)
     np.testing.assert_array_equal(result, expected, strict=True)

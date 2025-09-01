@@ -716,6 +716,21 @@ def test_word_evaluation_hook_correct_result(words, expected):
             ),
             id=";(i. 3 2 3);(i. 2 1);6;9 2",
         ),
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["IDOT"],
+                Atom(data_type=DataType.Integer, data=3),
+                RPAREN,
+                PRIMITIVE_MAP["COMMADOT"],
+                PRIMITIVE_MAP["RANK"],
+                Atom(data_type=DataType.Integer, data=0),
+                PRIMITIVE_MAP["SQUARERF"],
+                Atom(data_type=DataType.Integer, data=9),
+            ],
+            np.array([[0, 9], [1, 9], [2, 9]]),
+            id='(i.3) ,."0 ] 9',
+        ),
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):

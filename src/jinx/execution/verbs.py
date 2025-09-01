@@ -210,7 +210,10 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     for x_item, y_item in zip(x, y, strict=True):
         result.append(comma_dyad(x_item, y_item))
 
-    result = maybe_pad_with_fill_value(result)
+    if len(result) > 1:
+        result = maybe_pad_with_fill_value(result)
+    else:
+        result = result[0]
     return np.asarray(result)
 
 

@@ -332,7 +332,10 @@ def _evaluate_words(
                     if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):
                         result = build_hook(cavn1, cavn2)
                     else:
-                        raise JinxNotImplementedError("Only VV is implemented for hook/adverb matching")
+                        raise JinxNotImplementedError(
+                            f"Currently only 'Verb Verb' is implemented for hook/adverb matching, got "
+                            f"{cavn1.spelling}{cavn2.spelling} ('{type(cavn1).__name__} {type(cavn2).__name__}')"
+                        )
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]

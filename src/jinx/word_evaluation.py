@@ -140,7 +140,10 @@ def evaluate_words(
 
 
 def get_parts_to_left(
-    word: PartOfSpeechT, words: list[PartOfSpeechT | str], current_level: int
+    word: PartOfSpeechT,
+    words: list[PartOfSpeechT | str],
+    current_level: int,
+    variables: dict[str, PartOfSpeechT],
 ) -> list[PartOfSpeechT]:
     """Get the parts of speach to the left of the current word, modifying list of remaining words.
 
@@ -150,6 +153,7 @@ def get_parts_to_left(
     parts_to_left = []
 
     while words:
+        word = resolve_word(word, variables)
         # A verb/noun phrase starts with a verb/noun which does not have a conjunction to its left.
         if isinstance(word, Noun | Verb):
             if not isinstance(words[-1], Conjunction):
@@ -190,11 +194,10 @@ def resolve_word(
     original_name = word
     visited = set()
     while True:
-        var = word.spelling
-        visited.add(var)
-        if var not in variables:
+        visited.add(word.spelling)
+        if word.spelling not in variables:
             return word
-        assignment = variables[var]
+        assignment = variables[word.spelling]
         if not isinstance(assignment, Name):
             return assignment
         word = assignment
@@ -229,8 +232,10 @@ def _evaluate_words(
         # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
         # entire verb/noun phrase to the left as the next word to prepend to the fragment.
         # Contrary to usual parsing and evaluation, the verb/noun phrase is evaluated left-to-right.
-        if fragment and isinstance(fragment[0], Adverb | Conjunction):
-            parts_to_left = get_parts_to_left(word, words, level)
+        if fragment and isinstance(
+            resolve_word(fragment[0], variables), Adverb | Conjunction
+        ):
+            parts_to_left = get_parts_to_left(word, words, level, variables=variables)
             word = build_verb_noun_phrase(parts_to_left)
 
         fragment = [word, *fragment]

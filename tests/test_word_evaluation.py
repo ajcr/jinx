@@ -907,3 +907,17 @@ def test_word_evaluation_with_name_assigned_in_expression():
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 21
     assert variables["a"] == PRIMITIVE_MAP["PLUS"]
+
+
+def test_word_evaluation_with_name_part_of_conjunction():
+    # a"0 ] 3"
+    variables = {"a": PRIMITIVE_MAP["PLUS"]}
+    words = [
+        Name(spelling="a"),
+        PRIMITIVE_MAP["RANK"],
+        Atom(data_type=DataType.Integer, data=0),
+        PRIMITIVE_MAP["SQUARERF"],
+        Atom(data_type=DataType.Integer, data=3),
+    ]
+    result = evaluate_words(words, variables=variables)
+    assert result[1].implementation == 3

@@ -25,5 +25,9 @@ class SpellingError(BaseJError):
     pass
 
 
+class StackError(BaseJError):
+    pass
+
+
 class JinxNotImplementedError(BaseJError):
     """Raised when a feature is not implemented in Jinx."""

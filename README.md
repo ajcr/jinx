@@ -63,11 +63,12 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 
 ## Warning
 
-This project is an ongoing learning exercise. There will be bugs, missing features and performance quirks.
+This project is experimental. There will be bugs, missing features and performance quirks.
 
-Some key parts of J are not currently implemented in Jinx, but might be in future. These include:
+Some key parts of J are not currently implemented in Jinx (but might be in future). These include:
+- Differences in how names are interpreted and resolved at execution time.
 - Locales.
 - Definitions and direct definitions (using `{{ ... }}`).
 - Array types other than floats, integers and and strings.
-- Executing scripts.
+- Executing J scripts.
 - Control words.

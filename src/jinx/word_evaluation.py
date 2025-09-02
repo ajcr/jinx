@@ -32,15 +32,11 @@ from jinx.execution.application import (
 )
 from jinx.execution.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
-from jinx.errors import JinxNotImplementedError
+from jinx.errors import JinxNotImplementedError, EvaluationError, JSyntaxError
 from jinx.execution.printing import noun_to_string
 from jinx.execution.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
-
-
-class EvaluationError(Exception):
-    pass
 
 
 def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
@@ -329,13 +325,17 @@ def _evaluate_words(
                     *_,
                 ):
                     edge, cavn1, cavn2, *last = fragment_
-                    if isinstance(cavn1, Verb) and isinstance(cavn2, Verb):
-                        result = build_hook(cavn1, cavn2)
-                    else:
-                        raise JinxNotImplementedError(
-                            f"Currently only 'Verb Verb' is implemented for hook/adverb matching, got "
-                            f"{cavn1.spelling}{cavn2.spelling} ('{type(cavn1).__name__} {type(cavn2).__name__}')"
-                        )
+                    match [cavn1, cavn2]:
+                        case [Verb(), Verb()]:
+                            result = build_hook(cavn1, cavn2)
+                        case [Adverb(), Adverb()] | [Conjunction() , Noun()] | [Conjunction(), Verb()] | [Noun(), Conjunction()] | [Verb(), Conjunction()]:
+                            # These are valid combinations but not implemented yet.
+                            raise JinxNotImplementedError(
+                                f"Jinx error: currently only 'Verb Verb' is implemented for hook/adverb matching, got "
+                                f"({type(cavn1).__name__} {type(cavn2).__name__})"
+                            )
+                        case _:
+                            raise JSyntaxError(f"syntax error: unexecutable fragment ({type(cavn1).__name__} {type(cavn2).__name__})")
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]
@@ -356,6 +356,8 @@ def _evaluate_words(
         # fmt: on
 
     if len(fragment) > 2:
-        raise EvaluationError("Unexecutable fragment")
+        raise EvaluationError(
+            f"Unexecutable fragment: {[str_(w) for w in fragment if w is not None]}"
+        )
 
     return fragment

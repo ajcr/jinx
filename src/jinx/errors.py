@@ -29,5 +29,13 @@ class StackError(BaseJError):
     pass
 
 
+class EvaluationError(BaseJError):
+    pass
+
+
+class JSyntaxError(BaseJError):
+    pass
+
+
 class JinxNotImplementedError(BaseJError):
     """Raised when a feature is not implemented in Jinx."""

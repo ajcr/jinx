@@ -2,8 +2,11 @@
 
 Names of sequences of characters that are assigned some meaning in the J language.
 
-These objects are not tied to their implementation here and are just used for
-spelling (recognition of fragments of a sentence).
+These objects are not tied to their implementation here and are defined here for
+spelling (recognition of fragments of a sentence) and rank and obverse lookups.
+
+The functions that implement these primitives are added at evaluation time (this allows
+potentially different implementations to be used, e.g. pure Python, NumPy, etc.).
 
 See:
 - https://code.jsoftware.com/wiki/NuVoc

@@ -18,7 +18,13 @@ import random
 
 import numpy as np
 
-from jinx.errors import DomainError, JIndexError, LengthError, ValenceError
+from jinx.errors import (
+    DomainError,
+    JIndexError,
+    LengthError,
+    ValenceError,
+    JinxNotImplementedError,
+)
 from jinx.execution.conversion import box_dtype, is_box
 from jinx.execution.helpers import (
     get_fill_value,
@@ -569,7 +575,7 @@ def curlylfdot_monad(y: np.ndarray) -> np.ndarray:
     return y[0]
 
 
-def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+def curlylfdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """{. dyad: the leading x items of y."""
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
@@ -582,8 +588,10 @@ def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     for dim, take in enumerate(x):
         if take == 0:
-            raise NotImplementedError("Dimension with 0 items is not supported")
-        if take > y.shape[dim]:
+            raise JinxNotImplementedError(
+                "{. dyad: Dimension with 0 items is not supported"
+            )
+        elif take > y.shape[dim]:
             padding.append((0, take - y.shape[dim]))
             slices.append(slice(None))
         elif take < -y.shape[dim]:
@@ -600,7 +608,52 @@ def curlylfco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         padding += [(0, 0)] * (y.ndim - len(x))
 
     result = y[tuple(slices)]
-    result = np.pad(result, padding, mode="constant", constant_values=0)
+    result = np.pad(result, padding, mode="constant", constant_values=get_fill_value(y))
+    return result
+
+
+def curlyrtdot_monad(y: np.ndarray) -> np.ndarray:
+    """}. monad: drop leading item from y."""
+    y = np.atleast_1d(y)
+    if y.size == 0:
+        return np.array([])
+    return y[1:]
+
+
+def curlyrtdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """}. monad: drop leading x items from y."""
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    if len(x) > y.ndim:
+        raise LengthError(f"x has {len(x)} atoms but y has only {y.ndim} axes")
+
+    if y.size == 0:
+        return np.array([])
+
+    padding = []
+    slices = []
+
+    for dim, drop in enumerate(x):
+        if drop == 0:
+            padding.append((0, 0))
+            slices.append(slice(None))
+        elif drop > y.shape[dim]:
+            raise JinxNotImplementedError("}. dyad: empty dimension is not supported")
+        elif drop < -y.shape[dim]:
+            raise JinxNotImplementedError("}. dyad: empty dimension is not supported")
+        elif drop < 0:
+            padding.append((0, 0))
+            slices.append(slice(None, y.shape[dim] + drop))
+        else:
+            padding.append((0, 0))
+            slices.append(slice(drop, None))
+
+    if len(x) < y.ndim:
+        padding += [(0, 0)] * (y.ndim - len(x))
+
+    result = y[tuple(slices)]
+    result = np.pad(result, padding, mode="constant", constant_values=get_fill_value(y))
     return result
 
 
@@ -754,7 +807,8 @@ VERB_MAP = {
     "BSLASHCO": (bslashco_monad, bslashco_dyad),
     "BANG": (bang_monad, bang_dyad),
     "CURLYLF": (NotImplemented, curlylf_dyad),
-    "CURLYLFDOT": (curlylfdot_monad, curlylfco_dyad),
+    "CURLYLFDOT": (curlylfdot_monad, curlylfdot_dyad),
+    "CURLYRTDOT": (curlyrtdot_monad, curlyrtdot_dyad),
     "CURLYLFCO": (curlylfco_monad, None),
     "CURLYRTCO": (curlyrtco_monad, None),
     "SEMI": (semi_monad, semi_dyad),

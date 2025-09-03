@@ -762,11 +762,20 @@ def query_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return rng.choice(y, size=x, replace=False)
 
 
+def cast_bool_to_int(func):
+    @mark_ufunc_based
+    def func_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        result = func(x, y)
+        return result.view(np.int8)
+
+    return func_
+
+
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
 # Use None for monadic or dyadic valences of the verb do not exist in J.
 VERB_MAP = {
     # VERB: (MONAD, DYAD)
-    "EQ": (eq_monad, np.equal),
+    "EQ": (eq_monad, cast_bool_to_int(np.equal)),
     "MINUS": (np.negative, np.subtract),
     "MINUSDOT": (minusdot_monad, NotImplemented),
     "MINUSCO": (minusco_monad, minusco_dyad),
@@ -781,16 +790,16 @@ VERB_MAP = {
     "HAT": (np.exp, np.power),
     "HATDOT": (np.log, hatdot_dyad),
     "DOLLAR": (dollar_monad, dollar_dyad),
-    "LT": (lt_monad, np.less),
+    "LT": (lt_monad, cast_bool_to_int(np.less)),
     "LTDOT": (np.floor, np.minimum),
-    "LTCO": (ltco_monad, np.less_equal),
-    "GT": (gt_monad, np.greater),
+    "LTCO": (ltco_monad, cast_bool_to_int(np.less_equal)),
+    "GT": (gt_monad, cast_bool_to_int(np.greater)),
     "GTDOT": (np.ceil, np.maximum),
-    "GTCO": (gtco_monad, np.greater_equal),
+    "GTCO": (gtco_monad, cast_bool_to_int(np.greater_equal)),
     "IDOT": (idot_monad, NotImplemented),
     "ICAPDOT": (icapdot_monad, NotImplemented),
     "TILDEDOT": (tildedot_monad, None),
-    "TILDECO": (tildeco_monad, np.not_equal),
+    "TILDECO": (tildeco_monad, cast_bool_to_int(np.not_equal)),
     "COMMA": (comma_monad, comma_dyad),
     "COMMADOT": (commadot_monad, commadot_dyad),
     "COMMACO": (commaco_monad, commaco_dyad),

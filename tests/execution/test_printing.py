@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from src.jinx.vocabulary import Array, DataType
+from src.jinx.vocabulary import Noun, DataType
 from src.jinx.execution.printing import noun_to_string
 from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
 
@@ -10,43 +10,41 @@ from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
     "array, expected",
     [
         pytest.param(
-            Array(data_type=DataType.Integer, implementation=np.array([9])),
+            Noun(data_type=DataType.Integer, implementation=np.array([9])),
             "9",
             id="[9]",
         ),
         pytest.param(
-            Array(data_type=DataType.Integer, implementation=np.array([1, 2, 3])),
+            Noun(data_type=DataType.Integer, implementation=np.array([1, 2, 3])),
             "1 2 3",
             id="[1, 2, 3]",
         ),
         pytest.param(
-            Array(data_type=DataType.Integer, implementation=np.array([1, 2, 3, 4, 5])),
+            Noun(data_type=DataType.Integer, implementation=np.array([1, 2, 3, 4, 5])),
             "1 2 3 4 5",
             id="[1, 2, 3, 4, 5]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer, implementation=np.array([1, 2, 3, 4, 5, 6])
             ),
             "1 2 3 4 5 ...",
             id="[1, 2, 3, 4, 5, 6]",
         ),
         pytest.param(
-            Array(
-                data_type=DataType.Integer, implementation=np.array([[1, 2], [3, 4]])
-            ),
+            Noun(data_type=DataType.Integer, implementation=np.array([[1, 2], [3, 4]])),
             "1 2\n3 4",
             id="[[1, 2], [3, 4]]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer, implementation=np.array([[1, 2], [999, 4]])
             ),
             "  1 2\n999 4",
             id="[[1, 2], [999, 4]]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer,
                 implementation=np.array([[1, 2, 3, 4, 5, 6], [999, 1, 1, 1, 1, 1]]),
             ),
@@ -54,14 +52,14 @@ from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
             id="[[1, 2, 3, 4, 5,6 ], [999, 1, 1, 1, 1, 1]]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer, implementation=np.array([[1, 2], [-999, 4]])
             ),
             "   1 2\n_999 4",
             id="[[1, 2], [-999, 4]]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer,
                 implementation=np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]),
             ),
@@ -69,7 +67,7 @@ from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
             id="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Integer,
                 implementation=np.array([[[1, 2], [3, 4]], [[5, 6], [999, 8]]]),
             ),
@@ -87,24 +85,24 @@ def test_noun_to_string(array, expected):
     "array, expected",
     [
         pytest.param(
-            Array(data_type=DataType.Box, implementation=lt_monad(np.array(9))),
+            Noun(data_type=DataType.Box, implementation=lt_monad(np.array(9))),
             "┌─┐\n│9│\n└─┘",
             id="<9",
         ),
         pytest.param(
-            Array(data_type=DataType.Box, implementation=lt_monad(np.array([9]))),
+            Noun(data_type=DataType.Box, implementation=lt_monad(np.array([9]))),
             "┌─┐\n│9│\n└─┘",
             id="<9",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Box, implementation=lt_monad(lt_monad(np.array(3)))
             ),
             "┌───┐\n│┌─┐│\n││3││\n│└─┘│\n└───┘",
             id="<<3",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Box,
                 implementation=semi_dyad(lt_monad(np.array(3)), np.array(5)),
             ),
@@ -112,7 +110,7 @@ def test_noun_to_string(array, expected):
             id="(<3);5",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Box,
                 implementation=dollar_dyad(
                     np.array([2, 2]),
@@ -126,7 +124,7 @@ def test_noun_to_string(array, expected):
             id="2 2 $ 1000;1;10;100",
         ),
         pytest.param(
-            Array(
+            Noun(
                 data_type=DataType.Box,
                 implementation=semi_dyad(
                     np.array(list("alpha")),

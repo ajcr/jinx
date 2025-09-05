@@ -5,7 +5,7 @@ import functools
 
 import numpy as np
 
-from jinx.vocabulary import Verb, Atom, Array, Monad, Dyad
+from jinx.vocabulary import Verb, Noun, Monad, Dyad
 from jinx.errors import DomainError, JinxNotImplementedError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.helpers import (
@@ -71,7 +71,7 @@ def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
     )
 
 
-def rank_conjunction(verb: Verb, noun: Atom | Array) -> Verb:
+def rank_conjunction(verb: Verb, noun: Noun) -> Verb:
     rank = np.atleast_1d(noun.implementation).tolist()
     return _modify_rank(verb, rank)
 
@@ -150,17 +150,17 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
-def ampm_conjunction(left: Verb | Atom | Array, right: Verb | Atom | Array) -> Verb:
+def ampm_conjunction(left: Verb | Noun, right: Verb | Noun) -> Verb:
     """& conjunction: make a monad from a dyad by providing the left or right noun argument,
     or compose two verbs."""
-    if isinstance(left, Atom | Array) and isinstance(right, Verb):
+    if isinstance(left, Noun) and isinstance(right, Verb):
         function = functools.partial(right.dyad.function, left.implementation)
         verb_spelling = maybe_parenthesise_verb_spelling(right.spelling)
         spelling = f"{left.implementation}&{verb_spelling}"
         monad = Monad(name=spelling, rank=right.dyad.right_rank, function=function)
         dyad = None
 
-    elif isinstance(left, Verb) and isinstance(right, Atom | Array):
+    elif isinstance(left, Verb) and isinstance(right, Noun):
         # functools.partial cannot be used to apply to right argument of ufuncs
         # as they do not accept kwargs, so we need to wrap the function.
         def _wrapper(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -243,14 +243,14 @@ def ampdot_conjunction(u: Verb, v: Verb) -> Verb:
     return _modify_rank(verb, v.monad.rank)
 
 
-def hatco_conjunction(u: Verb, noun_or_verb: Atom | Array | Verb) -> Verb:
+def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
     """^: conjunction: power of verb."""
 
     if isinstance(noun_or_verb, Verb):
         raise JinxNotImplementedError("^: conjunction with verb is not yet implemented")
 
-    if isinstance(noun_or_verb, Atom | Array):
-        exponent: Atom | Array = noun_or_verb
+    if isinstance(noun_or_verb, Noun):
+        exponent: Noun = noun_or_verb
 
     if exponent.implementation.size == 0:
         raise DomainError(

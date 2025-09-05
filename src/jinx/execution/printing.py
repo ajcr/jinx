@@ -5,15 +5,15 @@ import os
 
 import numpy as np
 
-from jinx.vocabulary import Atom, Array
+from jinx.vocabulary import Noun
 from jinx.execution.conversion import is_box
 
 
 MAX_COLS = 100
 
 
-def noun_to_string(noun: Atom | Array, max_cols: int = MAX_COLS) -> str:
-    """Convert a noun (Atom or Array) to a string representation."""
+def noun_to_string(noun: Noun, max_cols: int = MAX_COLS) -> str:
+    """Convert a noun to a string representation."""
     arr = noun.implementation
     rows = array_to_rows(arr, max_cols=max_cols)
     return os.linesep.join(rows)

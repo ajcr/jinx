@@ -43,33 +43,16 @@ class DataType(Enum):
     Box = auto()
 
 
-@dataclass
-class Noun:
-    pass
-
-
 @dataclass(kw_only=True)
-class Atom(Noun):
+class Noun:
     data_type: DataType
     """Data type of value."""
 
-    data: int | float | str | None = None
-    """Data to represent the atom's value, parsed from the word."""
+    data: list[int | float | str] | None = None
+    """Data to represent the value itself, parsed from the word."""
 
     implementation: Any = None
-    """Implementation of the atom, e.g. a NumPy scalar."""
-
-
-@dataclass(kw_only=True)
-class Array(Noun):
-    data_type: DataType
-    """Data type of values in the array."""
-
-    data: list[int | float] | str | None = None
-    """Data to represent the values in the array, parsed from the word."""
-
-    implementation: Any = None
-    """Implementation of the atom, e.g. a NumPy array."""
+    """Implementation of the noun, e.g. a NumPy array."""
 
 
 @dataclass

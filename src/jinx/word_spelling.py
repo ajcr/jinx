@@ -15,9 +15,8 @@ from jinx.errors import SpellingError
 from jinx.primitives import PRIMITIVES
 from jinx.vocabulary import (
     Word,
-    Atom,
+    Noun,
     PartOfSpeechT,
-    Array,
     DataType,
     Comment,
     Name,
@@ -50,7 +49,7 @@ def parse_float(word: str) -> float | None:
     return float(word)
 
 
-def spell_numeric(word: Word) -> Atom | Array:
+def spell_numeric(word: Word) -> Noun:
     values = word.value.split()
     numbers = []
     data_type = DataType.Integer
@@ -69,19 +68,12 @@ def spell_numeric(word: Word) -> Atom | Array:
 
         raise SpellingError(f"Ill-formed number: {value}")
 
-    if len(numbers) == 1:
-        return Atom(data_type=data_type, data=numbers[0])
-
-    return Array(data_type=data_type, data=numbers)
+    return Noun(data_type=data_type, data=numbers)
 
 
-def spell_quoted(word: Word) -> Atom | Array:
-    assert word.value[0] == "'" and word.value[-1] == "'"
-
+def spell_quoted(word: Word) -> Noun:
     data = word.value[1:-1]
-    if len(data) <= 1:
-        return Atom(data_type=DataType.Byte, data=data)
-    return Array(data_type=DataType.Byte, data=list(data))
+    return Noun(data_type=DataType.Byte, data=list(data))
 
 
 PRIMITIVE_MAP = {primitive.spelling: primitive for primitive in PRIMITIVES}

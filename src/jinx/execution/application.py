@@ -10,7 +10,7 @@ import functools
 
 import numpy as np
 
-from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad, Atom, Array
+from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad
 from jinx.errors import LengthError, ValenceError, JinxNotImplementedError
 from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
 from jinx.execution.helpers import maybe_pad_with_fill_value, is_ufunc_based
@@ -263,7 +263,7 @@ def build_hook(f: Verb, g: Verb) -> Verb:
     )
 
 
-def build_fork(f: Verb | Atom | Array, g: Verb, h: Verb) -> Verb:
+def build_fork(f: Verb | Noun, g: Verb, h: Verb) -> Verb:
     """Build a fork given verbs f, g, h.
 
       (f g h) y  ->    (f y) g   (h y)

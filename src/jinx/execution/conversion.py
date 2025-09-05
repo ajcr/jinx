@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from jinx.vocabulary import Atom, Array, DataType, Noun
+from jinx.vocabulary import DataType, Noun
 
 # Define a structured dtype for boxes, which can hold any object.
 #
@@ -37,8 +37,11 @@ def is_box(obj: Any) -> bool:
     return getattr(obj, "dtype", None) == box_dtype
 
 
-def convert_noun_np(noun: Atom | Array) -> np.ndarray:
+def convert_noun_np(noun: Noun) -> np.ndarray:
     dtype = DATATYPE_TO_NP_MAP[noun.data_type]
+    if len(noun.data) == 1:
+        # A scalar (ndim == 0) is returned for single element arrays.
+        return np.array(noun.data[0], dtype=dtype)
     return np.array(noun.data, dtype=dtype)
 
 
@@ -66,9 +69,7 @@ def infer_data_type(data):
 
 def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun:
     data_type = infer_data_type(data)
-    if np.isscalar(data) or data.ndim == 0:
-        return Atom(data_type=data_type, implementation=data)
-    return Array(data_type=data_type, implementation=data)
+    return Noun(data_type=data_type, implementation=data)
 
 
 def is_ufunc(func: callable) -> bool:

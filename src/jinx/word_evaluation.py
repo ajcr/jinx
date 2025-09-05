@@ -18,8 +18,6 @@ from jinx.vocabulary import (
     Name,
     Comment,
     Copula,
-    Atom,
-    Array,
 )
 
 from jinx.execution.application import (
@@ -39,10 +37,10 @@ from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
 
 
-def str_(word: Atom | Array | Verb | Conjunction | Adverb) -> str:
+def str_(word: Noun | Verb | Conjunction | Adverb) -> str:
     if isinstance(word, str):
         return word
-    if isinstance(word, Atom | Array):
+    if isinstance(word, Noun):
         return noun_to_string(word)
     elif isinstance(word, Verb | Adverb | Conjunction):
         return word.spelling

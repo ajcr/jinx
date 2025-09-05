@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from jinx.vocabulary import Atom, Array, DataType, Verb, Name
+from jinx.vocabulary import Noun, DataType, Verb, Name
 from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
@@ -28,18 +28,24 @@ RANK = PRIMITIVE_MAP["RANK"]
     "words, expected",
     [
         pytest.param(
-            [Atom(data_type=DataType.Integer, data=1)],
-            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
+            [Noun(data_type=DataType.Integer, data=[1])],
+            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
             id="1",
         ),
         pytest.param(
-            [LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN],
-            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
+            [LPAREN, Noun(data_type=DataType.Integer, data=[1]), RPAREN],
+            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
             id="(1)",
         ),
         pytest.param(
-            [LPAREN, LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN, RPAREN],
-            [Atom(data_type=DataType.Integer, data=1, implementation=np.array(1))],
+            [
+                LPAREN,
+                LPAREN,
+                Noun(data_type=DataType.Integer, data=[1]),
+                RPAREN,
+                RPAREN,
+            ],
+            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
             id="((1))",
         ),
         pytest.param(
@@ -53,18 +59,18 @@ RANK = PRIMITIVE_MAP["RANK"]
             id="(-)",
         ),
         pytest.param(
-            [MINUS, Atom(data_type=DataType.Integer, data=1)],
+            [MINUS, Noun(data_type=DataType.Integer, data=[1])],
             [
-                Atom(
+                Noun(
                     data_type=DataType.Integer, data=None, implementation=np.int64(-1)
                 ),
             ],
             id="-1",
         ),
         pytest.param(
-            [MINUS, LPAREN, Atom(data_type=DataType.Integer, data=1), RPAREN],
+            [MINUS, LPAREN, Noun(data_type=DataType.Integer, data=[1]), RPAREN],
             [
-                Atom(
+                Noun(
                     data_type=DataType.Integer, data=None, implementation=np.int64(-1)
                 ),
             ],
@@ -76,11 +82,11 @@ RANK = PRIMITIVE_MAP["RANK"]
                 MINUS,
                 RPAREN,
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 RPAREN,
             ],
             [
-                Atom(
+                Noun(
                     data_type=DataType.Integer, data=None, implementation=np.int64(-1)
                 ),
             ],
@@ -88,44 +94,44 @@ RANK = PRIMITIVE_MAP["RANK"]
         ),
         pytest.param(
             [
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 MINUS,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
             ],
             id="1-1",
         ),
         pytest.param(
             [
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 MINUS,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 RPAREN,
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
             ],
             id="(1-1)",
         ),
         pytest.param(
             [
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=8),
+                Noun(data_type=DataType.Integer, data=[8]),
                 MINUS,
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 MINUS,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
                 RPAREN,
                 PLUS,
-                Atom(data_type=DataType.Integer, data=3),
+                Noun(data_type=DataType.Integer, data=[3]),
             ],
             [
-                Atom(
+                Noun(
                     data_type=DataType.Integer, data=None, implementation=np.int64(15)
                 ),
             ],
@@ -135,18 +141,18 @@ RANK = PRIMITIVE_MAP["RANK"]
             [
                 LPAREN,
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=8),
+                Noun(data_type=DataType.Integer, data=[8]),
                 MINUS,
-                Atom(data_type=DataType.Integer, data=1),
+                Noun(data_type=DataType.Integer, data=[1]),
                 RPAREN,
                 MINUS,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
                 PLUS,
-                Atom(data_type=DataType.Integer, data=3),
+                Noun(data_type=DataType.Integer, data=[3]),
             ],
             [
-                Atom(data_type=DataType.Integer, data=None, implementation=np.int64(5)),
+                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(5)),
             ],
             id="((8 - 1) - 5) + 3",
         ),
@@ -183,13 +189,13 @@ def test_word_evaluation_adverb_creation(words, expected):
     "words, expected",
     [
         pytest.param(
-            [PLUS, SLASH, Atom(data_type=DataType.Integer, data=77)],
-            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
+            [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[77])],
+            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
             id="+/ 77",
         ),
         pytest.param(
-            [PLUS, SLASH, Array(data_type=DataType.Integer, data=[1, 3, 5])],
-            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(9))],
+            [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[1, 3, 5])],
+            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(9))],
             id="+/ 1 3 5",
         ),
         pytest.param(
@@ -197,10 +203,10 @@ def test_word_evaluation_adverb_creation(words, expected):
                 LPAREN,
                 PLUS,
                 SLASH,
-                Array(data_type=DataType.Integer, data=[8, 3, 5]),
+                Noun(data_type=DataType.Integer, data=[8, 3, 5]),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
+            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
             id="(+/ 8 3 5)",
         ),
         pytest.param(
@@ -209,9 +215,9 @@ def test_word_evaluation_adverb_creation(words, expected):
                 PLUS,
                 SLASH,
                 RPAREN,
-                Array(data_type=DataType.Integer, data=[8, 3, 5]),
+                Noun(data_type=DataType.Integer, data=[8, 3, 5]),
             ],
-            [Atom(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
+            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
             id="(+/) 8 3 5",
         ),
     ],
@@ -225,22 +231,22 @@ def test_word_evaluation_adverb_application(words, expected):
     "words, expected_verb_spelling",
     [
         pytest.param(
-            [PLUS, RANK, Atom(data_type=DataType.Integer, data=0)],
+            [PLUS, RANK, Noun(data_type=DataType.Integer, data=[0])],
             '+"0',
             id='+"0',
         ),
         pytest.param(
-            [PLUS, RANK, Atom(data_type=DataType.Integer, data=1)],
+            [PLUS, RANK, Noun(data_type=DataType.Integer, data=[1])],
             '+"1',
             id='+"1',
         ),
         pytest.param(
-            [LPAREN, PLUS, RPAREN, RANK, Atom(data_type=DataType.Integer, data=1)],
+            [LPAREN, PLUS, RPAREN, RANK, Noun(data_type=DataType.Integer, data=[1])],
             '+"1',
             id='(+)"1',
         ),
         pytest.param(
-            [PLUS, SLASH, RANK, Atom(data_type=DataType.Integer, data=2)],
+            [PLUS, SLASH, RANK, Noun(data_type=DataType.Integer, data=[2])],
             '+/"2',
             id='+/"2',
         ),
@@ -250,7 +256,7 @@ def test_word_evaluation_adverb_application(words, expected):
                 SLASH,
                 RANK,
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=2),
+                Noun(data_type=DataType.Integer, data=[2]),
                 RPAREN,
             ],
             '+/"2',
@@ -263,7 +269,7 @@ def test_word_evaluation_adverb_application(words, expected):
                 LPAREN,
                 RANK,
                 RPAREN,
-                Atom(data_type=DataType.Integer, data=2),
+                Noun(data_type=DataType.Integer, data=[2]),
             ],
             '+/"2',
             id='+/(")2',
@@ -287,12 +293,12 @@ def test_word_evaluation_verb_conjunction_noun_application(
             [
                 PLUS,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
             id='+"0 (5)',
         ),
         pytest.param(
@@ -300,11 +306,11 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 LPAREN,
                 PLUS,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 RPAREN,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
             id='(+"0) 5',
         ),
         pytest.param(
@@ -312,13 +318,13 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 LPAREN,
                 PLUS,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 RPAREN,
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
             id='(+"0) (5)',
         ),
     ],
@@ -336,12 +342,12 @@ def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected
                 PLUS,
                 SLASH,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 LPAREN,
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(5))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
             id='+/"0 (5)',
         ),
     ],
@@ -360,11 +366,11 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
             [
                 PLUS,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 PLUS,
-                Atom(data_type=DataType.Integer, data=9),
+                Noun(data_type=DataType.Integer, data=[9]),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
             id='+"0 + 9',
         ),
         pytest.param(
@@ -372,11 +378,11 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 SLASH,
                 RANK,
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 PLUS,
-                Atom(data_type=DataType.Integer, data=9),
+                Noun(data_type=DataType.Integer, data=[9]),
             ],
-            [Atom(data_type=DataType.Integer, implementation=np.int64(9))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
             id='+/"0 + 9',
         ),
     ],
@@ -409,8 +415,8 @@ def test_word_evaluation_hook_produces_single_verb(words):
     "words, expected",
     [
         pytest.param(
-            [LPAREN, PLUS, PERCENT, RPAREN, Atom(data_type=DataType.Integer, data=4)],
-            Atom(data_type=DataType.Float, implementation=np.float64(4.25)),
+            [LPAREN, PLUS, PERCENT, RPAREN, Noun(data_type=DataType.Integer, data=[4])],
+            Noun(data_type=DataType.Float, implementation=np.float64(4.25)),
             id="(+%)4",
         ),
     ],
@@ -432,7 +438,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["PLUSDOT"],
                 IDOT,
                 RPAREN,
-                Atom(data_type=DataType.Integer, data=36),
+                Noun(data_type=DataType.Integer, data=[36]),
             ],
             np.array([1, 2, 3, 4, 6, 9, 12, 18, 36]),
             id="~. |. (+. i.) 36",
@@ -443,7 +449,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["STARCO"],
-                Array(data_type=DataType.Integer, data=[3, 4, 5]),
+                Noun(data_type=DataType.Integer, data=[3, 4, 5]),
             ],
             np.array(50),
             id="+/@:*: 3 4 5",
@@ -451,7 +457,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
         # From: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
         pytest.param(
             [
-                Atom(data_type=DataType.Integer, data=2),
+                Noun(data_type=DataType.Integer, data=[2]),
                 PRIMITIVE_MAP["STAR"],
                 PRIMITIVE_MAP["PERCENTCO"],
                 PRIMITIVE_MAP["AT"],
@@ -459,7 +465,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["STARCO"],
-                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+                Noun(data_type=DataType.Integer, data=[1, 2, 3]),
             ],
             np.array(4.29211),
             id="2 * %: @ + / @: *: 1 2 3",
@@ -467,7 +473,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
         # From: https://code.jsoftware.com/wiki/Vocabulary/Modifiers
         pytest.param(
             [
-                Atom(data_type=DataType.Integer, data=2),
+                Noun(data_type=DataType.Integer, data=[2]),
                 PRIMITIVE_MAP["STAR"],
                 PRIMITIVE_MAP["PERCENTCO"],
                 PRIMITIVE_MAP["AT"],
@@ -477,7 +483,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 RPAREN,
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["STARCO"],
-                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+                Noun(data_type=DataType.Integer, data=[1, 2, 3]),
             ],
             np.array(7.48331),
             id="2 * %: @ (+ /) @: *: 1 2 3",
@@ -488,7 +494,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["TILDE"],
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["IDOT"],
-                Atom(data_type=DataType.Integer, data=10),
+                Noun(data_type=DataType.Integer, data=[10]),
             ],
             np.array(-27),
             id="-~/i.10",
@@ -499,7 +505,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["NUMBER"],
                 PRIMITIVE_MAP["IDOT"],
-                Atom(data_type=DataType.Integer, data=6),
+                Noun(data_type=DataType.Integer, data=[6]),
             ],
             np.array(5),
             id="<:@:#i.6",
@@ -512,21 +518,21 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["NUMBER"],
                 RPAREN,
                 PRIMITIVE_MAP["IDOT"],
-                Atom(data_type=DataType.Integer, data=8),
+                Noun(data_type=DataType.Integer, data=[8]),
             ],
             np.array(7),
             id="(<:@:#)i.8",
         ),
         pytest.param(
             [
-                Array(data_type=DataType.Integer, data=[1, 2, 3]),
+                Noun(data_type=DataType.Integer, data=[1, 2, 3]),
                 PRIMITIVE_MAP["PLUS"],
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["STARCO"],
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["MINUS"],
-                Array(data_type=DataType.Integer, data=[2, 2, 2]),
+                Noun(data_type=DataType.Integer, data=[2, 2, 2]),
             ],
             np.array(2),
             id="1 2 3 +/@:*:@:- 2 2 2",
@@ -548,7 +554,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["BSLASHDOT"],
                 RPAREN,
-                Array(
+                Noun(
                     data_type=DataType.Integer,
                     data=[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
                 ),
@@ -575,7 +581,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["MINUS"],
                 PRIMITIVE_MAP["SQUARERF"],
                 RPAREN,
-                Array(
+                Noun(
                     data_type=DataType.Integer,
                     data=[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
                 ),
@@ -588,11 +594,11 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 LPAREN,
                 PRIMITIVE_MAP["COMMA"],
                 PRIMITIVE_MAP["RANK"],
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 RPAREN,
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["TILDE"],
-                Array(
+                Noun(
                     data_type=DataType.Integer,
                     data=[0, 1, 2],
                 ),
@@ -612,13 +618,13 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 LPAREN,
                 PRIMITIVE_MAP["NUMBER"],
                 PRIMITIVE_MAP["TILDE"],
-                Atom(data_type=DataType.Integer, data=2),
+                Noun(data_type=DataType.Integer, data=[2]),
                 PRIMITIVE_MAP["BAR"],
                 PRIMITIVE_MAP["IDOT"],
                 PRIMITIVE_MAP["AT"],
                 PRIMITIVE_MAP["NUMBER"],
                 RPAREN,
-                Array(data_type=DataType.Integer, data=[3, 1, 4, 1, 5, 9, 2]),
+                Noun(data_type=DataType.Integer, data=[3, 1, 4, 1, 5, 9, 2]),
             ],
             np.array([1, 1, 9]),
             id="(#~ 2 | i.@#) 3 1 4 1 5 9 2",
@@ -632,7 +638,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["PLUS"],
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["IDOT"],
-                Array(data_type=DataType.Integer, data=[2, 2]),
+                Noun(data_type=DataType.Integer, data=[2, 2]),
             ],
             np.array([[0, 1, 0, 0], [0, 1, 2, 3]]),
             id="i.@+/ i. 2 2",
@@ -644,7 +650,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["SLASH"],
                 PRIMITIVE_MAP["TILDE"],
                 PRIMITIVE_MAP["IDOT"],
-                Atom(data_type=DataType.Integer, data=5),
+                Noun(data_type=DataType.Integer, data=[5]),
             ],
             np.array(
                 [
@@ -662,9 +668,9 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["GT"],
                 PRIMITIVE_MAP["LT"],
                 PRIMITIVE_MAP["RANK"],
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 PRIMITIVE_MAP["SQUARERF"],
-                Array(data_type=DataType.Integer, data=[8, 6, 4, 3, 2]),
+                Noun(data_type=DataType.Integer, data=[8, 6, 4, 3, 2]),
             ],
             np.array([8, 6, 4, 3, 2]),
             id='> <"0 ] 8 6 4 3 2',
@@ -674,17 +680,17 @@ def test_word_evaluation_hook_correct_result(words, expected):
                 PRIMITIVE_MAP["SEMI"],
                 LPAREN,
                 PRIMITIVE_MAP["IDOT"],
-                Array(data_type=DataType.Integer, data=[3, 2, 3]),
+                Noun(data_type=DataType.Integer, data=[3, 2, 3]),
                 RPAREN,
                 PRIMITIVE_MAP["SEMI"],
                 LPAREN,
                 PRIMITIVE_MAP["IDOT"],
-                Array(data_type=DataType.Integer, data=[2, 1]),
+                Noun(data_type=DataType.Integer, data=[2, 1]),
                 RPAREN,
                 PRIMITIVE_MAP["SEMI"],
-                Atom(data_type=DataType.Integer, data=6),
+                Noun(data_type=DataType.Integer, data=[6]),
                 PRIMITIVE_MAP["SEMI"],
-                Array(data_type=DataType.Integer, data=[9, 2]),
+                Noun(data_type=DataType.Integer, data=[9, 2]),
             ],
             np.array(
                 [
@@ -720,13 +726,13 @@ def test_word_evaluation_hook_correct_result(words, expected):
             [
                 LPAREN,
                 PRIMITIVE_MAP["IDOT"],
-                Atom(data_type=DataType.Integer, data=3),
+                Noun(data_type=DataType.Integer, data=[3]),
                 RPAREN,
                 PRIMITIVE_MAP["COMMADOT"],
                 PRIMITIVE_MAP["RANK"],
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
                 PRIMITIVE_MAP["SQUARERF"],
-                Atom(data_type=DataType.Integer, data=9),
+                Noun(data_type=DataType.Integer, data=[9]),
             ],
             np.array([[0, 9], [1, 9], [2, 9]]),
             id='(i.3) ,."0 ] 9',
@@ -760,7 +766,7 @@ def test_word_evaluation_computes_correct_noun(words, expected):
                 PRIMITIVE_MAP["ATCO"],
                 PRIMITIVE_MAP["MINUS"],
                 PRIMITIVE_MAP["RANK"],
-                Atom(data_type=DataType.Integer, data=0),
+                Noun(data_type=DataType.Integer, data=[0]),
             ],
             '%@:-"0',
             id='(%)@:-"0',
@@ -781,9 +787,9 @@ def test_word_evaluation_build_verb(words, expected):
             [
                 Name(spelling="a"),
                 PRIMITIVE_MAP["EQDOT"],
-                Atom(data_type=DataType.Integer, data=3),
+                Noun(data_type=DataType.Integer, data=[3]),
             ],
-            Atom(data_type=DataType.Integer, data=3, implementation=np.int64(3)),
+            Noun(data_type=DataType.Integer, data=[3], implementation=np.int64(3)),
             Name(spelling="a"),
             id="a =: 3",
         ),
@@ -810,12 +816,12 @@ def test_word_evaluation_with_reassignment():
     words = [
         Name(spelling="a"),
         PRIMITIVE_MAP["EQDOT"],
-        Atom(data_type=DataType.Integer, data=3),
+        Noun(data_type=DataType.Integer, data=[3]),
     ]
     result = evaluate_words(words, variables=variables)
 
-    assert variables["a"] == Atom(
-        data_type=DataType.Integer, data=3, implementation=np.int64(3)
+    assert variables["a"] == Noun(
+        data_type=DataType.Integer, data=[3], implementation=np.int64(3)
     )
     assert result[1] == Name(spelling="a")
 
@@ -830,9 +836,9 @@ def test_word_evaluation_with_reassignment():
 def test_word_evaluation_with_single_name_as_verb():
     variables = {"a": PRIMITIVE_MAP["PLUS"]}
     words = [
-        Atom(data_type=DataType.Integer, data=2),
+        Noun(data_type=DataType.Integer, data=[2]),
         Name(spelling="a"),
-        Atom(data_type=DataType.Integer, data=3),
+        Noun(data_type=DataType.Integer, data=[3]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 5
@@ -845,7 +851,7 @@ def test_word_evaluation_with_single_name_as_adverb():
     words = [
         PRIMITIVE_MAP["PLUS"],
         Name(spelling="a"),
-        Array(data_type=DataType.Integer, data=[3, 5, 7]),
+        Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 15
@@ -857,9 +863,9 @@ def test_word_evaluation_with_name_to_name_to_verb():
     # 2 a 7
     variables = {"a": Name(spelling="b"), "b": PRIMITIVE_MAP["PLUS"]}
     words = [
-        Atom(data_type=DataType.Integer, data=2),
+        Noun(data_type=DataType.Integer, data=[2]),
         Name(spelling="a"),
-        Atom(data_type=DataType.Integer, data=7),
+        Noun(data_type=DataType.Integer, data=[7]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 9
@@ -873,7 +879,7 @@ def test_word_evaluation_with_names_as_verb_and_adverb():
     words = [
         Name(spelling="a"),
         Name(spelling="b"),
-        Array(data_type=DataType.Integer, data=[3, 5, 7]),
+        Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 15
@@ -899,9 +905,9 @@ def test_word_evaluation_with_name_assigned_to_name_to_verb():
         "c": PRIMITIVE_MAP["PLUS"],
     }
     words = [
-        Atom(data_type=DataType.Integer, data=7),
+        Noun(data_type=DataType.Integer, data=[7]),
         Name(spelling="a"),
-        Atom(data_type=DataType.Integer, data=11),
+        Noun(data_type=DataType.Integer, data=[11]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 18
@@ -911,13 +917,13 @@ def test_word_evaluation_with_name_assigned_in_expression():
     # 8 (a =: +) 13
     variables = {}
     words = [
-        Atom(data_type=DataType.Integer, data=8),
+        Noun(data_type=DataType.Integer, data=[8]),
         LPAREN,
         Name(spelling="a"),
         PRIMITIVE_MAP["EQDOT"],
         PRIMITIVE_MAP["PLUS"],
         RPAREN,
-        Atom(data_type=DataType.Integer, data=13),
+        Noun(data_type=DataType.Integer, data=[13]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 21
@@ -930,9 +936,9 @@ def test_word_evaluation_with_name_part_of_conjunction():
     words = [
         Name(spelling="a"),
         PRIMITIVE_MAP["RANK"],
-        Atom(data_type=DataType.Integer, data=0),
+        Noun(data_type=DataType.Integer, data=[0]),
         PRIMITIVE_MAP["SQUARERF"],
-        Atom(data_type=DataType.Integer, data=3),
+        Noun(data_type=DataType.Integer, data=[3]),
     ]
     result = evaluate_words(words, variables=variables)
     assert result[1].implementation == 3

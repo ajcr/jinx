@@ -42,7 +42,7 @@ class CharacterClass(Enum):
 
 
 class Action(Enum):
-    I = "emit, update"
+    I = "emit, update"  # noqa: E741
     N = "no emit, update"
     X = "no action"
 

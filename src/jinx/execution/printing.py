@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 from jinx.vocabulary import Noun
-from jinx.execution.conversion import is_box
+from jinx.execution.helpers import is_box
 
 
 MAX_COLS = 100

@@ -8,8 +8,8 @@ import numpy as np
 from jinx.vocabulary import Verb, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JinxNotImplementedError
 from jinx.execution.application import _apply_dyad, _apply_monad
-from jinx.execution.conversion import is_ufunc
 from jinx.execution.helpers import (
+    is_ufunc,
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )

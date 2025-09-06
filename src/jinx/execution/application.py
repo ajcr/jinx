@@ -12,8 +12,8 @@ import numpy as np
 
 from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad
 from jinx.errors import LengthError, ValenceError, JinxNotImplementedError
-from jinx.execution.conversion import ndarray_or_scalar_to_noun, is_ufunc
-from jinx.execution.helpers import maybe_pad_with_fill_value, is_ufunc_based
+from jinx.execution.conversion import ndarray_or_scalar_to_noun
+from jinx.execution.helpers import maybe_pad_with_fill_value, is_ufunc, is_ufunc_based
 
 
 def get_rank(verb_rank: int, noun_rank: int) -> int:

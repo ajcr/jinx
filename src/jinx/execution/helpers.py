@@ -5,6 +5,8 @@ from typing import Callable, Any
 
 import numpy as np
 
+from jinx.execution.conversion import box_dtype
+
 
 def get_fill_value(array: np.ndarray) -> int | str:
     """Get the fill value for an array."""
@@ -101,6 +103,14 @@ def maybe_parenthesise_verb_spelling(spelling: str) -> str:
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]
+
+
+def is_box(obj: Any) -> bool:
+    return getattr(obj, "dtype", None) == box_dtype
+
+
+def is_ufunc(func: callable) -> bool:
+    return isinstance(func, np.ufunc) or hasattr(func, "ufunc")
 
 
 def mark_ufunc_based(function: Callable[..., Any]) -> bool:

@@ -25,10 +25,11 @@ from jinx.errors import (
     ValenceError,
     JinxNotImplementedError,
 )
-from jinx.execution.conversion import box_dtype, is_box
+from jinx.execution.conversion import box_dtype
 from jinx.execution.helpers import (
     get_fill_value,
     increase_ndim,
+    is_box,
     is_same_array,
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,

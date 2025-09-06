@@ -33,6 +33,8 @@ class Shell(cmd.Cmd):
     def do_EOF(self, _):
         return True
 
+    # '?' is a primitive verb in J and we want the Cmd class to disregard it.
+    # and not treat it as a help command.
     def do_help(self, line):
         return self.default("?" + line)
 

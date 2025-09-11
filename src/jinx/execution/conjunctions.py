@@ -157,19 +157,19 @@ def ampm_conjunction(left: Verb | Noun, right: Verb | Noun) -> Verb:
         function = functools.partial(right.dyad.function, left.implementation)
         verb_spelling = maybe_parenthesise_verb_spelling(right.spelling)
         spelling = f"{left.implementation}&{verb_spelling}"
-        monad = Monad(name=spelling, rank=right.dyad.right_rank, function=function)
+        monad = Monad(name=spelling, rank=INFINITY, function=function)
         dyad = None
 
     elif isinstance(left, Verb) and isinstance(right, Noun):
         # functools.partial cannot be used to apply to right argument of ufuncs
         # as they do not accept kwargs, so we need to wrap the function.
         def _wrapper(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            return left.dyad.function(x, y)
+            return _apply_dyad(left, x, y)
 
         function = functools.partial(_wrapper, y=right.implementation)
         verb_spelling = maybe_parenthesise_verb_spelling(left.spelling)
         spelling = f"{verb_spelling}&{right.implementation}"
-        monad = Monad(name=spelling, rank=left.dyad.left_rank, function=function)
+        monad = Monad(name=spelling, rank=INFINITY, function=function)
         dyad = None
 
     elif isinstance(left, Verb) and isinstance(right, Verb):

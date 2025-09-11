@@ -6,10 +6,12 @@ import functools
 import numpy as np
 
 from jinx.vocabulary import Verb, Monad, Dyad
-from jinx.errors import DomainError, ValenceError, JinxNotImplementedError
+from jinx.errors import DomainError, ValenceError, JinxNotImplementedError, LengthError
 from jinx.execution.application import _apply_dyad, _apply_monad
 from jinx.execution.helpers import (
     is_ufunc,
+    is_box,
+    get_fill_value,
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )
@@ -281,6 +283,32 @@ def slashdot_adverb(verb: Verb) -> Verb:
         result = maybe_pad_with_fill_value(result, fill_value=0)
         return np.asarray(result)
 
+    def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        x = np.atleast_1d(x)
+        y = np.atleast_1d(y)
+
+        if len(x) != len(y):
+            raise LengthError(
+                f"x and y must have the same length, got {len(x)} and {len(y)}"
+            )
+
+        item_indices = {}
+
+        if is_box(x):
+            for i, x_item in enumerate(x):
+                item_indices.setdefault(x_item[0].tobytes(), []).append(i)
+
+        else:
+            for i, x_item in enumerate(x):
+                item_indices.setdefault(x_item.tobytes(), []).append(i)
+
+        result = []
+        for idx in item_indices.values():
+            result.append(_apply_monad(verb, y[idx]))
+
+        result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
+        return np.asarray(result)
+
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
     spelling = f"{verb.spelling}/."
 
@@ -292,7 +320,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
             name=spelling,
             left_rank=INFINITY,
             right_rank=INFINITY,
-            function=NotImplemented,
+            function=dyad,
         ),
     )
 

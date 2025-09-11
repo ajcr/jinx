@@ -29,6 +29,7 @@ from jinx.execution.conversion import box_dtype
 from jinx.execution.helpers import (
     get_fill_value,
     increase_ndim,
+    hash_box,
     is_box,
     is_same_array,
     maybe_pad_by_duplicating_atoms,
@@ -279,6 +280,17 @@ def barco_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 def tildedot_monad(y: np.ndarray) -> np.ndarray:
     """~. monad: remove duplicates from a list."""
     y = np.atleast_1d(y)
+
+    if is_box(y):
+        seen = set()
+        result = []
+        for item in y:
+            h = hash_box(item)
+            if h not in seen:
+                result.append(item if is_box(item) else (item[0],))
+            seen.add(h)
+        return np.array(result, dtype=box_dtype).squeeze()
+
     uniq, idx = np.unique(y, return_index=True, axis=0)
     return uniq[np.argsort(idx)]
 

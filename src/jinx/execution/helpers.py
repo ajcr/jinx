@@ -14,6 +14,8 @@ def get_fill_value(array: np.ndarray) -> int | str:
         return 0
     elif np.issubdtype(array.dtype, np.str_):
         return " "
+    elif is_box(array):
+        return np.array([], dtype=box_dtype).squeeze()
     raise NotImplementedError(f"Fill value for dtype {array.dtype} is not known.")
 
 
@@ -107,6 +109,23 @@ def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
 
 def is_box(obj: Any) -> bool:
     return getattr(obj, "dtype", None) == box_dtype
+
+
+def hash_box(array: np.ndarray, level: int = 0) -> int:
+    """Compute a hash value for a box array."""
+    if not is_box(array):
+        raise ValueError("Array must be of box dtype.")
+
+    val = 0
+    for item in array:
+        if is_box(item):
+            val = (val * 31 + level) % (2**64)
+            val ^= hash_box(item, level + 1)
+        elif isinstance(item, np.ndarray):
+            val ^= hash(item.tobytes())
+        else:
+            val ^= hash(item)
+    return val
 
 
 def is_ufunc(func: callable) -> bool:

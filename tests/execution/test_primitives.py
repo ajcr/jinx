@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 
 from src.jinx.execution.conversion import box_dtype
+from src.jinx.execution.helpers import is_box
 from src.jinx.execution.verbs import (
     comma_dyad,
     commadot_dyad,
@@ -13,6 +14,7 @@ from src.jinx.execution.verbs import (
     bslashco_monad,
     numberco_monad,
     commaco_dyad,
+    tildedot_monad,
 )
 
 
@@ -372,3 +374,68 @@ def test_commaco_dyad(x, y, expected):
 def test_commadot_dyad(x, y, expected):
     result = commadot_dyad(x, y)
     np.testing.assert_array_equal(result, expected, strict=True)
+
+
+@pytest.mark.parametrize(
+    "y, expected",
+    [
+        pytest.param(np.array(0), np.array([0]), id="~. 0"),
+        pytest.param(np.array([1, 1]), np.array([1]), id="~. 1 1"),
+        pytest.param(np.array([1, 2, 1]), np.array([1, 2]), id="~. 1 2 1"),
+        pytest.param(
+            np.array([3, 3, 2, 1, 2, 3]), np.array([3, 2, 1]), id="~. 3 3 2 1 2 3"
+        ),
+        pytest.param(
+            np.array([[0, 1], [2, 3], [0, 1]]),
+            np.array([[0, 1], [2, 3]]),
+            id="~. (i.2 2) , (0 1)",
+        ),
+    ],
+)
+def test_tildedot_monad(y, expected):
+    result = tildedot_monad(y)
+    np.testing.assert_array_equal(result, expected, strict=True)
+
+
+@pytest.mark.parametrize(
+    "y, expected",
+    [
+        pytest.param(
+            np.array([(1,), (2,), (1,), (3,), (2,), (1,)], dtype=box_dtype),
+            np.array([(1,), (2,), (3,)], dtype=box_dtype),
+            id='~. <"0 ] 1 2 1 3 2 1',
+        ),
+        pytest.param(
+            np.array(
+                [(np.array([0, 1]),), (np.array([0, 1]),)], dtype=box_dtype
+            ).squeeze(),
+            np.array([(np.array([0, 1]),)], dtype=box_dtype).squeeze(),
+            id="~. (0 1);(0 1)",
+        ),
+        pytest.param(
+            np.array(
+                [
+                    [(0,), (1,), (2,)],
+                    [(3,), (4,), (5,)],
+                    [(0,), (1,), (2,)],
+                ],
+                dtype=box_dtype,
+            ),
+            np.array(
+                [
+                    [(0,), (1,), (2,)],
+                    [(3,), (4,), (5,)],
+                ],
+                dtype=box_dtype,
+            ),
+            id='~. 3 3 $ <"0 i. 6',
+        ),
+    ],
+)
+def test_tildedot_monad_boxed(y, expected):
+    result = tildedot_monad(y)
+    for r, e in zip(np.atleast_1d(result), np.atleast_1d(expected), strict=True):
+        if is_box(r):
+            np.testing.assert_array_equal(r[0], e[0], strict=True)
+        else:
+            assert r == e

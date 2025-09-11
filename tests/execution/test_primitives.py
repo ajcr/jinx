@@ -430,6 +430,15 @@ def test_tildedot_monad(y, expected):
             ),
             id='~. 3 3 $ <"0 i. 6',
         ),
+        pytest.param(
+            np.array(
+                [(np.array([(1,)], dtype=box_dtype),), (1,)], dtype=box_dtype
+            ),
+            np.array(
+                [(np.array([(1,)], dtype=box_dtype),), (1,)], dtype=box_dtype
+            ),
+            id="~. (<<1),(<1)",
+        ),
     ],
 )
 def test_tildedot_monad_boxed(y, expected):

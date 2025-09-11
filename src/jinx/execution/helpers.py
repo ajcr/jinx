@@ -116,7 +116,7 @@ def hash_box(array: np.ndarray, level: int = 0) -> int:
     if not is_box(array):
         raise ValueError("Array must be of box dtype.")
 
-    val = 0
+    val = 3331
     for item in array:
         if is_box(item):
             val = (val * 31 + level) % (2**64)

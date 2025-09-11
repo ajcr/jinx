@@ -27,8 +27,8 @@ class Shell(cmd.Cmd):
         try:
             words = evaluate_words(words, self.variables)
             print_words(words, self.variables)
-        except BaseJError as e:
-            print(e, file=sys.stderr)
+        except BaseJError as error:
+            print(f"{type(error).__name__}: {error}", file=sys.stderr)
 
     def do_EOF(self, _):
         return True

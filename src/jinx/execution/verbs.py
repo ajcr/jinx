@@ -817,7 +817,7 @@ VERB_MAP = {
     "COMMADOT": (commadot_monad, commadot_dyad),
     "COMMACO": (commaco_monad, commaco_dyad),
     "BAR": (np.abs, bar_dyad),
-    "BARDOT": (np.flip, bardot_dyad),
+    "BARDOT": (np.flipud, bardot_dyad),
     "BARCO": (np.transpose, barco_dyad),
     "NUMBER": (number_monad, number_dyad),
     "NUMBERDOT": (numberdot_monad, numberdot_dyad),

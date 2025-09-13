@@ -24,9 +24,15 @@ def maybe_pad_with_fill_value(
     fill_value: Any = None,
 ) -> list[np.ndarray]:
     """Pad arrays to the same shape with a fill value."""
+    # If all arrays have the same shape, return them as is.
     shapes = [arr.shape for arr in arrays]
     if len(set(shapes)) == 1:
         return arrays
+
+    # Boxes do not need to padded, just wrap them in a tuple so the returned list can
+    # be converted to an array.
+    if is_box(arrays[0]):
+        return [(arr,) for arr in padded_arrays]
 
     dims = [max(dim) for dim in itertools.zip_longest(*shapes, fillvalue=1)]
     padded_arrays = []

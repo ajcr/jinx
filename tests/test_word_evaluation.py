@@ -6,6 +6,8 @@ from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
 
+from jinx.execution.conversion import box_dtype
+
 ## Words
 # Punctuation
 LPAREN = PUNCTUATION_MAP["("]
@@ -743,6 +745,50 @@ def test_word_evaluation_computes_correct_noun(words, expected):
     result = evaluate_words(words)
     assert len(result) == 2
     assert np.array_equal(np.round(result[1].implementation, 5), expected)
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["LT"],
+                PRIMITIVE_MAP["AT"],
+                LPAREN,
+                PRIMITIVE_MAP["IDOT"],
+                PRIMITIVE_MAP["RANK"],
+                Noun(data_type=DataType.Integer, data=[0]),
+                RPAREN,
+                RPAREN,
+                Noun(data_type=DataType.Integer, data=[4, 2]),
+            ],
+            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=box_dtype),
+            id='(<@(i."0)) 4 2',
+        ),
+        pytest.param(
+            [
+                LPAREN,
+                PRIMITIVE_MAP["LT"],
+                PRIMITIVE_MAP["AT"],
+                PRIMITIVE_MAP["IDOT"],
+                PRIMITIVE_MAP["RANK"],
+                Noun(data_type=DataType.Integer, data=[0]),
+                RPAREN,
+                Noun(data_type=DataType.Integer, data=[4, 2]),
+            ],
+            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=box_dtype),
+            id='(<@i."0) 4 2',
+        ),
+    ],
+)
+def test_word_evaluation_computes_correct_boxed_array(words, expected):
+    result = evaluate_words(words)
+    assert len(result) == 2
+
+    result_box = result[1].implementation
+    for res, exp in zip(result_box, expected, strict=True):
+        assert np.array_equiv(res[0], exp[0])
 
 
 @pytest.mark.parametrize(

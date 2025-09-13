@@ -7,6 +7,7 @@ Main references:
 """
 
 import functools
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -32,6 +33,35 @@ def fill_and_assemble(
 ) -> np.ndarray:
     cells = maybe_pad_with_fill_value(cells)
     return np.asarray(cells).reshape(frame_shape + cells[0].shape)
+
+
+@dataclass
+class ArrayCells:
+    cell_shape: tuple[int, ...]
+    frame_shape: tuple[int, ...]
+    cells: np.ndarray
+
+
+def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
+    # Look at the array shape and rank to determine frame and cell shape.
+    #
+    # The trailing `rank` axes define the cell shape and the preceding
+    # axes define the frame shape. E.g. for rank=2:
+    #
+    #   arr.shape = (n0, n1, n2, n3, n4)
+    #                ----------  ------
+    #                ^ frame     ^ cell
+    #
+    # If rank=0, the frame shape is the same as the shape and the monad
+    # applies to each atom of the array.
+    if rank == 0:
+        return ArrayCells(cell_shape=(), frame_shape=arr.shape, cells=arr.ravel())
+
+    return ArrayCells(
+        cell_shape=arr.shape[-rank:],
+        frame_shape=arr.shape[:-rank],
+        cells=arr.reshape(-1, *arr.shape[-rank:]),
+    )
 
 
 def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
@@ -62,28 +92,9 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     if rank == 0 and (is_ufunc(function) or is_ufunc_based(function)):
         return function(arr)
 
-    # Look at the shape of the array and the rank of the verb to
-    # determine the frame and cell shape.
-    #
-    # The trailing `rank` axes define the cell shape and the preceding
-    # axes define the frame shape. E.g. for rank=2:
-    #
-    #   arr.shape = (n0, n1, n2, n3, n4)
-    #                ----------  ------
-    #                ^ frame     ^ cell
-    #
-    # If rank=0, the frame shape is the same as the shape and the monad
-    # applies to each atom of the array.
-    if rank == 0:
-        frame_shape = arr.shape
-        arr_reshaped = arr.ravel()
-    else:
-        cell_shape = arr.shape[-rank:]
-        frame_shape = arr.shape[:-rank]
-        arr_reshaped = arr.reshape(-1, *cell_shape)
-
-    cells = [function(cell) for cell in arr_reshaped]
-    return fill_and_assemble(cells, frame_shape)
+    array_cells = split_into_cells(arr, rank)
+    cells = [function(cell) for cell in array_cells.cells]
+    return fill_and_assemble(cells, array_cells.frame_shape)
 
 
 def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:

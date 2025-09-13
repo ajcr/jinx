@@ -7,7 +7,13 @@ import numpy as np
 
 from jinx.vocabulary import Verb, Noun, Monad, Dyad
 from jinx.errors import DomainError, JinxNotImplementedError
-from jinx.execution.application import _apply_dyad, _apply_monad
+from jinx.execution.application import (
+    _apply_dyad,
+    _apply_monad,
+    split_into_cells,
+    get_rank,
+    fill_and_assemble,
+)
 from jinx.execution.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
@@ -77,20 +83,39 @@ def rank_conjunction(verb: Verb, noun: Noun) -> Verb:
 
 
 def at_conjunction(u: Verb, v: Verb) -> Verb:
-    """@ conjunction: compose verbs u and v, with u applied using the rank of v."""
+    """@ conjunction: compose verbs u and v, with u applied using the rank of v.
 
-    # The verb u is to be applied using the rank of v.
-    u_rank_v = _modify_rank(u, v.monad.rank)
+    This means v is applied first, then u is applied to each cell of the result of v
+    *before* any padding or assembly is done.
+
+    Once u has been applied to each v-cell, the results are padded and assembled.
+    """
 
     def _monad(y: np.ndarray) -> np.ndarray:
-        a = _apply_monad(v, y)
-        b = _apply_monad(u_rank_v, a)
-        return b
+        rank = get_rank(v.monad.rank, y.ndim)
+        v_cell_array = split_into_cells(y, rank)
+        v_cells = [_apply_monad(v, cell) for cell in v_cell_array.cells]
+        u_cells = [_apply_monad(u, cell) for cell in v_cells]
+        padded_cells = maybe_pad_with_fill_value(u_cells)
+        return fill_and_assemble(padded_cells, v_cell_array.frame_shape)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        a = _apply_dyad(v, x, y)
-        b = _apply_monad(u_rank_v, a)
-        return b
+        left_rank = get_rank(v.dyad.left_rank, x.ndim)
+        right_rank = get_rank(v.dyad.right_rank, y.ndim)
+
+        v_cell_left_array = split_into_cells(x, left_rank)
+        v_cell_right_array = split_into_cells(y, right_rank)
+
+        v_cells = [
+            _apply_dyad(v, lx, ry)
+            for lx, ry in zip(
+                v_cell_left_array.cells, v_cell_right_array.cells, strict=True
+            )
+        ]
+        u_cells = [_apply_monad(u, cell) for cell in v_cells]
+
+        padded_cells = maybe_pad_with_fill_value(u_cells)
+        return fill_and_assemble(padded_cells, v_cell_right_array.frame_shape)
 
     u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
     v_spelling = maybe_parenthesise_verb_spelling(v.spelling)

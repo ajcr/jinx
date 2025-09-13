@@ -23,13 +23,19 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
     2 1 1 7 9 (+/@:* % *&(+/)&.:*:)&(- +/%#) 6 3 1 5 7
 0.721332
 ```
-- One of many ways to create identity matrices (see [this essay](https://code.jsoftware.com/wiki/Essays/Identity_Matrix)):
+- Many ways to create identity matrices (see [this essay](https://code.jsoftware.com/wiki/Essays/Identity_Matrix)):
 ```j
-    |.@~:\ @ ($&0) 2 3   NB. 3D array with two 3x3 identity matrices
+    |.@~:\ @ ($&0) 3
 1 0 0
 0 1 0
 0 0 1
 
+    (i.@,~ = >: * i.) 3
+1 0 0
+0 1 0
+0 0 1
+
+    ((={:)\ @ i.) 3
 1 0 0
 0 1 0
 0 0 1

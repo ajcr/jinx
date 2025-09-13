@@ -130,37 +130,27 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
     ):
         return function(left_arr, right_arr)
 
-    left_cell_shape = left_arr.shape[-left_rank:] if left_rank else ()
-    left_frame_shape = left_arr.shape[:-left_rank] if left_rank else left_arr.shape
-    left_arr_reshaped = (
-        left_arr.reshape(-1, *left_cell_shape) if left_rank else left_arr.ravel()
-    )
-
-    right_cell_shape = right_arr.shape[-right_rank:] if right_rank else ()
-    right_frame_shape = right_arr.shape[:-right_rank] if right_rank else right_arr.shape
-    right_arr_reshaped = (
-        right_arr.reshape(-1, *right_cell_shape) if right_rank else right_arr.ravel()
-    )
+    left = split_into_cells(left_arr, left_rank)
+    right = split_into_cells(right_arr, right_rank)
 
     # If the left and right frame shapes are the same, we can apply the dyad immediately.
-    if left_frame_shape == right_frame_shape:
+    if left.frame_shape == right.frame_shape:
         cells = [
             function(left_cell, right_cell)
-            for left_cell, right_cell in zip(
-                left_arr_reshaped, right_arr_reshaped, strict=True
-            )
+            for left_cell, right_cell in zip(left.cells, right.cells, strict=True)
         ]
-        return fill_and_assemble(cells, left_frame_shape)
+        return fill_and_assemble(cells, left.frame_shape)
 
     # Otherwise we need to find the common frame shape. One of the frame shapes must
     # be a prefix of the other, otherwise it's not possible to apply the dyad.
-    common_frame_shape = find_common_frame_shape(left_frame_shape, right_frame_shape)
+    common_frame_shape = find_common_frame_shape(left.frame_shape, right.frame_shape)
     if common_frame_shape is None:
         raise LengthError(
-            f"Cannot apply dyad {verb.spelling} to arrays of shape {left_frame_shape} and {right_frame_shape}"
+            f"Cannot apply dyad {verb.spelling} to arrays of shape {left.frame_shape} and {right.frame_shape}"
         )
 
     rcf = len(common_frame_shape)
+
     left_rcf_cell_shape = left_arr.shape[rcf:]
     right_rcf_cell_shape = right_arr.shape[rcf:]
 
@@ -172,23 +162,23 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
         left_arr_reshaped, right_arr_reshaped, strict=True
     ):
         subcells = []
-        if common_frame_shape == left_frame_shape:
+        if common_frame_shape == left.frame_shape:
             # right_cell is longer and contains multiple operand cells
             if right_rank == 0:
-                right = right_cell.ravel()
+                right_subcells = right_cell.ravel()
             else:
-                right = right_cell.reshape(-1, *right_cell_shape)
+                right_subcells = right_cell.reshape(-1, *right.cell_shape)
 
-            for right_subcell in right:
+            for right_subcell in right_subcells:
                 subcells.append(function(left_cell, right_subcell))
         else:
             # left_cell is longer and contains multiple operand cells
             if left_rank == 0:
-                left = left_cell.ravel()
+                left_subcells = left_cell.ravel()
             else:
-                left = left_cell.reshape(-1, *left_cell_shape)
+                left_subcells = left_cell.reshape(-1, *left.cell_shape)
 
-            for left_subcell in left:
+            for left_subcell in left_subcells:
                 subcells.append(function(left_subcell, right_cell))
 
         subcells = maybe_pad_with_fill_value(subcells)
@@ -203,7 +193,7 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
 
     # Gather the cells into the final frame shape (the longer of the left
     # and right frame shapes, plus the result cell shape).
-    collecting_frame = max(left_frame_shape, right_frame_shape, key=len)
+    collecting_frame = max(left.frame_shape, right.frame_shape, key=len)
     return cells.reshape(collecting_frame + cells[0].shape)
 
 

@@ -43,17 +43,19 @@ class ArrayCells:
 
 
 def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
-    # Look at the array shape and rank to determine frame and cell shape.
-    #
-    # The trailing `rank` axes define the cell shape and the preceding
-    # axes define the frame shape. E.g. for rank=2:
-    #
-    #   arr.shape = (n0, n1, n2, n3, n4)
-    #                ----------  ------
-    #                ^ frame     ^ cell
-    #
-    # If rank=0, the frame shape is the same as the shape and the monad
-    # applies to each atom of the array.
+    """
+    Look at the array shape and rank to determine frame and cell shape.
+
+    The trailing `rank` axes define the cell shape and the preceding
+    axes define the frame shape. E.g. for rank=2:
+
+      arr.shape = (n0, n1, n2, n3, n4)
+                   ----------  ------
+                   ^ frame     ^ cell
+
+    If rank=0, the frame shape is the same as the shape and the monad
+    applies to each atom of the array.
+    """
     if rank == 0:
         return ArrayCells(cell_shape=(), frame_shape=arr.shape, cells=arr.ravel())
 
@@ -66,7 +68,6 @@ def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
 
 def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
     arr = noun.implementation
-
     result = _apply_monad(verb, arr)
     return ndarray_or_scalar_to_noun(result)
 

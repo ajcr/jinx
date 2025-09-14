@@ -1,7 +1,5 @@
 """Methods for converting between J Nouns and NumPy arrays."""
 
-from typing import Any
-
 import numpy as np
 
 from jinx.vocabulary import DataType, Noun

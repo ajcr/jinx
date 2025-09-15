@@ -353,6 +353,9 @@ def _evaluate_words(
 
         # fmt: on
 
+    if any(isinstance(item, list) for item in fragment):
+        raise EvaluationError("Unbalanced parentheses")
+
     if len(fragment) > 2:
         raise EvaluationError(
             f"Unexecutable fragment: {[str_(w) for w in fragment if w is not None]}"

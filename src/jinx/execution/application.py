@@ -66,9 +66,8 @@ def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
     )
 
 
-def apply_monad(verb: Verb, noun: Noun) -> np.ndarray:
-    arr = noun.implementation
-    result = _apply_monad(verb, arr)
+def apply_monad(verb: Verb, noun: Noun) -> Noun:
+    result = _apply_monad(verb, noun.implementation)
     return ndarray_or_scalar_to_noun(result)
 
 
@@ -99,10 +98,7 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
 
 
 def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
-    left_arr = noun_1.implementation
-    right_arr = noun_2.implementation
-
-    result = _apply_dyad(verb, left_arr, right_arr)
+    result = _apply_dyad(verb, noun_1.implementation, noun_2.implementation)
     return ndarray_or_scalar_to_noun(result)
 
 

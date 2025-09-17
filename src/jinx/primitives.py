@@ -481,6 +481,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
             right_rank=INFINITY,
             is_commutative=False,
         ),
+        obverse="""}:@;@(,&' '&.>"1)""",
     ),
 ]
 

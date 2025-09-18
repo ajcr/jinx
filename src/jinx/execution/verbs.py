@@ -306,6 +306,8 @@ def tildeco_monad(y: np.ndarray) -> np.ndarray:
 
 def dollar_monad(y: np.ndarray) -> np.ndarray | None:
     """$ monad: returns the shape of the array."""
+    if isinstance(y, str):
+        return np.array([len(y)])
     if np.isscalar(y) or y.shape == ():
         # Differs from the J implementation which returns a missing value for shape of scalar.
         return np.array(0)
@@ -369,6 +371,8 @@ def icapdot_monad(y: np.ndarray) -> np.ndarray:
 
 def number_monad(y: np.ndarray) -> np.ndarray:
     """# monad: count number of items in y."""
+    if isinstance(y, str):
+        return np.array(len(y))
     if np.isscalar(y) or y.shape == ():
         return np.array(1)
     return np.array(y.shape[0])

@@ -289,8 +289,17 @@ def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
         return Verb(
             name="SQUARELF",
             spelling="]",
-            monad=squarelf_monad,
-            dyad=squarelf_dyad,
+            monad=Monad(
+                name="SQUARELF",
+                rank=INFINITY,
+                function=lambda y: y,
+            ),
+            dyad=Dyad(
+                name="SQUARELF",
+                left_rank=INFINITY,
+                right_rank=INFINITY,
+                function=lambda x, y: y,
+            ),
             obverse="]",
         )
 

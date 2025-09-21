@@ -130,7 +130,7 @@ def test_dyadic_application_using_plus(verb, left_array, right_array, expected):
     right_noun = Noun(data_type=DataType.Integer, implementation=right_array)
 
     result = apply_dyad(verb, left_noun, right_noun)
-    assert np.array_equal(result.implementation, expected)
+    np.testing.assert_array_equal(result.implementation, expected, strict=True)
 
 
 @pytest.mark.parametrize(

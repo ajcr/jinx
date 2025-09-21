@@ -139,13 +139,15 @@ from src.jinx.execution.verbs import (
 )
 def test_comma_dyad(x, y, expected):
     result = comma_dyad(x, y)
-    assert np.array_equal(result, expected), f"Expected {expected}, got {result}"
+    np.testing.assert_array_equal(result, expected, strict=True)
 
 
 @pytest.mark.parametrize(
     "x, y, expected",
     [
-        pytest.param(np.array(0), np.array(5), np.array([]), id="0 $ 5"),
+        pytest.param(
+            np.array(0), np.array(5), np.array([], dtype=np.int64), id="0 $ 5"
+        ),
         pytest.param(np.array(1), np.array(5), np.array([5]), id="1 $ 5"),
         pytest.param(np.array(2), np.array(5), np.array([5, 5]), id="2 $ 5"),
         pytest.param(
@@ -159,7 +161,7 @@ def test_comma_dyad(x, y, expected):
 )
 def test_dollar_dyad(x, y, expected):
     result = dollar_dyad(x, y)
-    assert np.array_equal(result, expected), f"Expected {expected}, got {result}"
+    np.testing.assert_array_equal(result, expected, strict=True)
 
 
 @pytest.mark.parametrize(
@@ -177,7 +179,7 @@ def test_dollar_dyad(x, y, expected):
 )
 def test_dollar_monad(y, expected):
     result = dollar_monad(y)
-    assert np.array_equal(result, expected), f"Expected {expected}, got {result}"
+    np.testing.assert_array_equal(result, expected, strict=True)
 
 
 @pytest.mark.parametrize(
@@ -201,7 +203,7 @@ def test_dollar_monad(y, expected):
 )
 def test_slashco_monad(y, expected):
     result = slashco_monad(y)
-    assert np.array_equal(result, expected)
+    np.testing.assert_array_equal(result, expected, strict=True)
 
 
 @pytest.mark.parametrize(
@@ -225,7 +227,7 @@ def test_slashco_monad(y, expected):
 )
 def test_bslashco_monad(y, expected):
     result = bslashco_monad(y)
-    assert np.array_equal(result, expected)
+    np.testing.assert_array_equal(result, expected, strict=True)
 
 
 BOX_1 = np.array([(1,)], dtype=box_dtype).squeeze()
@@ -323,9 +325,7 @@ def test_comma_dyad_joins_boxes():
 )
 def test_numberco_monad(y, expected):
     result = numberco_monad(y)
-    assert result.shape == expected.shape
-    assert result.dtype == expected.dtype
-    assert np.allclose(result, expected)
+    np.testing.assert_allclose(result, expected, strict=True)
 
 
 @pytest.mark.parametrize(

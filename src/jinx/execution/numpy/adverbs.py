@@ -7,8 +7,8 @@ import numpy as np
 
 from jinx.vocabulary import Verb, Monad, Dyad
 from jinx.errors import DomainError, ValenceError, JinxNotImplementedError, LengthError
-from jinx.execution.application import _apply_dyad, _apply_monad
-from jinx.execution.helpers import (
+from jinx.execution.numpy.application import _apply_dyad, _apply_monad
+from jinx.execution.numpy.helpers import (
     is_ufunc,
     is_box,
     get_fill_value,

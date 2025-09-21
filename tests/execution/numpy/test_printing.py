@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from src.jinx.vocabulary import Noun, DataType
-from src.jinx.execution.printing import noun_to_string
-from src.jinx.execution.verbs import lt_monad, semi_dyad, dollar_dyad
+from jinx.vocabulary import Noun, DataType
+from jinx.execution.numpy.printing import noun_to_string
+from jinx.execution.numpy.verbs import lt_monad, semi_dyad, dollar_dyad
 
 
 @pytest.mark.parametrize(

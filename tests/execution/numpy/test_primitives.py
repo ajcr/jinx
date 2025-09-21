@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from src.jinx.execution.conversion import box_dtype
-from src.jinx.execution.helpers import is_box
-from src.jinx.execution.verbs import (
+from jinx.execution.numpy.conversion import box_dtype
+from jinx.execution.numpy.helpers import is_box
+from jinx.execution.numpy.verbs import (
     comma_dyad,
     commadot_dyad,
     dollar_dyad,

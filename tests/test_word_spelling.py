@@ -1,6 +1,6 @@
 import pytest
 
-from src.jinx.word_spelling import parse_float, parse_integer
+from jinx.word_spelling import parse_float, parse_integer
 
 
 @pytest.mark.parametrize(

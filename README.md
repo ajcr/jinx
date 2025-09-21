@@ -40,7 +40,7 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 0 1 0
 0 0 1
 ```
-- For the Joesphus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)), calculate the survivor's number for a circle of people of size N:
+- The Josephus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)). Calculate the survivor's number for a circle of people of size N:
 ```j
     (1&|.&.#:)"0 >: i. 5 10    NB. N ranges from 1 to 50 here (arranged as a table)
  1  1  3  1  3  5  7  1  3  5

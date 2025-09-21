@@ -123,6 +123,18 @@ from src.jinx.execution.verbs import (
             np.array([[0, 1, 2], [5, 0, 0]]),
             id="(i.3),(1 1 $ 5)",
         ),
+        pytest.param(
+            np.array([1, 2]),
+            np.array(np.inf),
+            np.array([1, 2, np.inf]),
+            id="1 2, _",
+        ),
+        pytest.param(
+            np.array(np.inf),
+            np.array([1, 2]),
+            np.array([np.inf, 1, 2]),
+            id="_, 1 2",
+        ),
     ],
 )
 def test_comma_dyad(x, y, expected):

@@ -157,13 +157,16 @@ def comma_monad(y: np.ndarray) -> np.ndarray:
 
 def comma_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """, dyad: returns array containing the items of x followed by the items of y."""
+
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 
+    dtype = np.promote_types(x.dtype, y.dtype)
+
     if x.shape == (1,):
-        x = np.full_like(y[:1], x[0])
+        x = np.full_like(y[:1], x[0], dtype=dtype)
     elif y.shape == (1,):
-        y = np.full_like(x[:1], y[0])
+        y = np.full_like(x[:1], y[0], dtype=dtype)
     else:
         trailing_dims = [
             max(xs, ys)
@@ -203,16 +206,16 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
 
-    if x.ndim > 1 and y.ndim > 1 and len(x) != len(y):
-        raise LengthError(
-            f"Shapes {x.shape} and {y.shape} have different numbers of items"
-        )
-
     if x.shape == (1,):
         x = np.repeat(x, y.shape[0], axis=0)
 
     if y.shape == (1,):
         y = np.repeat(y, x.shape[0], axis=0)
+
+    if len(x) != len(y):
+        raise LengthError(
+            f"executing dyad ,. shapes {x.shape} and {y.shape} have different numbers of items"
+        )
 
     result = []
     for x_item, y_item in zip(x, y, strict=True):

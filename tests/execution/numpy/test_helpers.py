@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 
-from src.jinx.execution.helpers import (
+from jinx.execution.numpy.helpers import (
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
 )

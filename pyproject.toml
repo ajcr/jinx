@@ -34,6 +34,9 @@ jinx = "jinx.shell:main"
 pythonpath = [
     "src"
 ]
+addopts = [
+    "--import-mode=importlib",
+]
 
 [dependency-groups]
 dev = [

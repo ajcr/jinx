@@ -5,8 +5,7 @@ from jinx.vocabulary import Noun, DataType, Verb, Name
 from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
-
-from jinx.execution.conversion import box_dtype
+from jinx.execution.numpy.conversion import box_dtype
 
 ## Words
 # Punctuation

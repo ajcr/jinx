@@ -31,7 +31,7 @@ DATATYPE_TO_NP_MAP = {
 }
 
 
-def convert_noun_np(noun: Noun) -> np.ndarray:
+def convert_noun_to_numpy_array(noun: Noun) -> np.ndarray:
     dtype = DATATYPE_TO_NP_MAP[noun.data_type]
     if len(noun.data) == 1:
         # A scalar (ndim == 0) is returned for single element arrays.
@@ -41,7 +41,7 @@ def convert_noun_np(noun: Noun) -> np.ndarray:
 
 def ensure_noun_implementation(noun: Noun) -> None:
     if noun.implementation is None:
-        noun.implementation = convert_noun_np(noun)
+        noun.implementation = convert_noun_to_numpy_array(noun)
 
 
 def infer_data_type(data):

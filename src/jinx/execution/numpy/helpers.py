@@ -5,7 +5,7 @@ from typing import Callable, Any
 
 import numpy as np
 
-from jinx.execution.conversion import box_dtype
+from jinx.execution.numpy.conversion import box_dtype
 
 
 def get_fill_value(array: np.ndarray) -> int | str:

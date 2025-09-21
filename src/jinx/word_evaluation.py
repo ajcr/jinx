@@ -20,7 +20,7 @@ from jinx.vocabulary import (
     Copula,
 )
 
-from jinx.execution.application import (
+from jinx.execution.numpy.application import (
     apply_monad,
     apply_dyad,
     apply_conjunction,
@@ -28,11 +28,11 @@ from jinx.execution.application import (
     build_fork,
     build_hook,
 )
-from jinx.execution.conversion import ensure_noun_implementation
+from jinx.execution.numpy.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
 from jinx.errors import JinxNotImplementedError, EvaluationError, JSyntaxError
-from jinx.execution.printing import noun_to_string
-from jinx.execution.primitives import PRIMITIVE_MAP
+from jinx.execution.numpy.printing import noun_to_string
+from jinx.execution.numpy.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
 

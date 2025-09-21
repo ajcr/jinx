@@ -25,8 +25,8 @@ from jinx.errors import (
     ValenceError,
     JinxNotImplementedError,
 )
-from jinx.execution.conversion import box_dtype
-from jinx.execution.helpers import (
+from jinx.execution.numpy.conversion import box_dtype
+from jinx.execution.numpy.helpers import (
     get_fill_value,
     increase_ndim,
     hash_box,

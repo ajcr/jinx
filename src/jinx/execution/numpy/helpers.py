@@ -1,10 +1,9 @@
 """Helper methods for manipulating arrays."""
 
 import itertools
-from typing import Callable, Any
+from typing import Any, Callable
 
 import numpy as np
-
 from jinx.execution.numpy.conversion import box_dtype
 
 

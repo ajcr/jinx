@@ -10,15 +10,14 @@ import functools
 from dataclasses import dataclass
 
 import numpy as np
-
-from jinx.vocabulary import Noun, Verb, Conjunction, Adverb, Monad, Dyad
-from jinx.errors import LengthError, ValenceError, JinxNotImplementedError
+from jinx.errors import JinxNotImplementedError, LengthError, ValenceError
 from jinx.execution.numpy.conversion import ndarray_or_scalar_to_noun
 from jinx.execution.numpy.helpers import (
-    maybe_pad_with_fill_value,
     is_ufunc,
     is_ufunc_based,
+    maybe_pad_with_fill_value,
 )
+from jinx.vocabulary import Adverb, Conjunction, Dyad, Monad, Noun, Verb
 
 
 def get_rank(verb_rank: int, noun_rank: int) -> int:

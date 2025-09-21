@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, TypeVar
 
-from jinx.vocabulary import Noun, Verb, Conjunction, Adverb
-
+from jinx.vocabulary import Adverb, Conjunction, Noun, Verb
 
 T = TypeVar("T")
 

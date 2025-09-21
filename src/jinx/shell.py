@@ -3,10 +3,10 @@ import cmd
 import sys
 
 from jinx.errors import BaseJError, SpellingError
+from jinx.execution.executor import Executor, load_executor
+from jinx.word_evaluation import evaluate_words, print_words
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
-from jinx.word_evaluation import evaluate_words, print_words
-from jinx.execution.executor import Executor, load_executor
 
 
 class Shell(cmd.Cmd):

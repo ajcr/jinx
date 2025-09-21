@@ -1,14 +1,14 @@
 import functools
 
-import pytest
 import numpy as np
+import pytest
 
-from jinx.vocabulary import Noun, DataType, Verb, Name
+from jinx.execution.numpy import executor as numpy_executor
+from jinx.execution.numpy.conversion import box_dtype
+from jinx.primitives import PRIMITIVE_MAP
+from jinx.vocabulary import DataType, Name, Noun, Verb
 from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
-from jinx.primitives import PRIMITIVE_MAP
-from jinx.execution.numpy.conversion import box_dtype
-from jinx.execution.numpy import executor as numpy_executor
 
 ## Words
 # Punctuation

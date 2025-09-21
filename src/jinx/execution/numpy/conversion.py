@@ -1,7 +1,6 @@
 """Methods for converting between J Nouns and NumPy arrays."""
 
 import numpy as np
-
 from jinx.vocabulary import DataType, Noun
 
 # Define a structured dtype for boxes, which can hold any object.

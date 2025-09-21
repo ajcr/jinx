@@ -3,13 +3,12 @@ import pytest
 
 from jinx.errors import LengthError
 from jinx.execution.numpy.application import apply_dyad
-from jinx.vocabulary import Noun, DataType
+from jinx.execution.numpy.conjunctions import rank_conjunction
 from jinx.execution.numpy.verbs import (
     VERB_MAP,
 )
-from jinx.execution.numpy.conjunctions import rank_conjunction
 from jinx.primitives import PRIMITIVE_MAP
-
+from jinx.vocabulary import DataType, Noun
 
 PLUS = PRIMITIVE_MAP["PLUS"]
 PLUS.monad.function = VERB_MAP["PLUS"][0]

@@ -1,18 +1,17 @@
 from jinx.execution.executor import Executor
+from jinx.execution.numpy.adverbs import ADVERB_MAP
 from jinx.execution.numpy.application import (
-    apply_monad,
-    apply_dyad,
-    apply_conjunction,
     apply_adverb,
+    apply_conjunction,
+    apply_dyad,
+    apply_monad,
     build_fork,
     build_hook,
 )
-from jinx.execution.numpy.adverbs import ADVERB_MAP
 from jinx.execution.numpy.conjunctions import CONJUNCTION_MAP
-from jinx.execution.numpy.verbs import VERB_MAP
 from jinx.execution.numpy.conversion import ensure_noun_implementation
 from jinx.execution.numpy.printing import noun_to_string
-
+from jinx.execution.numpy.verbs import VERB_MAP
 
 executor = Executor(
     apply_monad=apply_monad,

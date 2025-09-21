@@ -4,21 +4,19 @@ import dataclasses
 import functools
 
 import numpy as np
-
-from jinx.vocabulary import Verb, Noun, Monad, Dyad
 from jinx.errors import DomainError, JinxNotImplementedError
 from jinx.execution.numpy.application import (
     _apply_dyad,
     _apply_monad,
-    split_into_cells,
-    get_rank,
     fill_and_assemble,
+    get_rank,
+    split_into_cells,
 )
 from jinx.execution.numpy.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )
-
+from jinx.vocabulary import Dyad, Monad, Noun, Verb
 
 INFINITY = float("inf")
 

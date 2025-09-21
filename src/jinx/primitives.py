@@ -13,7 +13,7 @@ See:
 - https://code.jsoftware.com/wiki/Vocabulary/Inverses
 """
 
-from jinx.vocabulary import Verb, Adverb, Conjunction, Copula, Monad, Dyad
+from jinx.vocabulary import Adverb, Conjunction, Copula, Dyad, Monad, Verb
 
 # The monad and dyad fields are not populated here (they default to None).
 # This is to allow the correct implementation of the verb to be looked up

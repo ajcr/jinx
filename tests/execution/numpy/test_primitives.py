@@ -1,19 +1,19 @@
-import pytest
 import numpy as np
+import pytest
 
 from jinx.execution.numpy.conversion import box_dtype
 from jinx.execution.numpy.helpers import is_box
 from jinx.execution.numpy.verbs import (
+    bslashco_monad,
     comma_dyad,
+    commaco_dyad,
     commadot_dyad,
     dollar_dyad,
     dollar_monad,
     gt_monad,
     lt_monad,
-    slashco_monad,
-    bslashco_monad,
     numberco_monad,
-    commaco_dyad,
+    slashco_monad,
     tildedot_monad,
 )
 

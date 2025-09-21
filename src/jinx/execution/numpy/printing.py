@@ -4,10 +4,8 @@ import itertools
 import os
 
 import numpy as np
-
-from jinx.vocabulary import Noun
 from jinx.execution.numpy.helpers import is_box
-
+from jinx.vocabulary import Noun
 
 MAX_COLS = 100
 

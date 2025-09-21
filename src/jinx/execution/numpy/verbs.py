@@ -17,27 +17,25 @@ import math
 import random
 
 import numpy as np
-
 from jinx.errors import (
     DomainError,
     JIndexError,
+    JinxNotImplementedError,
     LengthError,
     ValenceError,
-    JinxNotImplementedError,
 )
 from jinx.execution.numpy.conversion import box_dtype
 from jinx.execution.numpy.helpers import (
     get_fill_value,
-    increase_ndim,
     hash_box,
+    increase_ndim,
     is_box,
     is_same_array,
+    mark_ufunc_based,
     maybe_pad_by_duplicating_atoms,
     maybe_pad_with_fill_value,
-    mark_ufunc_based,
 )
 from jinx.word_formation import form_words
-
 
 np.seterr(divide="ignore")
 

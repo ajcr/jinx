@@ -13,22 +13,22 @@ https://code.jsoftware.com/wiki/Vocabulary/Modifiers
 
 """
 
-from jinx.vocabulary import (
-    PartOfSpeechT,
-    Verb,
-    Adverb,
-    Conjunction,
-    Punctuation,
-    Noun,
-    Name,
-    Comment,
-    Copula,
-)
+from jinx.errors import EvaluationError, JinxNotImplementedError, JSyntaxError
+from jinx.execution.executor import Executor
 from jinx.primitives import PRIMITIVES
-from jinx.errors import JinxNotImplementedError, EvaluationError, JSyntaxError
+from jinx.vocabulary import (
+    Adverb,
+    Comment,
+    Conjunction,
+    Copula,
+    Name,
+    Noun,
+    PartOfSpeechT,
+    Punctuation,
+    Verb,
+)
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
-from jinx.execution.executor import Executor
 
 
 def str_(executor: Executor, word: Noun | Verb | Conjunction | Adverb) -> str:

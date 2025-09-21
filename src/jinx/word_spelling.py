@@ -14,13 +14,13 @@ import re
 from jinx.errors import SpellingError
 from jinx.primitives import PRIMITIVES
 from jinx.vocabulary import (
-    Word,
+    Comment,
+    DataType,
+    Name,
     Noun,
     PartOfSpeechT,
-    DataType,
-    Comment,
-    Name,
     Punctuation,
+    Word,
 )
 
 

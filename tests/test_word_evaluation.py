@@ -1,3 +1,5 @@
+import functools
+
 import pytest
 import numpy as np
 
@@ -6,6 +8,7 @@ from jinx.word_evaluation import evaluate_words
 from jinx.word_spelling import PUNCTUATION_MAP
 from jinx.primitives import PRIMITIVE_MAP
 from jinx.execution.numpy.conversion import box_dtype
+from jinx.execution.numpy import executor as numpy_executor
 
 ## Words
 # Punctuation
@@ -23,6 +26,9 @@ SLASH = PRIMITIVE_MAP["SLASH"]
 
 # Conjunctions
 RANK = PRIMITIVE_MAP["RANK"]
+
+
+evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
 
 
 @pytest.mark.parametrize(
@@ -160,7 +166,7 @@ RANK = PRIMITIVE_MAP["RANK"]
     ],
 )
 def test_word_evaluation_basic_arithmetic(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert result[1:] == expected
 
 
@@ -180,7 +186,7 @@ def test_word_evaluation_basic_arithmetic(words, expected):
     ],
 )
 def test_word_evaluation_adverb_creation(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert isinstance(result[1], Verb)
     assert result[1].spelling == expected
@@ -224,7 +230,7 @@ def test_word_evaluation_adverb_creation(words, expected):
     ],
 )
 def test_word_evaluation_adverb_application(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert result[1:] == expected
 
 
@@ -281,7 +287,7 @@ def test_word_evaluation_adverb_application(words, expected):
 def test_word_evaluation_verb_conjunction_noun_application(
     words, expected_verb_spelling
 ):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert isinstance(result[1], Verb)
     assert result[1].spelling == expected_verb_spelling
@@ -331,7 +337,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
     ],
 )
 def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert result[1:] == expected
 
 
@@ -356,7 +362,7 @@ def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected
 def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
     words, expected
 ):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert result[1:] == expected
 
 
@@ -389,7 +395,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
     ],
 )
 def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert result[1:] == expected
 
 
@@ -407,7 +413,7 @@ def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, exp
     ],
 )
 def test_word_evaluation_hook_produces_single_verb(words):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert isinstance(result[1], Verb)
 
@@ -423,7 +429,7 @@ def test_word_evaluation_hook_produces_single_verb(words):
     ],
 )
 def test_word_evaluation_hook_correct_result(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert result[1] == expected
 
@@ -741,7 +747,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
     ],
 )
 def test_word_evaluation_computes_correct_noun(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert np.array_equal(np.round(result[1].implementation, 5), expected)
 
@@ -782,7 +788,7 @@ def test_word_evaluation_computes_correct_noun(words, expected):
     ],
 )
 def test_word_evaluation_computes_correct_boxed_array(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
 
     result_box = result[1].implementation
@@ -819,7 +825,7 @@ def test_word_evaluation_computes_correct_boxed_array(words, expected):
     ],
 )
 def test_word_evaluation_build_verb(words, expected):
-    result = evaluate_words(words)
+    result = evaluate_words_numpy(words)
     assert len(result) == 2
     assert isinstance(result[1], Verb)
     assert result[1].spelling == expected
@@ -848,7 +854,7 @@ def test_word_evaluation_build_verb(words, expected):
 )
 def test_word_evaluation_with_single_assignment(words, assignment, expected):
     variables = {}
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert variables["a"] == assignment
     assert len(result) == 2
     assert result[1] == expected
@@ -863,7 +869,7 @@ def test_word_evaluation_with_reassignment():
         PRIMITIVE_MAP["EQDOT"],
         Noun(data_type=DataType.Integer, data=[3]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
 
     assert variables["a"] == Noun(
         data_type=DataType.Integer, data=[3], implementation=np.int64(3)
@@ -872,7 +878,7 @@ def test_word_evaluation_with_reassignment():
 
     # a =: +
     words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], PRIMITIVE_MAP["PLUS"]]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
 
     assert variables["a"] == PRIMITIVE_MAP["PLUS"]
     assert result[1] == Name(spelling="a")
@@ -885,7 +891,7 @@ def test_word_evaluation_with_single_name_as_verb():
         Name(spelling="a"),
         Noun(data_type=DataType.Integer, data=[3]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 5
 
 
@@ -898,7 +904,7 @@ def test_word_evaluation_with_single_name_as_adverb():
         Name(spelling="a"),
         Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 15
 
 
@@ -912,7 +918,7 @@ def test_word_evaluation_with_name_to_name_to_verb():
         Name(spelling="a"),
         Noun(data_type=DataType.Integer, data=[7]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 9
 
 
@@ -926,7 +932,7 @@ def test_word_evaluation_with_names_as_verb_and_adverb():
         Name(spelling="b"),
         Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 15
 
 
@@ -934,7 +940,7 @@ def test_word_evaluation_with_name_assigned_to_itself():
     # a =: a
     variables = {}
     words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], Name(spelling="a")]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert variables["a"] == Name(spelling="a")
     assert result[1] == Name(spelling="a")
 
@@ -954,7 +960,7 @@ def test_word_evaluation_with_name_assigned_to_name_to_verb():
         Name(spelling="a"),
         Noun(data_type=DataType.Integer, data=[11]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 18
 
 
@@ -970,7 +976,7 @@ def test_word_evaluation_with_name_assigned_in_expression():
         RPAREN,
         Noun(data_type=DataType.Integer, data=[13]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 21
     assert variables["a"] == PRIMITIVE_MAP["PLUS"]
 
@@ -985,5 +991,5 @@ def test_word_evaluation_with_name_part_of_conjunction():
         PRIMITIVE_MAP["SQUARERF"],
         Noun(data_type=DataType.Integer, data=[3]),
     ]
-    result = evaluate_words(words, variables=variables)
+    result = evaluate_words_numpy(words, variables=variables)
     assert result[1].implementation == 3

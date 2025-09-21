@@ -4,16 +4,16 @@ import pytest
 from jinx.errors import LengthError
 from jinx.execution.numpy.application import apply_dyad
 from jinx.vocabulary import Noun, DataType
-from jinx.execution.numpy.primitives import (
-    PRIMITIVE_MAP as PRIMITIVE_MAP_NP,
+from jinx.execution.numpy.verbs import (
+    VERB_MAP,
 )
 from jinx.execution.numpy.conjunctions import rank_conjunction
 from jinx.primitives import PRIMITIVE_MAP
 
 
 PLUS = PRIMITIVE_MAP["PLUS"]
-PLUS.monad.function = PRIMITIVE_MAP_NP["PLUS"][0]
-PLUS.dyad.function = PRIMITIVE_MAP_NP["PLUS"][1]
+PLUS.monad.function = VERB_MAP["PLUS"][0]
+PLUS.dyad.function = VERB_MAP["PLUS"][1]
 PLUS_0_1 = rank_conjunction(
     PLUS, Noun(data_type=DataType.Integer, implementation=np.array([0, 1]))
 )

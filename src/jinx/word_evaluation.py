@@ -1,6 +1,11 @@
 """Parsing and evaluation.
 
-In J, parsing and evaluation happen simultaneously.
+In J parsing and evaluation happen simultaneously. A fragment of the sentence is matched
+against a set of 8 patterns. When a match is found the corresponding operation is executed
+and the fragment is replaced with the result. This continues until no more matches are found.
+
+In Jinx the execution may be done using different backends. An Executor instance with methods
+for executing on each pattern is passed by the caller.
 
 https://www.jsoftware.com/ioj/iojSent.htm#Parsing
 https://www.jsoftware.com/help/jforc/parsing_and_execution_ii.htm
@@ -19,29 +24,18 @@ from jinx.vocabulary import (
     Comment,
     Copula,
 )
-
-from jinx.execution.numpy.application import (
-    apply_monad,
-    apply_dyad,
-    apply_conjunction,
-    apply_adverb,
-    build_fork,
-    build_hook,
-)
-from jinx.execution.numpy.conversion import ensure_noun_implementation
 from jinx.primitives import PRIMITIVES
 from jinx.errors import JinxNotImplementedError, EvaluationError, JSyntaxError
-from jinx.execution.numpy.printing import noun_to_string
-from jinx.execution.numpy.primitives import PRIMITIVE_MAP
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
+from jinx.execution.executor import Executor
 
 
-def str_(word: Noun | Verb | Conjunction | Adverb) -> str:
+def str_(executor: Executor, word: Noun | Verb | Conjunction | Adverb) -> str:
     if isinstance(word, str):
         return word
     if isinstance(word, Noun):
-        return noun_to_string(word)
+        return executor.noun_to_string(word)
     elif isinstance(word, Verb | Adverb | Conjunction):
         return word.spelling
     elif isinstance(word, Name):
@@ -51,10 +45,12 @@ def str_(word: Noun | Verb | Conjunction | Adverb) -> str:
 
 
 def print_words(
-    words: list[PartOfSpeechT], variables: dict[str, PartOfSpeechT]
+    executor: Executor, words: list[PartOfSpeechT], variables: dict[str, PartOfSpeechT]
 ) -> None:
     value = " ".join(
-        str_(variables[word.spelling]) if isinstance(word, Name) else str_(word)
+        str_(executor, variables[word.spelling])
+        if isinstance(word, Name)
+        else str_(executor, word)
         for word in words
         if word is not None
     )
@@ -63,27 +59,28 @@ def print_words(
 
 
 def evaluate_single_verb_sentence(
-    sentence: str, variables: dict[str, PartOfSpeechT]
+    executor: Executor, sentence: str, variables: dict[str, PartOfSpeechT]
 ) -> Verb:
     tokens = form_words(sentence)
     words = spell_words(tokens)
-    words = _evaluate_words(words, variables)
+    words = _evaluate_words(executor, words, variables)
     assert len(words) == 2 and isinstance(words[1], Verb)
     return words[1]
 
 
 def build_verb_noun_phrase(
+    executor: Executor,
     words: list[Verb | Noun | Adverb | Conjunction],
 ) -> Verb | Noun | None:
     """Build the verb or noun phrase from a list of words, or raise an error."""
     while len(words) > 1:
         match words:
             case [left, Adverb(), *remaining]:
-                result = apply_adverb(left, words[1])
+                result = executor.apply_adverb(left, words[1])
                 words = [result, *remaining]
 
             case [left, Conjunction(), right, *remaining]:
-                result = apply_conjunction(left, words[1], right)
+                result = executor.apply_conjunction(left, words[1], right)
                 words = [result, *remaining]
 
             case _:
@@ -99,6 +96,7 @@ def build_verb_noun_phrase(
 
 
 def evaluate_words(
+    executor: Executor,
     words: list[PartOfSpeechT],
     variables: dict[str, PartOfSpeechT] | None = None,
     level: int = 0,
@@ -110,30 +108,39 @@ def evaluate_words(
     # framework (this is just NumPy for now).
     for word in words:
         if isinstance(word, Noun):
-            ensure_noun_implementation(word)
+            executor.ensure_noun_implementation(word)
+
+    all_primitives = (
+        executor.primitive_verb_map
+        | executor.primitive_adverb_map
+        | executor.primitive_conjuction_map
+    )
 
     for primitive in PRIMITIVES:
-        if primitive.name not in PRIMITIVE_MAP:
+        if primitive.name not in all_primitives:
             continue
         if isinstance(primitive, Verb):
-            monad, dyad = PRIMITIVE_MAP[primitive.name]
+            monad, dyad = executor.primitive_verb_map[primitive.name]
             if primitive.monad is not None:
                 primitive.monad.function = monad
             if primitive.dyad is not None:
                 primitive.dyad.function = dyad
-        if isinstance(primitive, (Adverb, Conjunction)):
-            primitive.function = PRIMITIVE_MAP[primitive.name]
+        if isinstance(primitive, Adverb):
+            primitive.function = executor.primitive_adverb_map[primitive.name]
+        if isinstance(primitive, Conjunction):
+            primitive.function = executor.primitive_conjuction_map[primitive.name]
 
     # Verb obverses are converted from strings to Verb objects.
     for word in words:
         if isinstance(word, Verb) and isinstance(word.obverse, str):
-            verb = evaluate_single_verb_sentence(word.obverse, variables)
+            verb = evaluate_single_verb_sentence(executor, word.obverse, variables)
             word.obverse = verb
 
-    return _evaluate_words(words, variables, level=level)
+    return _evaluate_words(executor, words, variables, level=level)
 
 
 def get_parts_to_left(
+    executor: Executor,
     word: PartOfSpeechT,
     words: list[PartOfSpeechT | str],
     current_level: int,
@@ -161,7 +168,7 @@ def get_parts_to_left(
             parts_to_left = [word, *parts_to_left]
 
         elif word == ")":
-            word = evaluate_words(words, level=current_level + 1)
+            word = evaluate_words(executor, words, level=current_level + 1)
             continue
 
         else:
@@ -200,7 +207,7 @@ def resolve_word(
 
 
 def _evaluate_words(
-    words: list[PartOfSpeechT], variables, level: int = 0
+    executor: Executor, words: list[PartOfSpeechT], variables, level: int = 0
 ) -> list[PartOfSpeechT]:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
@@ -221,7 +228,7 @@ def _evaluate_words(
         # If the next word closes a parenthesis, we need to evaluate the words inside it
         # first to get the next word to prepend to the fragment.
         if word == ")":
-            word = evaluate_words(words, variables, level=level + 1)
+            word = evaluate_words(executor, words, variables, level=level + 1)
 
         # If the fragment has a modifier (adverb/conjunction) at the start, we need to find the
         # entire verb/noun phrase to the left as the next word to prepend to the fragment.
@@ -229,8 +236,10 @@ def _evaluate_words(
         if fragment and isinstance(
             resolve_word(fragment[0], variables), Adverb | Conjunction
         ):
-            parts_to_left = get_parts_to_left(word, words, level, variables=variables)
-            word = build_verb_noun_phrase(parts_to_left)
+            parts_to_left = get_parts_to_left(
+                executor, word, words, level, variables=variables
+            )
+            word = build_verb_noun_phrase(executor, parts_to_left)
 
         fragment = [word, *fragment]
 
@@ -256,7 +265,7 @@ def _evaluate_words(
                 # 0. Monad
                 case None | "=." | "=:" | "(", Verb(), Noun():
                     edge, verb, noun = fragment_
-                    result = apply_monad(verb, noun)
+                    result = executor.apply_monad(verb, noun)
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]
@@ -264,13 +273,13 @@ def _evaluate_words(
                 # 1. Monad
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Adverb() | Verb(), Verb(), Noun():
                     edge, _, verb, noun = fragment_
-                    result = apply_monad(verb, noun)
+                    result = executor.apply_monad(verb, noun)
                     fragment[2:] = [result]
 
                 # 2. Dyad
                 case None | "=." | "=:" | "(" | Adverb() | Verb() | Noun(), Noun(), Verb(), Noun():
                     edge, noun, verb, noun_2 = fragment_
-                    result = apply_dyad(verb, noun, noun_2)
+                    result = executor.apply_dyad(verb, noun, noun_2)
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:] = [result]
@@ -283,7 +292,7 @@ def _evaluate_words(
                     *_,
                 ):
                     edge, verb, adverb, *last = fragment_
-                    result = apply_adverb(verb, adverb)
+                    result = executor.apply_adverb(verb, adverb)
                     if edge == "(" and last == [")"] and level > 0:
                         return result
                     fragment[1:3] = [result]
@@ -297,7 +306,7 @@ def _evaluate_words(
                     *_,
                 ):
                     edge, verb_or_noun_1, conjunction, verb_or_noun_2, *last = fragment_
-                    result = apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
+                    result = executor.apply_conjunction(verb_or_noun_1, conjunction, verb_or_noun_2)
                     if edge == "(" and last == [")"] and level > 0:
                         return result
                     fragment[1:4] = [result]
@@ -310,7 +319,7 @@ def _evaluate_words(
                     Verb(),
                 ):
                     edge, verb_or_noun_1, verb_2, verb_3 = fragment_
-                    result = build_fork(verb_or_noun_1, verb_2, verb_3)
+                    result = executor.build_fork(verb_or_noun_1, verb_2, verb_3)
                     if edge == "(" and level > 0:
                         return result
                     fragment[1:4] = [result]
@@ -325,7 +334,7 @@ def _evaluate_words(
                     edge, cavn1, cavn2, *last = fragment_
                     match [cavn1, cavn2]:
                         case [Verb(), Verb()]:
-                            result = build_hook(cavn1, cavn2)
+                            result = executor.build_hook(cavn1, cavn2)
                         case [Adverb(), Adverb()] | [Conjunction() , Noun()] | [Conjunction(), Verb()] | [Noun(), Conjunction()] | [Verb(), Conjunction()]:
                             # These are valid combinations but not implemented yet.
                             raise JinxNotImplementedError(
@@ -358,7 +367,7 @@ def _evaluate_words(
 
     if len(fragment) > 2:
         raise EvaluationError(
-            f"Unexecutable fragment: {[str_(w) for w in fragment if w is not None]}"
+            f"Unexecutable fragment: {[str_(executor, w) for w in fragment if w is not None]}"
         )
 
     return fragment

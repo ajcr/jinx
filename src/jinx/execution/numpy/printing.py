@@ -2,6 +2,7 @@
 
 import itertools
 import os
+from typing import Sequence
 
 import numpy as np
 from jinx.execution.numpy.helpers import is_box
@@ -10,7 +11,7 @@ from jinx.vocabulary import Noun
 MAX_COLS = 100
 
 
-def noun_to_string(noun: Noun, max_cols: int = MAX_COLS) -> str:
+def noun_to_string(noun: Noun[np.ndarray], max_cols: int = MAX_COLS) -> str:
     """Convert a noun to a string representation."""
     arr = noun.implementation
     rows = array_to_rows(arr, max_cols=max_cols)
@@ -103,12 +104,15 @@ def ndim_n_to_rows(arr: np.ndarray, append_ellipsis: bool) -> list[str]:
     return rows
 
 
-def box_1D_or_2D_to_rows(box: list[list[str]], widths: list[int]) -> list[str]:
+BatchedRowsT = Sequence[str] | Sequence["BatchedRowsT"]
+
+
+def box_1D_or_2D_to_rows(box: BatchedRowsT, widths: list[int]) -> list[str]:
     """Convert a 2D box (list of list of strings) to a list of strings for printing."""
     rows = [box_top_line(widths=widths)]
     for n, box_row in enumerate(box):
         for row_item_row in itertools.zip_longest(*box_row, fillvalue=""):
-            vals = [val.ljust(width) for val, width in zip(row_item_row, widths)]
+            vals = [str(val).ljust(width) for val, width in zip(row_item_row, widths)]
             row = "│" + "│".join(vals) + "│"
             rows.append(row)
 
@@ -124,7 +128,9 @@ def box_to_rows(box: np.ndarray) -> list[str]:
     box_items = [item[0] for item in box.ravel()]
     items_as_rows = [array_to_rows(item) for item in box_items]
 
-    row_groups = list(itertools.batched(items_as_rows, box.shape[-1], strict=True))
+    row_groups: BatchedRowsT = list(
+        itertools.batched(items_as_rows, box.shape[-1], strict=True)
+    )
     if box.ndim >= 2:
         row_groups = list(itertools.batched(row_groups, box.shape[-2], strict=True))
 
@@ -137,7 +143,7 @@ def box_to_rows(box: np.ndarray) -> list[str]:
     if box.ndim == 2:
         return box_1D_or_2D_to_rows(row_groups[0], widths)
 
-    boxes = [box_1D_or_2D_to_rows(rows, widths) for rows in row_groups]
+    boxes: BatchedRowsT = [box_1D_or_2D_to_rows(rows, widths) for rows in row_groups]
     leading_dims = list(box.shape[:-2])
 
     while leading_dims:

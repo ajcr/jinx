@@ -17,18 +17,18 @@ from jinx.execution.numpy.helpers import (
     is_ufunc_based,
     maybe_pad_with_fill_value,
 )
-from jinx.vocabulary import Adverb, Conjunction, Dyad, Monad, Noun, Verb
+from jinx.vocabulary import Adverb, Conjunction, Dyad, Monad, Noun, Verb, RankT
 
 
-def get_rank(verb_rank: int, noun_rank: int) -> int:
+def get_rank(verb_rank: RankT, noun_rank: int) -> int:
     """Get the rank at which to apply the verb to the noun.
 
     If the verb rank is negative, it means that the verb rank is subtracted
     from the noun rank, to a minimum of 0.
     """
     if verb_rank < 0:
-        return max(0, noun_rank + verb_rank)
-    return min(verb_rank, noun_rank)
+        return max(0, noun_rank + verb_rank)  # type: ignore[return-value]
+    return min(verb_rank, noun_rank)  # type: ignore[return-value]
 
 
 def fill_and_assemble(
@@ -69,12 +69,12 @@ def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
     )
 
 
-def apply_monad(verb: Verb, noun: Noun) -> Noun:
+def apply_monad(verb: Verb[np.ndarray], noun: Noun[np.ndarray]) -> Noun[np.ndarray]:
     result = _apply_monad(verb, noun.implementation)
     return ndarray_or_scalar_to_noun(result)
 
 
-def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
+def _apply_monad(verb: Verb[np.ndarray], arr: np.ndarray) -> np.ndarray:
     if verb.monad is None or verb.monad.function is None:
         raise ValenceError(f"Verb {verb.spelling} has no monadic valence.")
     if verb.monad.function is NotImplemented:
@@ -100,12 +100,16 @@ def _apply_monad(verb: Verb, arr: np.ndarray) -> np.ndarray:
     return fill_and_assemble(cells, array_cells.frame_shape)
 
 
-def apply_dyad(verb: Verb, noun_1: Noun, noun_2: Noun) -> Noun:
+def apply_dyad(
+    verb: Verb[np.ndarray], noun_1: Noun[np.ndarray], noun_2: Noun[np.ndarray]
+) -> Noun[np.ndarray]:
     result = _apply_dyad(verb, noun_1.implementation, noun_2.implementation)
     return ndarray_or_scalar_to_noun(result)
 
 
-def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.ndarray:
+def _apply_dyad(
+    verb: Verb[np.ndarray], left_arr: np.ndarray, right_arr: np.ndarray
+) -> np.ndarray:
     if verb.dyad is None or verb.dyad.function is None:
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
     if verb.dyad.function is NotImplemented:
@@ -189,12 +193,12 @@ def _apply_dyad(verb: Verb, left_arr: np.ndarray, right_arr: np.ndarray) -> np.n
             cells.append(subcells)
 
     cells = maybe_pad_with_fill_value(cells)
-    cells = np.asarray(cells)
+    array = np.asarray(cells)
 
     # Gather the cells into the final frame shape (the longer of the left
     # and right frame shapes, plus the result cell shape).
     collecting_frame = max(left.frame_shape, right.frame_shape, key=len)
-    return cells.reshape(collecting_frame + cells[0].shape)
+    return array.reshape(collecting_frame + cells[0].shape)
 
 
 def find_common_frame_shape(

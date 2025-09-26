@@ -68,18 +68,14 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
         pytest.param(
             [MINUS, Noun(data_type=DataType.Integer, data=[1])],
             [
-                Noun(
-                    data_type=DataType.Integer, data=None, implementation=np.int64(-1)
-                ),
+                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             ],
             id="-1",
         ),
         pytest.param(
             [MINUS, LPAREN, Noun(data_type=DataType.Integer, data=[1]), RPAREN],
             [
-                Noun(
-                    data_type=DataType.Integer, data=None, implementation=np.int64(-1)
-                ),
+                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             ],
             id="-(1)",
         ),
@@ -93,9 +89,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 RPAREN,
             ],
             [
-                Noun(
-                    data_type=DataType.Integer, data=None, implementation=np.int64(-1)
-                ),
+                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             ],
             id="(-)(1)",
         ),
@@ -106,7 +100,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 Noun(data_type=DataType.Integer, data=[1]),
             ],
             [
-                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Noun(data_type=DataType.Integer, implementation=np.int64(0)),
             ],
             id="1-1",
         ),
@@ -119,7 +113,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 RPAREN,
             ],
             [
-                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(0)),
+                Noun(data_type=DataType.Integer, implementation=np.int64(0)),
             ],
             id="(1-1)",
         ),
@@ -138,9 +132,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 Noun(data_type=DataType.Integer, data=[3]),
             ],
             [
-                Noun(
-                    data_type=DataType.Integer, data=None, implementation=np.int64(15)
-                ),
+                Noun(data_type=DataType.Integer, implementation=np.int64(15)),
             ],
             id="(8 - (1 - 5)) + 3",
         ),
@@ -159,7 +151,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 Noun(data_type=DataType.Integer, data=[3]),
             ],
             [
-                Noun(data_type=DataType.Integer, data=None, implementation=np.int64(5)),
+                Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             ],
             id="((8 - 1) - 5) + 3",
         ),
@@ -197,12 +189,12 @@ def test_word_evaluation_adverb_creation(words, expected):
     [
         pytest.param(
             [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[77])],
-            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(77))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(77))],
             id="+/ 77",
         ),
         pytest.param(
             [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[1, 3, 5])],
-            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(9))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
             id="+/ 1 3 5",
         ),
         pytest.param(
@@ -213,7 +205,7 @@ def test_word_evaluation_adverb_creation(words, expected):
                 Noun(data_type=DataType.Integer, data=[8, 3, 5]),
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(16))],
             id="(+/ 8 3 5)",
         ),
         pytest.param(
@@ -224,7 +216,7 @@ def test_word_evaluation_adverb_creation(words, expected):
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[8, 3, 5]),
             ],
-            [Noun(data_type=DataType.Integer, data=None, implementation=np.int64(16))],
+            [Noun(data_type=DataType.Integer, implementation=np.int64(16))],
             id="(+/) 8 3 5",
         ),
     ],

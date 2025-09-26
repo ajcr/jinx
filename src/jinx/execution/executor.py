@@ -1,23 +1,23 @@
 from dataclasses import dataclass
-from typing import Callable, TypeVar
+from typing import Callable
 
 from jinx.vocabulary import Adverb, Conjunction, Noun, Verb
 
-T = TypeVar("T")
-
 
 @dataclass(frozen=True)
-class Executor:
-    apply_monad: Callable[[Verb, Noun], Noun]
+class Executor[T]:
+    apply_monad: Callable[[Verb[T], Noun[T]], Noun[T]]
     """Apply monadic form of verb to a noun."""
 
-    apply_dyad: Callable[[Verb, Noun, Noun], Noun]
+    apply_dyad: Callable[[Verb[T], Noun[T], Noun[T]], Noun[T]]
     """Apply dyadic form of verb to two nouns."""
 
-    apply_conjunction: Callable[[Verb | Noun, Conjunction, Verb], Verb | Noun]
+    apply_conjunction: Callable[
+        [Verb[T] | Noun[T], Conjunction, Verb[T]], Verb[T] | Noun[T]
+    ]
     """Apply conjunction to left and right arguments."""
 
-    apply_adverb: Callable[[Verb | Noun, Adverb], Verb | Noun]
+    apply_adverb: Callable[[Verb[T] | Noun[T], Adverb], Verb[T] | Noun[T]]
     """Apply adverb to left argument."""
 
     build_fork: Callable[[Noun | Verb, Verb, Verb], Verb]
@@ -34,13 +34,13 @@ class Executor:
     ]
     """Map of primitive verb names to implementations of monad and dyad functions."""
 
-    primitive_adverb_map: dict[str, Callable[[Verb], Verb]]
+    primitive_adverb_map: dict[str, Callable[[Verb[T]], Verb[T]]]
     """Map of primitive adverb names to implementation function."""
 
     primitive_conjuction_map: dict[str, Callable[[Verb | Noun, Verb | Noun], Verb]]
     """Map of primitive conjunction names to implementation function."""
 
-    noun_to_string: Callable[[Noun], str]
+    noun_to_string: Callable[[Noun[T]], str]
     """Convert a noun to a string representation for printing."""
 
 

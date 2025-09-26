@@ -13,6 +13,8 @@ https://code.jsoftware.com/wiki/Vocabulary/Modifiers
 
 """
 
+from typing import cast
+
 from jinx.errors import EvaluationError, JinxNotImplementedError, JSyntaxError
 from jinx.execution.executor import Executor
 from jinx.primitives import PRIMITIVES
@@ -31,7 +33,7 @@ from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
 
 
-def str_(executor: Executor, word: Noun | Verb | Conjunction | Adverb) -> str:
+def str_(executor: Executor, word: PartOfSpeechT | str) -> str:
     if isinstance(word, str):
         return word
     if isinstance(word, Noun):
@@ -214,7 +216,7 @@ def _evaluate_words(
     if words[0] is not None:
         words = [None, *words]
 
-    fragment = []
+    fragment: list[PartOfSpeechT] = []
 
     while words:
         word = words.pop()
@@ -353,7 +355,7 @@ def _evaluate_words(
                 case ["(", Conjunction() | Adverb() | Verb() | Noun()]:
                     _, cavn = fragment_
                     if level > 0:
-                        return cavn
+                        return cast(list[PartOfSpeechT], cavn)   
                     raise EvaluationError("Unbalanced parentheses")
 
                 # Non-executable fragment.

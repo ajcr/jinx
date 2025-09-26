@@ -1,3 +1,5 @@
+import numpy as np
+
 from jinx.execution.executor import Executor
 from jinx.execution.numpy.adverbs import ADVERB_MAP
 from jinx.execution.numpy.application import (
@@ -13,7 +15,7 @@ from jinx.execution.numpy.conversion import ensure_noun_implementation
 from jinx.execution.numpy.printing import noun_to_string
 from jinx.execution.numpy.verbs import VERB_MAP
 
-executor = Executor(
+executor = Executor[np.ndarray](
     apply_monad=apply_monad,
     apply_dyad=apply_dyad,
     apply_conjunction=apply_conjunction,

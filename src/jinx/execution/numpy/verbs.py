@@ -215,14 +215,14 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             f"executing dyad ,. shapes {x.shape} and {y.shape} have different numbers of items"
         )
 
-    result = []
+    items = []
     for x_item, y_item in zip(x, y, strict=True):
-        result.append(comma_dyad(x_item, y_item))
+        items.append(comma_dyad(x_item, y_item))
 
-    if len(result) > 1:
-        result = maybe_pad_with_fill_value(result)
-    else:
-        result = result[0]
+    if len(items) == 1:
+        return np.asarray(items[0])
+
+    result = maybe_pad_with_fill_value(items)
     return np.asarray(result)
 
 
@@ -321,8 +321,9 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Does not support custom fill values at the moment.
     Does not support INFINITY as an atom of x.
     """
-    if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
-        raise DomainError(f"Invalid shape: {x}")
+    if np.isscalar(x) or x.shape == ():
+        if x < 0 or not np.issubdtype(x.dtype, np.integer):
+            raise DomainError(f"Invalid shape: {x}")
 
     if np.isscalar(x) or x.shape == ():
         x_shape = (np.squeeze(x),)
@@ -759,7 +760,7 @@ def query_monad(y: np.ndarray) -> np.ndarray:
         result = random.choice([0, 1])
 
     else:
-        result = random.randint(0, y)
+        result = random.randint(0, int(y))
 
     return np.asarray(result)
 

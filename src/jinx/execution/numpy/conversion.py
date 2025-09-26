@@ -30,24 +30,21 @@ DATATYPE_TO_NP_MAP = {
 }
 
 
-def convert_noun_to_numpy_array(noun: Noun) -> np.ndarray:
+def convert_noun_to_numpy_array(noun: Noun[np.ndarray]) -> np.ndarray:
     dtype = DATATYPE_TO_NP_MAP[noun.data_type]
     if len(noun.data) == 1:
         # A scalar (ndim == 0) is returned for single element arrays.
-        return np.array(noun.data[0], dtype=dtype)
-    return np.array(noun.data, dtype=dtype)
+        return np.array(noun.data[0], dtype=dtype)  # type: ignore[call-overload]
+    return np.array(noun.data, dtype=dtype)  # type: ignore[call-overload]
 
 
-def ensure_noun_implementation(noun: Noun) -> None:
+def ensure_noun_implementation(noun: Noun[np.ndarray]) -> None:
     if noun.implementation is None:
         noun.implementation = convert_noun_to_numpy_array(noun)
 
 
-def infer_data_type(data):
-    try:
-        dtype = data.dtype
-    except AttributeError:
-        dtype = type(data)
+def infer_data_type(data: np.ndarray) -> DataType:
+    dtype = data.dtype
     if np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.bool_):
         return DataType.Integer
     if np.issubdtype(dtype, np.floating):
@@ -60,6 +57,6 @@ def infer_data_type(data):
     raise NotImplementedError(f"Cannot handle NumPy dtype: {dtype}")
 
 
-def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun:
+def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun[np.ndarray]:
     data_type = infer_data_type(data)
-    return Noun(data_type=data_type, implementation=data)
+    return Noun[np.ndarray](data_type=data_type, implementation=data)

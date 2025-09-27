@@ -20,13 +20,13 @@ class Executor[T]:
     apply_adverb: Callable[[Verb[T] | Noun[T], Adverb], Verb[T] | Noun[T]]
     """Apply adverb to left argument."""
 
-    build_fork: Callable[[Noun | Verb, Verb, Verb], Verb]
+    build_fork: Callable[[Noun[T] | Verb[T], Verb[T], Verb[T]], Verb[T]]
     """Build fork."""
 
-    build_hook: Callable[[Verb, Verb], Verb]
+    build_hook: Callable[[Verb[T], Verb[T]], Verb[T]]
     """Build hook."""
 
-    ensure_noun_implementation: Callable[[Noun], None]
+    ensure_noun_implementation: Callable[[Noun[T]], None]
     """Ensure that the noun has an implementation."""
 
     primitive_verb_map: dict[
@@ -37,7 +37,7 @@ class Executor[T]:
     primitive_adverb_map: dict[str, Callable[[Verb[T]], Verb[T]]]
     """Map of primitive adverb names to implementation function."""
 
-    primitive_conjuction_map: dict[str, Callable[[Verb | Noun, Verb | Noun], Verb]]
+    primitive_conjuction_map: dict[str, Callable[[Verb[T] | Noun[T], Verb[T] | Noun[T]], Verb[T]]]
     """Map of primitive conjunction names to implementation function."""
 
     noun_to_string: Callable[[Noun[T]], str]

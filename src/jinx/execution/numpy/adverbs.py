@@ -14,7 +14,7 @@ from jinx.execution.numpy.helpers import (
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )
-from jinx.vocabulary import Dyad, Monad, Verb
+from jinx.vocabulary import Dyad, Monad, Noun, Verb
 
 INFINITY = float("inf")
 

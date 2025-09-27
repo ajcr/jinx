@@ -15,6 +15,8 @@ Resources:
 
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Callable, NamedTuple, Sequence
@@ -67,7 +69,7 @@ class Monad[T]:
     rank: RankT
     """Rank of monadic valence of the verb."""
 
-    function: Callable[[T], T] | "Verb[T]" = None  # type: ignore[assignment]
+    function: Callable[[T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb to apply. Initially
     None and set at runtime."""
 
@@ -83,7 +85,7 @@ class Dyad[T]:
     right_rank: RankT
     """Right rank of the dyadic verb."""
 
-    function: Callable[[T, T], T] | "Verb[T]" = None  # type: ignore[assignment]
+    function: Callable[[T, T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb object. Initially
     set to and set at runtime."""
 
@@ -105,7 +107,7 @@ class Verb[T]:
     dyad: Dyad[T] | None = None
     """The dyadic form of the verb, if it exists."""
 
-    obverse: str | None = None
+    obverse: Verb[T] | str | None = None
     """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
 
 

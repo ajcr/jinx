@@ -37,7 +37,9 @@ class Executor[T]:
     primitive_adverb_map: dict[str, Callable[[Verb[T]], Verb[T]]]
     """Map of primitive adverb names to implementation function."""
 
-    primitive_conjuction_map: dict[str, Callable[[Verb[T] | Noun[T], Verb[T] | Noun[T]], Verb[T]]]
+    primitive_conjuction_map: dict[
+        str, Callable[[Verb[T] | Noun[T], Verb[T] | Noun[T]], Verb[T]]
+    ]
     """Map of primitive conjunction names to implementation function."""
 
     noun_to_string: Callable[[Noun[T]], str]

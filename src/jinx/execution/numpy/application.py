@@ -8,6 +8,7 @@ Main references:
 
 import functools
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 from jinx.errors import JinxNotImplementedError, LengthError, ValenceError
@@ -85,7 +86,7 @@ def _apply_monad(verb: Verb[np.ndarray], arr: np.ndarray) -> np.ndarray:
     if isinstance(verb.monad.function, Verb):
         function = functools.partial(_apply_monad, verb.monad.function)
     else:
-        function = verb.monad.function
+        function = verb.monad.function  # type: ignore[assignment]
 
     rank = get_rank(verb.monad.rank, arr.ndim)
 
@@ -120,7 +121,7 @@ def _apply_dyad(
     if isinstance(verb.dyad.function, Verb):
         function = functools.partial(_apply_dyad, verb.dyad.function)
     else:
-        function = verb.dyad.function
+        function = verb.dyad.function  # type: ignore[assignment]
 
     left_rank = get_rank(verb.dyad.left_rank, left_arr.ndim)
     right_rank = get_rank(verb.dyad.right_rank, right_arr.ndim)
@@ -186,11 +187,11 @@ def _apply_dyad(
                 subcells.append(function(left_subcell, right_cell))
 
         subcells = maybe_pad_with_fill_value(subcells)
-        subcells = np.asarray(subcells)
-        if subcells.shape:
+        subarray = np.asarray(subcells)
+        if subarray.shape:
             cells.extend(subcells)
         else:
-            cells.append(subcells)
+            cells.append(subarray)
 
     cells = maybe_pad_with_fill_value(cells)
     array = np.asarray(cells)
@@ -230,7 +231,7 @@ def apply_adverb(verb_or_noun: Verb | Noun, adverb: Adverb) -> Verb:
 INFINITY = float("inf")
 
 
-def build_hook(f: Verb, g: Verb) -> Verb:
+def build_hook(f: Verb[np.ndarray], g: Verb[np.ndarray]) -> Verb[np.ndarray]:
     """Build a hook given verbs f and g.
 
       (f g) y  ->  y f (g y)
@@ -251,7 +252,7 @@ def build_hook(f: Verb, g: Verb) -> Verb:
     g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
     spelling = f"{f_spelling} {g_spelling}"
 
-    return Verb(
+    return Verb[np.ndarray](
         spelling=spelling,
         name=spelling,
         monad=Monad(
@@ -268,7 +269,9 @@ def build_hook(f: Verb, g: Verb) -> Verb:
     )
 
 
-def build_fork(f: Verb | Noun, g: Verb, h: Verb) -> Verb:
+def build_fork(
+    f: Verb[np.ndarray] | Noun[np.ndarray], g: Verb[np.ndarray], h: Verb[np.ndarray]
+) -> Verb[np.ndarray]:
     """Build a fork given verbs f, g, h.
 
       (f g h) y  ->    (f y) g   (h y)
@@ -306,13 +309,13 @@ def build_fork(f: Verb | Noun, g: Verb, h: Verb) -> Verb:
     if isinstance(f, Verb):
         f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
     else:
-        f_spelling = f.implementation
+        f_spelling = str(f.implementation)
 
     g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
     h_spelling = f"({h.spelling})" if " " in h.spelling else h.spelling
     spelling = f"{f_spelling} {g_spelling} {h_spelling}"
 
-    return Verb(
+    return Verb[np.ndarray](
         spelling=spelling,
         name=spelling,
         monad=Monad(

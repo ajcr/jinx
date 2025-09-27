@@ -4,7 +4,7 @@ import dataclasses
 import functools
 
 import numpy as np
-from jinx.errors import DomainError, JinxNotImplementedError
+from jinx.errors import DomainError, JinxNotImplementedError, ValenceError
 from jinx.execution.numpy.application import (
     _apply_dyad,
     _apply_monad,
@@ -21,7 +21,9 @@ from jinx.vocabulary import Dyad, Monad, Noun, Verb
 INFINITY = float("inf")
 
 
-def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
+def _modify_rank(
+    verb: Verb[np.ndarray], rank: np.ndarray | int | float
+) -> Verb[np.ndarray]:
     rank = np.atleast_1d(rank)
     if np.issubdtype(rank.dtype, np.floating):
         if not np.isinf(rank).any():
@@ -75,12 +77,14 @@ def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
     )
 
 
-def rank_conjunction(verb: Verb, noun: Noun) -> Verb:
+def rank_conjunction(
+    verb: Verb[np.ndarray], noun: Noun[np.ndarray]
+) -> Verb[np.ndarray]:
     rank = np.atleast_1d(noun.implementation).tolist()
     return _modify_rank(verb, rank)
 
 
-def at_conjunction(u: Verb, v: Verb) -> Verb:
+def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:
     """@ conjunction: compose verbs u and v, with u applied using the rank of v.
 
     This means v is applied first, then u is applied to each cell of the result of v
@@ -88,6 +92,8 @@ def at_conjunction(u: Verb, v: Verb) -> Verb:
 
     Once u has been applied to each v-cell, the results are padded and assembled.
     """
+    if v.monad is None:
+        raise ValenceError(f"{v.spelling} has no monadic form")
 
     def _monad(y: np.ndarray) -> np.ndarray:
         rank = get_rank(v.monad.rank, y.ndim)
@@ -262,6 +268,8 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
 
 def ampdot_conjunction(u: Verb, v: Verb) -> Verb:
     """&. conjunction: u&.v is equivalent to (u&.:v)"mv , where mv is the monadic rank of v."""
+    if v.monad is None:
+        raise ValenceError(f"{v.spelling} has no monadic form")
     verb = ampdotco_conjunction(u, v)
     return _modify_rank(verb, v.monad.rank)
 
@@ -339,8 +347,8 @@ def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
             result.append(atom_result)
 
         result = maybe_pad_with_fill_value(result, fill_value=0)
-        result = np.asarray(result)
-        return result.reshape(exponent.implementation.shape + result[0].shape)
+        array = np.asarray(result)
+        return array.reshape(exponent.implementation.shape + result[0].shape)
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         result = []
@@ -364,8 +372,8 @@ def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
             result.append(atom_result)
 
         result = maybe_pad_with_fill_value(result, fill_value=0)
-        result = np.asarray(result)
-        return result.reshape(exponent.implementation.shape + result[0].shape)
+        array = np.asarray(result)
+        return array.reshape(exponent.implementation.shape + result[0].shape)
 
     u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
 

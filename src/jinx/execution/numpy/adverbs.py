@@ -86,7 +86,7 @@ def bslash_adverb(verb: Verb) -> Verb:
             result = []
             for i in range(1, len(y) + 1):
                 result.append(_apply_monad(verb, y[:i]))
-            result = maybe_pad_with_fill_value(result, fill_value=0)
+            result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
             return np.asarray(result)
 
     def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -107,7 +107,7 @@ def bslash_adverb(verb: Verb) -> Verb:
         result = []
         for window in windows:
             result.append(_apply_monad(verb, window))
-        result = maybe_pad_with_fill_value(result, fill_value=0)
+        result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
@@ -138,7 +138,7 @@ def bslashdot_adverb(verb: Verb) -> Verb:
             result = []
             for i in range(len(y)):
                 result.append(_apply_monad(verb, y[i:]))
-            result = maybe_pad_with_fill_value(result, fill_value=0)
+            result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
             return np.asarray(result)
 
     def dyad_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -163,7 +163,7 @@ def bslashdot_adverb(verb: Verb) -> Verb:
         result = []
         for window in windows:
             result.append(_apply_monad(verb, window))
-        result = maybe_pad_with_fill_value(result, fill_value=0)
+        result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
@@ -278,7 +278,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
                 f"Monad {verb.spelling} dooes not yet support array rank > 3."
             )
 
-        result = maybe_pad_with_fill_value(result, fill_value=0)
+        result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
     def dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:

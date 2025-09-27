@@ -8,7 +8,6 @@ Main references:
 
 import functools
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 from jinx.errors import JinxNotImplementedError, LengthError, ValenceError

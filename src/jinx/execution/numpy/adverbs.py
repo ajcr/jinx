@@ -26,17 +26,18 @@ def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
     if is_ufunc(verb.dyad.function) and verb.dyad.is_commutative:
-        monad = verb.dyad.function.reduce
-        dyad = verb.dyad.function.outer
+        f: np.ufunc = verb.dyad.function  # type: ignore[assignment]
+        monad = f.reduce
+        dyad = f.outer
 
     else:
         # Slow path: dyad is not a ufunc.
         # The function is either callable, in which cases it is applied directly,
         # or a Verb object that needs to be applied indirectly with _apply_dyad().
         if isinstance(verb.dyad.function, Verb):
-            func = functools.partial(_apply_dyad, verb)
+            func = functools.partial(_apply_dyad, verb)  # type: ignore[assignment]
         else:
-            func = verb.dyad.function
+            func = verb.dyad.function  # type: ignore[assignment]
 
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             return func(y, x)
@@ -47,7 +48,8 @@ def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
             return functools.reduce(_dyad_arg_swap, y)
 
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            verb_slash = _modify_rank(verb, np.array([verb.dyad.left_rank, INFINITY]))
+            # We have already checked that verb.dyad is not None, so this is safe.
+            verb_slash = _modify_rank(verb, np.array([verb.dyad.left_rank, INFINITY]))  # type: ignore[union-attr]
             return _apply_dyad(verb_slash, x, y)
 
         monad = _reduce
@@ -80,7 +82,7 @@ def bslash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
 
     else:
 
-        def monad_(y: np.ndarray) -> np.ndarray:
+        def monad_(y: np.ndarray) -> np.ndarray:  # type: ignore[misc]
             y = np.atleast_1d(y)
             result = []
             for i in range(1, len(y) + 1):
@@ -98,10 +100,10 @@ def bslash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
             windows = y
         elif x > 0:
             # Overlapping windows
-            windows = [y[i : i + x] for i in range(len(y) - x + 1)]
+            windows = np.array([y[i : i + x] for i in range(len(y) - x + 1)])
         else:
             # Non-overlapping windows
-            windows = [y[i : i - x] for i in range(0, len(y), -x)]
+            windows = np.array([y[i : i - x] for i in range(0, len(y), -x)])
 
         result = []
         for window in windows:
@@ -289,7 +291,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
                 f"x and y must have the same length, got {len(x)} and {len(y)}"
             )
 
-        item_indices = {}
+        item_indices: dict[bytes, list[int]] = {}
 
         if is_box(x):
             for i, x_item in enumerate(x):

@@ -15,6 +15,7 @@ as their J counterparts.
 import itertools
 import math
 import random
+from typing import Callable
 
 import numpy as np
 from jinx.errors import (
@@ -305,7 +306,7 @@ def tildeco_monad(y: np.ndarray) -> np.ndarray:
     return result
 
 
-def dollar_monad(y: np.ndarray) -> np.ndarray | None:
+def dollar_monad(y: np.ndarray) -> np.ndarray:
     """$ monad: returns the shape of the array."""
     if isinstance(y, str):
         return np.array([len(y)])
@@ -781,7 +782,11 @@ def query_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return rng.choice(y, size=x, replace=False)
 
 
-def cast_bool_to_int(func):
+MonadT = Callable[[np.ndarray], np.ndarray]
+DyadT = Callable[[np.ndarray, np.ndarray], np.ndarray]
+
+
+def cast_bool_to_int(func: np.ufunc) -> DyadT:
     @mark_ufunc_based
     def func_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         result = func(x, y)
@@ -792,7 +797,7 @@ def cast_bool_to_int(func):
 
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
 # Use None for monadic or dyadic valences of the verb do not exist in J.
-VERB_MAP = {
+VERB_MAP: dict[str, tuple[MonadT | None, DyadT | None]] = {
     # VERB: (MONAD, DYAD)
     "EQ": (eq_monad, cast_bool_to_int(np.equal)),
     "MINUS": (np.negative, np.subtract),

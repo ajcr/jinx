@@ -1,5 +1,4 @@
 import numpy as np
-
 from jinx.execution.executor import Executor
 from jinx.execution.numpy.adverbs import ADVERB_MAP
 from jinx.execution.numpy.application import (

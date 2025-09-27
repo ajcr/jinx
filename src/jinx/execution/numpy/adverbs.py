@@ -2,6 +2,7 @@
 
 import dataclasses
 import functools
+from typing import Callable
 
 import numpy as np
 from jinx.errors import DomainError, JinxNotImplementedError, LengthError, ValenceError
@@ -324,7 +325,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
     )
 
 
-ADVERB_MAP = {
+ADVERB_MAP: dict[str, Callable[[Verb[np.ndarray]], Verb[np.ndarray]]] = {
     "SLASH": slash_adverb,
     "SLASHDOT": slashdot_adverb,
     "BSLASH": bslash_adverb,

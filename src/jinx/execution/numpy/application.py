@@ -17,7 +17,7 @@ from jinx.execution.numpy.helpers import (
     is_ufunc_based,
     maybe_pad_with_fill_value,
 )
-from jinx.vocabulary import Adverb, Conjunction, Dyad, Monad, Noun, Verb, RankT
+from jinx.vocabulary import Adverb, Conjunction, Dyad, Monad, Noun, RankT, Verb
 
 
 def get_rank(verb_rank: RankT, noun_rank: int) -> int:

@@ -2,6 +2,7 @@
 
 import dataclasses
 import functools
+from typing import Callable
 
 import numpy as np
 from jinx.errors import DomainError, JinxNotImplementedError, ValenceError
@@ -394,7 +395,13 @@ def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
     )
 
 
-CONJUNCTION_MAP = {
+CONJUNCTION_MAP: dict[
+    str,
+    Callable[
+        [Verb[np.ndarray] | Noun[np.ndarray], Verb[np.ndarray] | Noun[np.ndarray]],
+        Verb[np.ndarray],
+    ],
+] = {
     "RANK": rank_conjunction,
     "AT": at_conjunction,
     "ATCO": atco_conjunction,

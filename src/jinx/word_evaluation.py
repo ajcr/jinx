@@ -128,7 +128,7 @@ def evaluate_words(
             if primitive.dyad is not None and dyad is not None:
                 primitive.dyad.function = dyad
         if isinstance(primitive, Adverb):
-            primitive.function = executor.primitive_adverb_map[primitive.name]
+            primitive.function = executor.primitive_adverb_map[primitive.name]  # type: ignore[assignment]
         if isinstance(primitive, Conjunction):
             primitive.function = executor.primitive_conjuction_map[primitive.name]
 
@@ -147,13 +147,13 @@ def get_parts_to_left(
     words: list[PartOfSpeechT],
     current_level: int,
     variables: dict[str, PartOfSpeechT],
-) -> list[PartOfSpeechT]:
+) -> list[Noun | Verb | Adverb | Conjunction]:
     """Get the parts of speach to the left of the current word, modifying list of remaining words.
 
     This method is called when the last word we encountered is an adverb or conjunction and
     a verb or noun phrase is expected to the left of it.
     """
-    parts_to_left: list[PartOfSpeechT] = []
+    parts_to_left: list[Noun | Verb | Adverb | Conjunction] = []
 
     while words:
         word = resolve_word(word, variables)
@@ -163,13 +163,13 @@ def get_parts_to_left(
                 parts_to_left = [word, *parts_to_left]
                 break
             else:
-                conjunction = words.pop()
+                conjunction = cast(Conjunction, words.pop())
                 parts_to_left = [conjunction, word, *parts_to_left]
 
         elif isinstance(word, Adverb | Conjunction):
             parts_to_left = [word, *parts_to_left]
 
-        elif word == ")":
+        elif isinstance(word, Punctuation) and word.spelling == ")":
             word = evaluate_words(executor, words, level=current_level + 1)
             continue
 
@@ -178,8 +178,6 @@ def get_parts_to_left(
 
         if words:
             word = words.pop()
-            if isinstance(word, (Punctuation, Copula)):
-                word = word.spelling
 
     return parts_to_left
 
@@ -226,7 +224,7 @@ def _evaluate_words(
             continue
 
         elif isinstance(word, (Punctuation, Copula)):
-            word = word.spelling
+            word = word.spelling  # type: ignore[assignment]
 
         # If the next word closes a parenthesis, we need to evaluate the words inside it
         # first to get the next word to prepend to the fragment.
@@ -242,7 +240,7 @@ def _evaluate_words(
             parts_to_left = get_parts_to_left(
                 executor, word, words, level, variables=variables
             )
-            word = build_verb_noun_phrase(executor, parts_to_left)
+            word = build_verb_noun_phrase(executor, parts_to_left)  # type: ignore[assignment]
 
         fragment = [word, *fragment]
 

@@ -24,6 +24,6 @@ executor = Executor[np.ndarray](
     ensure_noun_implementation=ensure_noun_implementation,
     primitive_verb_map=VERB_MAP,
     primitive_adverb_map=ADVERB_MAP,
-    primitive_conjuction_map=CONJUNCTION_MAP,
+    primitive_conjuction_map=CONJUNCTION_MAP,  # type: ignore[arg-type]
     noun_to_string=noun_to_string,
 )

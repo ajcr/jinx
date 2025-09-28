@@ -67,9 +67,9 @@ def evaluate_single_verb_sentence(
 ) -> Verb:
     tokens = form_words(sentence)
     words = spell_words(tokens)
-    words = _evaluate_words(executor, words, variables)
-    assert len(words) == 2 and isinstance(words[1], Verb)
-    return words[1]
+    result = _evaluate_words(executor, words, variables)
+    assert len(result) == 2 and isinstance(result[1], Verb)
+    return result[1]
 
 
 def build_verb_noun_phrase(

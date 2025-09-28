@@ -2,7 +2,6 @@
 
 import dataclasses
 import functools
-from typing import Callable
 
 import numpy as np
 from jinx.errors import DomainError, JinxNotImplementedError, ValenceError
@@ -93,11 +92,9 @@ def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]
 
     Once u has been applied to each v-cell, the results are padded and assembled.
     """
-    if v.monad is None:
-        raise ValenceError(f"{v.spelling} has no monadic form")
 
     def _monad(y: np.ndarray) -> np.ndarray:
-        rank = get_rank(v.monad.rank, y.ndim)
+        rank = get_rank(v.monad.rank, y.ndim)  # type: ignore[union-attr]
         v_cell_array = split_into_cells(y, rank)
         v_cells = [_apply_monad(v, cell) for cell in v_cell_array.cells]
         u_cells = [_apply_monad(u, cell) for cell in v_cells]
@@ -105,8 +102,8 @@ def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]
         return fill_and_assemble(padded_cells, v_cell_array.frame_shape)
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        left_rank = get_rank(v.dyad.left_rank, x.ndim)
-        right_rank = get_rank(v.dyad.right_rank, y.ndim)
+        left_rank = get_rank(v.dyad.left_rank, x.ndim)  # type: ignore[union-attr]
+        right_rank = get_rank(v.dyad.right_rank, y.ndim)  # type: ignore[union-attr]
 
         v_cell_left_array = split_into_cells(x, left_rank)
         v_cell_right_array = split_into_cells(y, right_rank)
@@ -135,19 +132,19 @@ def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]
             function=_dyad,
         )
 
-    return Verb(
+    return Verb[np.ndarray](
         name=f"{u_spelling}@{v_spelling}",
         spelling=f"{u_spelling}@{v_spelling}",
         monad=Monad(
             name=f"{u_spelling}@{v_spelling}",
-            rank=v.monad.rank,
+            rank=v.monad.rank,  # type: ignore[union-attr]
             function=_monad,
         ),
         dyad=dyad,
     )
 
 
-def atco_conjunction(u: Verb, v: Verb) -> Verb:
+def atco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:
     """@: conjunction: compose verbs u and v, with the rank of the new verb as infinity."""
 
     def monad(y: np.ndarray) -> np.ndarray:
@@ -163,7 +160,7 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
     u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
     v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
 
-    return Verb(
+    return Verb[np.ndarray](
         name=f"{u_spelling}@:{v_spelling}",
         spelling=f"{u_spelling}@:{v_spelling}",
         monad=Monad(
@@ -180,11 +177,17 @@ def atco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
-def ampm_conjunction(left: Verb | Noun, right: Verb | Noun) -> Verb:
+def ampm_conjunction(
+    left: Verb[np.ndarray] | Noun[np.ndarray],
+    right: Verb[np.ndarray] | Noun[np.ndarray],
+) -> Verb[np.ndarray]:
     """& conjunction: make a monad from a dyad by providing the left or right noun argument,
     or compose two verbs."""
     if isinstance(left, Noun) and isinstance(right, Verb):
-        function = functools.partial(right.dyad.function, left.implementation)
+        if isinstance(right.dyad.function, Verb):  # type: ignore[union-attr]
+            function = functools.partial(_apply_dyad, right, left.implementation)
+        else:
+            function = functools.partial(right.dyad.function, left.implementation)  # type: ignore[union-attr]
         verb_spelling = maybe_parenthesise_verb_spelling(right.spelling)
         spelling = f"{left.implementation}&{verb_spelling}"
         monad = Monad(name=spelling, rank=INFINITY, function=function)
@@ -218,18 +221,18 @@ def ampm_conjunction(left: Verb | Noun, right: Verb | Noun) -> Verb:
         right_spelling = maybe_parenthesise_verb_spelling(right.spelling)
         spelling = f"{left_spelling}&{right_spelling}"
 
-        monad = Monad(name=spelling, rank=right.monad.rank, function=monad_)
+        monad = Monad(name=spelling, rank=right.monad.rank, function=monad_)  # type: ignore[union-attr]
         dyad = Dyad(
             name=spelling,
-            left_rank=right.monad.rank,
-            right_rank=right.monad.rank,
+            left_rank=right.monad.rank,  # type: ignore[union-attr]
+            right_rank=right.monad.rank,  # type: ignore[union-attr]
             function=dyad_,
         )
 
     return Verb(name=spelling, spelling=spelling, monad=monad, dyad=dyad)
 
 
-def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
+def ampdotco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:
     """&.: conjunction: execute v on the arguments, then u on the result, then
     the inverse v of on that result."""
 
@@ -239,18 +242,18 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
     def _monad(y: np.ndarray) -> np.ndarray:
         vy = _apply_monad(v, y)
         uvy = _apply_monad(u, vy)
-        return _apply_monad(v.obverse, uvy)
+        return _apply_monad(v.obverse, uvy)  # type: ignore[arg-type]
 
     def _dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         vy = _apply_monad(v, y)
         vx = _apply_monad(v, x)
         uvy = _apply_dyad(u, vx, vy)
-        return _apply_monad(v.obverse, uvy)
+        return _apply_monad(v.obverse, uvy)  # type: ignore[arg-type]
 
     v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
     u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
 
-    return Verb(
+    return Verb[np.ndarray](
         name=f"{u_spelling}&.:{v_spelling}",
         spelling=f"{u_spelling}&.:{v_spelling}",
         monad=Monad(
@@ -267,7 +270,7 @@ def ampdotco_conjunction(u: Verb, v: Verb) -> Verb:
     )
 
 
-def ampdot_conjunction(u: Verb, v: Verb) -> Verb:
+def ampdot_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:
     """&. conjunction: u&.v is equivalent to (u&.:v)"mv , where mv is the monadic rank of v."""
     if v.monad is None:
         raise ValenceError(f"{v.spelling} has no monadic form")
@@ -275,7 +278,9 @@ def ampdot_conjunction(u: Verb, v: Verb) -> Verb:
     return _modify_rank(verb, v.monad.rank)
 
 
-def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
+def hatco_conjunction(
+    u: Verb[np.ndarray], noun_or_verb: Noun[np.ndarray] | Verb[np.ndarray]
+) -> Verb[np.ndarray]:
     """^: conjunction: power of verb."""
 
     if isinstance(noun_or_verb, Verb):
@@ -395,13 +400,7 @@ def hatco_conjunction(u: Verb, noun_or_verb: Noun | Verb) -> Verb:
     )
 
 
-CONJUNCTION_MAP: dict[
-    str,
-    Callable[
-        [Verb[np.ndarray] | Noun[np.ndarray], Verb[np.ndarray] | Noun[np.ndarray]],
-        Verb[np.ndarray],
-    ],
-] = {
+CONJUNCTION_MAP = {
     "RANK": rank_conjunction,
     "AT": at_conjunction,
     "ATCO": atco_conjunction,

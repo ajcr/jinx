@@ -70,8 +70,8 @@ class Monad[T]:
     """Rank of monadic valence of the verb."""
 
     function: Callable[[T], T] | Verb[T] = None  # type: ignore[assignment]
-    """Function to execute the monadic verb, or another Verb to apply. Initially
-    None and set at runtime."""
+    """Function to execute the monadic verb, or another Verb object. Initially
+    set to None and then updated at runtime."""
 
 
 @dataclass
@@ -87,7 +87,7 @@ class Dyad[T]:
 
     function: Callable[[T, T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb object. Initially
-    set to and set at runtime."""
+    set to None and then updated at runtime."""
 
     is_commutative: bool = False
     """Whether the dyadic verb is commutative."""

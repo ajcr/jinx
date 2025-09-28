@@ -1,13 +1,13 @@
 """Helper methods for manipulating arrays."""
 
 import itertools
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 from jinx.execution.numpy.conversion import box_dtype
 
 
-def get_fill_value(array: np.ndarray) -> int | str:
+def get_fill_value(array: np.ndarray) -> int | str | np.ndarray:
     """Get the fill value for an array."""
     if np.issubdtype(array.dtype, np.number):
         return 0
@@ -127,11 +127,11 @@ def hash_box(array: np.ndarray, level: int = 0) -> int:
     return val
 
 
-def is_ufunc(func: callable) -> bool:
+def is_ufunc(func: Any) -> bool:
     return isinstance(func, np.ufunc) or hasattr(func, "ufunc")
 
 
-def mark_ufunc_based(function: Callable[..., Any]) -> bool:
+def mark_ufunc_based[T](function: T) -> T:
     """Mark a function as a ufunc-based function.
 
     This is used to identify functions that are typically composed of ufuncs
@@ -139,11 +139,11 @@ def mark_ufunc_based(function: Callable[..., Any]) -> bool:
 
     This greatly speeds up application of some verbs.
     """
-    function._is_ufunc_based = True
+    function._is_ufunc_based = True  # type: ignore[attr-defined]
     return function
 
 
-def is_ufunc_based(function: Callable[..., Any]) -> bool:
+def is_ufunc_based(function: Any) -> bool:
     """Check if a function is a ufunc-based function."""
     return getattr(function, "_is_ufunc_based", False)
 

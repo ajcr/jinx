@@ -2,6 +2,7 @@
 
 import dataclasses
 import functools
+from typing import Callable
 
 import numpy as np
 from jinx.errors import DomainError, JinxNotImplementedError, LengthError, ValenceError
@@ -18,26 +19,26 @@ from jinx.vocabulary import Dyad, Monad, Verb
 INFINITY = float("inf")
 
 
-def slash_adverb(verb: Verb) -> Verb:
-    function = verb.dyad.function
-    if function is None:
+def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
+    if verb.dyad is None or verb.dyad.function is None:
         # Note: this differs from J which still allows the adverb to be applied
         # to a verb, but may raise an error when the new verb is applied to a noun
         # and the verb has no dyadic valence.
         raise ValenceError(f"Verb {verb.spelling} has no dyadic valence.")
 
-    if is_ufunc(function) and verb.dyad.is_commutative:
-        monad = function.reduce
-        dyad = function.outer
+    if is_ufunc(verb.dyad.function) and verb.dyad.is_commutative:
+        f: np.ufunc = verb.dyad.function  # type: ignore[assignment]
+        monad = f.reduce
+        dyad = f.outer
 
     else:
         # Slow path: dyad is not a ufunc.
         # The function is either callable, in which cases it is applied directly,
         # or a Verb object that needs to be applied indirectly with _apply_dyad().
-        if isinstance(function, Verb):
-            func = functools.partial(_apply_dyad, verb)
+        if isinstance(verb.dyad.function, Verb):
+            func = functools.partial(_apply_dyad, verb)  # type: ignore[assignment]
         else:
-            func = function
+            func = verb.dyad.function  # type: ignore[assignment]
 
         def _dyad_arg_swap(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             return func(y, x)
@@ -48,7 +49,8 @@ def slash_adverb(verb: Verb) -> Verb:
             return functools.reduce(_dyad_arg_swap, y)
 
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            verb_slash = _modify_rank(verb, [verb.dyad.left_rank, INFINITY])
+            # We have already checked that verb.dyad is not None, so this is safe.
+            verb_slash = _modify_rank(verb, np.array([verb.dyad.left_rank, INFINITY]))  # type: ignore[union-attr]
             return _apply_dyad(verb_slash, x, y)
 
         monad = _reduce
@@ -57,7 +59,7 @@ def slash_adverb(verb: Verb) -> Verb:
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
     spelling = f"{verb.spelling}/"
 
-    return Verb(
+    return Verb[np.ndarray](
         name=spelling,
         spelling=spelling,
         monad=Monad(name=spelling, rank=INFINITY, function=monad),
@@ -67,7 +69,7 @@ def slash_adverb(verb: Verb) -> Verb:
     )
 
 
-def bslash_adverb(verb: Verb) -> Verb:
+def bslash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
     # Common cases that have a straightforward optimisation.
     SPECIAL_MONAD = {
         "+/": np.add.accumulate,
@@ -81,7 +83,7 @@ def bslash_adverb(verb: Verb) -> Verb:
 
     else:
 
-        def monad_(y: np.ndarray) -> np.ndarray:
+        def monad_(y: np.ndarray) -> np.ndarray:  # type: ignore[misc]
             y = np.atleast_1d(y)
             result = []
             for i in range(1, len(y) + 1):
@@ -99,10 +101,10 @@ def bslash_adverb(verb: Verb) -> Verb:
             windows = y
         elif x > 0:
             # Overlapping windows
-            windows = [y[i : i + x] for i in range(len(y) - x + 1)]
+            windows = np.array([y[i : i + x] for i in range(len(y) - x + 1)])
         else:
             # Non-overlapping windows
-            windows = [y[i : i - x] for i in range(0, len(y), -x)]
+            windows = np.array([y[i : i - x] for i in range(0, len(y), -x)])
 
         result = []
         for window in windows:
@@ -121,7 +123,7 @@ def bslash_adverb(verb: Verb) -> Verb:
     )
 
 
-def bslashdot_adverb(verb: Verb) -> Verb:
+def bslashdot_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
     SPECIAL_MONAD = {
         "+/": lambda x: np.add.accumulate(x[::-1])[::-1],
         "*/": lambda x: np.multiply.accumulate(x[::-1])[::-1],
@@ -177,8 +179,8 @@ def bslashdot_adverb(verb: Verb) -> Verb:
     )
 
 
-def tilde_adverb(verb: Verb) -> Verb:
-    if verb.dyad.function is None:
+def tilde_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
+    if verb.dyad is None or verb.dyad.function is None:
         # Note: this differs from J which still allows the adverb to be applied
         # to a verb, but may raise an error when the new verb is applied to a noun
         # and the verb has no dyadic valence.
@@ -195,7 +197,7 @@ def tilde_adverb(verb: Verb) -> Verb:
     spelling = maybe_parenthesise_verb_spelling(verb.spelling)
     spelling = f"{verb.spelling}~"
 
-    return Verb(
+    return Verb[np.ndarray](
         name=spelling,
         spelling=spelling,
         monad=Monad(name=spelling, rank=INFINITY, function=monad),
@@ -290,7 +292,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
                 f"x and y must have the same length, got {len(x)} and {len(y)}"
             )
 
-        item_indices = {}
+        item_indices: dict[bytes, list[int]] = {}
 
         if is_box(x):
             for i, x_item in enumerate(x):
@@ -323,7 +325,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
     )
 
 
-ADVERB_MAP = {
+ADVERB_MAP: dict[str, Callable[[Verb[np.ndarray]], Verb[np.ndarray]]] = {
     "SLASH": slash_adverb,
     "SLASHDOT": slashdot_adverb,
     "BSLASH": bslash_adverb,

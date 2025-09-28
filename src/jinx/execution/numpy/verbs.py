@@ -15,6 +15,7 @@ as their J counterparts.
 import itertools
 import math
 import random
+from typing import Callable
 
 import numpy as np
 from jinx.errors import (
@@ -215,14 +216,14 @@ def commadot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             f"executing dyad ,. shapes {x.shape} and {y.shape} have different numbers of items"
         )
 
-    result = []
+    items = []
     for x_item, y_item in zip(x, y, strict=True):
-        result.append(comma_dyad(x_item, y_item))
+        items.append(comma_dyad(x_item, y_item))
 
-    if len(result) > 1:
-        result = maybe_pad_with_fill_value(result)
-    else:
-        result = result[0]
+    if len(items) == 1:
+        return np.asarray(items[0])
+
+    result = maybe_pad_with_fill_value(items)
     return np.asarray(result)
 
 
@@ -305,7 +306,7 @@ def tildeco_monad(y: np.ndarray) -> np.ndarray:
     return result
 
 
-def dollar_monad(y: np.ndarray) -> np.ndarray | None:
+def dollar_monad(y: np.ndarray) -> np.ndarray:
     """$ monad: returns the shape of the array."""
     if isinstance(y, str):
         return np.array([len(y)])
@@ -321,8 +322,9 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     Does not support custom fill values at the moment.
     Does not support INFINITY as an atom of x.
     """
-    if np.isscalar(x) and (not np.issubdtype(type(x), np.integer) or x < 0):
-        raise DomainError(f"Invalid shape: {x}")
+    if np.isscalar(x) or x.shape == ():
+        if x < 0 or not np.issubdtype(x.dtype, np.integer):
+            raise DomainError(f"Invalid shape: {x}")
 
     if np.isscalar(x) or x.shape == ():
         x_shape = (np.squeeze(x),)
@@ -759,7 +761,7 @@ def query_monad(y: np.ndarray) -> np.ndarray:
         result = random.choice([0, 1])
 
     else:
-        result = random.randint(0, y)
+        result = random.randint(0, int(y))
 
     return np.asarray(result)
 
@@ -780,7 +782,11 @@ def query_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return rng.choice(y, size=x, replace=False)
 
 
-def cast_bool_to_int(func):
+MonadT = Callable[[np.ndarray], np.ndarray]
+DyadT = Callable[[np.ndarray, np.ndarray], np.ndarray]
+
+
+def cast_bool_to_int(func: np.ufunc) -> DyadT:
     @mark_ufunc_based
     def func_(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         result = func(x, y)
@@ -791,7 +797,7 @@ def cast_bool_to_int(func):
 
 # Use NotImplemented for monads or dyads that have not yet been implemented in Jinx.
 # Use None for monadic or dyadic valences of the verb do not exist in J.
-VERB_MAP = {
+VERB_MAP: dict[str, tuple[MonadT | None, DyadT | None]] = {
     # VERB: (MONAD, DYAD)
     "EQ": (eq_monad, cast_bool_to_int(np.equal)),
     "MINUS": (np.negative, np.subtract),

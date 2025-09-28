@@ -51,7 +51,7 @@ def parse_float(word: str) -> float | None:
 
 def spell_numeric(word: Word) -> Noun:
     values = word.value.split()
-    numbers = []
+    numbers: list[int | float] = []
     data_type = DataType.Integer
 
     for value in values:

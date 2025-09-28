@@ -4,6 +4,7 @@ import sys
 
 from jinx.errors import BaseJError, SpellingError
 from jinx.execution.executor import Executor, load_executor
+from jinx.vocabulary import PartOfSpeechT
 from jinx.word_evaluation import evaluate_words, print_words
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
@@ -14,7 +15,7 @@ class Shell(cmd.Cmd):
 
     def __init__(self, executor: Executor):
         super().__init__()
-        self.variables = {}
+        self.variables: dict[str, PartOfSpeechT] = {}
         self.executor = executor
 
     def do_exit(self, _):
@@ -28,8 +29,8 @@ class Shell(cmd.Cmd):
             print(e, file=sys.stderr)
             return
         try:
-            words = evaluate_words(self.executor, words, self.variables)
-            print_words(self.executor, words, self.variables)
+            result = evaluate_words(self.executor, words, self.variables)
+            print_words(self.executor, result, self.variables)
         except BaseJError as error:
             print(f"{type(error).__name__}: {error}", file=sys.stderr)
 

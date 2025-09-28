@@ -15,9 +15,15 @@ Resources:
 
 """
 
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, NamedTuple
+from typing import Callable, NamedTuple, Sequence
+
+# Rank can be an integer or infinite (a float). It can't be any other float value
+# but the type system does not make this easy to express.
+RankT = int | float
 
 
 class Word(NamedTuple):
@@ -43,95 +49,95 @@ class DataType(Enum):
     Box = auto()
 
 
-@dataclass(kw_only=True)
-class Noun:
+@dataclass
+class Noun[T]:
     data_type: DataType
     """Data type of value."""
 
-    data: list[int | float | str] | None = None
+    data: Sequence[int | float | str] = field(default_factory=list)
     """Data to represent the value itself, parsed from the word."""
 
-    implementation: Any = None
+    implementation: T = None  # type: ignore[assignment]
     """Implementation of the noun, e.g. a NumPy array."""
 
 
 @dataclass
-class Monad:
+class Monad[T]:
     name: str
     """Name of the monadic verb."""
 
-    rank: int
+    rank: RankT
     """Rank of monadic valence of the verb."""
 
-    function: Callable[[Any], Any] | "Verb" | None = None
-    """Function to execute the monadic verb, or another Verb to apply. Initially
-    set to and set at runtime."""
+    function: Callable[[T], T] | Verb[T] = None  # type: ignore[assignment]
+    """Function to execute the monadic verb, or another Verb object. Initially
+    set to None and then updated at runtime."""
 
 
 @dataclass
-class Dyad:
+class Dyad[T]:
     name: str
     """Name of the dyadic verb."""
 
-    left_rank: int
+    left_rank: RankT
     """Left rank of the dyadic verb."""
 
-    right_rank: int
+    right_rank: RankT
     """Right rank of the dyadic verb."""
 
-    function: Callable[[Any, Any], Any] | "Verb" | None = None
+    function: Callable[[T, T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb object. Initially
-    set to and set at runtime."""
+    set to None and then updated at runtime."""
 
     is_commutative: bool = False
     """Whether the dyadic verb is commutative."""
 
 
 @dataclass
-class Verb:
+class Verb[T]:
     spelling: str
     """The symbolic spelling of the verb, e.g. `+`."""
 
     name: str
     """The name of the verb, e.g. `PLUS`, or its spelling if not a primitive J verb."""
 
-    monad: Monad | None = None
+    monad: Monad[T] | None = None
     """The monadic form of the verb, if it exists."""
 
-    dyad: Dyad | None = None
+    dyad: Dyad[T] | None = None
     """The dyadic form of the verb, if it exists."""
 
-    obverse: str | None = None
+    obverse: Verb[T] | str | None = None
     """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
 
 
 @dataclass
-class Adverb:
+class Adverb[T]:
     spelling: str
     """The symbolic spelling of the adverb, e.g. `/`."""
 
     name: str
     """The name of the adverb, e.g. `SLASH`."""
 
-    monad: Monad | None = None
+    monad: Monad[T] | None = None
     """The monadic form of the adverb, if it exists."""
 
-    dyad: Dyad | None = None
+    dyad: Dyad[T] | None = None
     """The dyadic form of the adverb, if it exists."""
 
-    function: Callable[[Any], Any] | None = None
+    function: Callable[[Verb[T] | Noun[T]], Verb[T]] = None  # type: ignore[assignment]
     """Function of a single argument to implement the adverb."""
 
 
 @dataclass
-class Conjunction:
+class Conjunction[T]:
     spelling: str
     """The symbolic spelling of the conjunction, e.g. `@:`."""
 
     name: str
     """The name of the conjunction, e.g. `ATCO`."""
 
-    function: Callable[[Any, Any], Any] | None = None
+    function: Callable[[Verb[T] | Noun[T], Verb[T] | Noun[T]], Verb[T] | Noun[T]] = None  # type: ignore[assignment]
     """Function of a two arguments to implement the conjunction."""
 
 

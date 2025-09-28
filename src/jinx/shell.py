@@ -29,8 +29,8 @@ class Shell(cmd.Cmd):
             print(e, file=sys.stderr)
             return
         try:
-            words = evaluate_words(self.executor, words, self.variables)
-            print_words(self.executor, words, self.variables)
+            result = evaluate_words(self.executor, words, self.variables)
+            print_words(self.executor, result, self.variables)
         except BaseJError as error:
             print(f"{type(error).__name__}: {error}", file=sys.stderr)
 

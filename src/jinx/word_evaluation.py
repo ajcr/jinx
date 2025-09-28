@@ -49,17 +49,14 @@ def str_(executor: Executor, word: PartOfSpeechT | str) -> str:
 
 
 def print_words(
-    executor: Executor, words: list[PartOfSpeechT], variables: dict[str, PartOfSpeechT]
+    executor: Executor, word: PartOfSpeechT, variables: dict[str, PartOfSpeechT]
 ) -> None:
-    value = " ".join(
+    value = (
         str_(executor, variables[word.spelling])
         if isinstance(word, Name)
         else str_(executor, word)
-        for word in words
-        if word is not None
     )
-    if value:
-        print(value)
+    print(value)
 
 
 def evaluate_single_verb_sentence(
@@ -68,8 +65,9 @@ def evaluate_single_verb_sentence(
     tokens = form_words(sentence)
     words = spell_words(tokens)
     result = _evaluate_words(executor, words, variables)
-    assert len(result) == 2 and isinstance(result[1], Verb)
-    return result[1]
+    if not isinstance(result, Verb):
+        raise EvaluationError(f"Expected a verb, got {type(result).__name__}")
+    return result
 
 
 def build_verb_noun_phrase(
@@ -104,7 +102,7 @@ def evaluate_words(
     words: list[PartOfSpeechT],
     variables: dict[str, PartOfSpeechT] | None = None,
     level: int = 0,
-) -> list[PartOfSpeechT]:
+) -> PartOfSpeechT:
     if variables is None:
         variables = {}
 
@@ -212,11 +210,11 @@ def resolve_word(
 
 def _evaluate_words(
     executor: Executor, words: list[PartOfSpeechT], variables, level: int = 0
-) -> list[PartOfSpeechT] | PartOfSpeechT:
+) -> PartOfSpeechT:
     # If the first word is None, prepend a None to the list denoting the left-most
     # edge of the expression.
     if words[0] is not None:
-        words = [None, *words]
+        words = [None, *words]  # type: ignore[list-item]
 
     fragment: list[PartOfSpeechT] = []
     result: PartOfSpeechT
@@ -359,7 +357,7 @@ def _evaluate_words(
                 case ["(", Conjunction() | Adverb() | Verb() | Noun()]:
                     _, cavn = fragment_
                     if level > 0:
-                        return cast(list[PartOfSpeechT], cavn)   
+                        return cast(PartOfSpeechT, cavn)
                     raise EvaluationError("Unbalanced parentheses")
 
                 # Non-executable fragment.
@@ -368,12 +366,9 @@ def _evaluate_words(
 
         # fmt: on
 
-    if any(isinstance(item, list) for item in fragment):
-        raise EvaluationError("Unbalanced parentheses")
-
     if len(fragment) > 2:
         raise EvaluationError(
             f"Unexecutable fragment: {[str_(executor, w) for w in fragment if w is not None]}"
         )
 
-    return fragment
+    return fragment[1]

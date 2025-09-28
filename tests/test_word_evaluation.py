@@ -36,12 +36,12 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
     [
         pytest.param(
             [Noun(data_type=DataType.Integer, data=[1])],
-            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
+            Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1)),
             id="1",
         ),
         pytest.param(
             [LPAREN, Noun(data_type=DataType.Integer, data=[1]), RPAREN],
-            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
+            Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1)),
             id="(1)",
         ),
         pytest.param(
@@ -52,31 +52,27 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 RPAREN,
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1))],
+            Noun(data_type=DataType.Integer, data=[1], implementation=np.array(1)),
             id="((1))",
         ),
         pytest.param(
             [MINUS],
-            [MINUS],
+            MINUS,
             id="-",
         ),
         pytest.param(
             [LPAREN, MINUS, RPAREN],
-            [MINUS],
+            MINUS,
             id="(-)",
         ),
         pytest.param(
             [MINUS, Noun(data_type=DataType.Integer, data=[1])],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             id="-1",
         ),
         pytest.param(
             [MINUS, LPAREN, Noun(data_type=DataType.Integer, data=[1]), RPAREN],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             id="-(1)",
         ),
         pytest.param(
@@ -88,9 +84,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 Noun(data_type=DataType.Integer, data=[1]),
                 RPAREN,
             ],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(-1)),
             id="(-)(1)",
         ),
         pytest.param(
@@ -99,9 +93,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 MINUS,
                 Noun(data_type=DataType.Integer, data=[1]),
             ],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(0)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(0)),
             id="1-1",
         ),
         pytest.param(
@@ -112,9 +104,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 Noun(data_type=DataType.Integer, data=[1]),
                 RPAREN,
             ],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(0)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(0)),
             id="(1-1)",
         ),
         pytest.param(
@@ -131,9 +121,7 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 PLUS,
                 Noun(data_type=DataType.Integer, data=[3]),
             ],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(15)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(15)),
             id="(8 - (1 - 5)) + 3",
         ),
         pytest.param(
@@ -150,16 +138,14 @@ evaluate_words_numpy = functools.partial(evaluate_words, numpy_executor)
                 PLUS,
                 Noun(data_type=DataType.Integer, data=[3]),
             ],
-            [
-                Noun(data_type=DataType.Integer, implementation=np.int64(5)),
-            ],
+            Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             id="((8 - 1) - 5) + 3",
         ),
     ],
 )
 def test_word_evaluation_basic_arithmetic(words, expected):
     result = evaluate_words_numpy(words)
-    assert result[1:] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -179,9 +165,9 @@ def test_word_evaluation_basic_arithmetic(words, expected):
 )
 def test_word_evaluation_adverb_creation(words, expected):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert isinstance(result[1], Verb)
-    assert result[1].spelling == expected
+    # assert len(result) == 2
+    # assert isinstance(result[1], Verb)
+    assert result.spelling == expected
 
 
 @pytest.mark.parametrize(
@@ -189,12 +175,12 @@ def test_word_evaluation_adverb_creation(words, expected):
     [
         pytest.param(
             [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[77])],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(77))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(77)),
             id="+/ 77",
         ),
         pytest.param(
             [PLUS, SLASH, Noun(data_type=DataType.Integer, data=[1, 3, 5])],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(9)),
             id="+/ 1 3 5",
         ),
         pytest.param(
@@ -205,7 +191,7 @@ def test_word_evaluation_adverb_creation(words, expected):
                 Noun(data_type=DataType.Integer, data=[8, 3, 5]),
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(16))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(16)),
             id="(+/ 8 3 5)",
         ),
         pytest.param(
@@ -216,14 +202,14 @@ def test_word_evaluation_adverb_creation(words, expected):
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[8, 3, 5]),
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(16))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(16)),
             id="(+/) 8 3 5",
         ),
     ],
 )
 def test_word_evaluation_adverb_application(words, expected):
     result = evaluate_words_numpy(words)
-    assert result[1:] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -280,9 +266,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
     words, expected_verb_spelling
 ):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert isinstance(result[1], Verb)
-    assert result[1].spelling == expected_verb_spelling
+    assert result.spelling == expected_verb_spelling
 
 
 @pytest.mark.parametrize(
@@ -297,7 +281,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             id='+"0 (5)',
         ),
         pytest.param(
@@ -309,7 +293,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[5]),
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             id='(+"0) 5',
         ),
         pytest.param(
@@ -323,14 +307,14 @@ def test_word_evaluation_verb_conjunction_noun_application(
                 Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             id='(+"0) (5)',
         ),
     ],
 )
 def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected):
     result = evaluate_words_numpy(words)
-    assert result[1:] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -346,7 +330,7 @@ def test_word_evaluation_verb_conjunction_noun_monad_application(words, expected
                 Noun(data_type=DataType.Integer, data=[5]),
                 RPAREN,
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(5))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(5)),
             id='+/"0 (5)',
         ),
     ],
@@ -355,7 +339,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
     words, expected
 ):
     result = evaluate_words_numpy(words)
-    assert result[1:] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -369,7 +353,7 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Noun(data_type=DataType.Integer, data=[9]),
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(9)),
             id='+"0 + 9',
         ),
         pytest.param(
@@ -381,14 +365,14 @@ def test_word_evaluation_verb_adverb_conjunction_noun_monad_application(
                 PLUS,
                 Noun(data_type=DataType.Integer, data=[9]),
             ],
-            [Noun(data_type=DataType.Integer, implementation=np.int64(9))],
+            Noun(data_type=DataType.Integer, implementation=np.int64(9)),
             id='+/"0 + 9',
         ),
     ],
 )
 def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, expected):
     result = evaluate_words_numpy(words)
-    assert result[1:] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -406,8 +390,7 @@ def test_word_evaluation_verb_conjunction_noun_verb_monad_application(words, exp
 )
 def test_word_evaluation_hook_produces_single_verb(words):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert isinstance(result[1], Verb)
+    assert isinstance(result, Verb)
 
 
 @pytest.mark.parametrize(
@@ -422,8 +405,7 @@ def test_word_evaluation_hook_produces_single_verb(words):
 )
 def test_word_evaluation_hook_correct_result(words, expected):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert result[1] == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -740,8 +722,7 @@ def test_word_evaluation_hook_correct_result(words, expected):
 )
 def test_word_evaluation_computes_correct_noun(words, expected):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert np.array_equal(np.round(result[1].implementation, 5), expected)
+    assert np.array_equal(np.round(result.implementation, 5), expected)
 
 
 @pytest.mark.parametrize(
@@ -781,9 +762,7 @@ def test_word_evaluation_computes_correct_noun(words, expected):
 )
 def test_word_evaluation_computes_correct_boxed_array(words, expected):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-
-    result_box = result[1].implementation
+    result_box = result.implementation
     for res, exp in zip(result_box, expected, strict=True):
         assert np.array_equiv(res[0], exp[0])
 
@@ -818,9 +797,7 @@ def test_word_evaluation_computes_correct_boxed_array(words, expected):
 )
 def test_word_evaluation_build_verb(words, expected):
     result = evaluate_words_numpy(words)
-    assert len(result) == 2
-    assert isinstance(result[1], Verb)
-    assert result[1].spelling == expected
+    assert result.spelling == expected
 
 
 @pytest.mark.parametrize(
@@ -848,8 +825,7 @@ def test_word_evaluation_with_single_assignment(words, assignment, expected):
     variables = {}
     result = evaluate_words_numpy(words, variables=variables)
     assert variables["a"] == assignment
-    assert len(result) == 2
-    assert result[1] == expected
+    assert result == expected
 
 
 def test_word_evaluation_with_reassignment():
@@ -866,14 +842,14 @@ def test_word_evaluation_with_reassignment():
     assert variables["a"] == Noun(
         data_type=DataType.Integer, data=[3], implementation=np.int64(3)
     )
-    assert result[1] == Name(spelling="a")
+    assert result == Name(spelling="a")
 
     # a =: +
     words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], PRIMITIVE_MAP["PLUS"]]
     result = evaluate_words_numpy(words, variables=variables)
 
     assert variables["a"] == PRIMITIVE_MAP["PLUS"]
-    assert result[1] == Name(spelling="a")
+    assert result == Name(spelling="a")
 
 
 def test_word_evaluation_with_single_name_as_verb():
@@ -884,7 +860,7 @@ def test_word_evaluation_with_single_name_as_verb():
         Noun(data_type=DataType.Integer, data=[3]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 5
+    assert result.implementation == 5
 
 
 def test_word_evaluation_with_single_name_as_adverb():
@@ -897,7 +873,7 @@ def test_word_evaluation_with_single_name_as_adverb():
         Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 15
+    assert result.implementation == 15
 
 
 def test_word_evaluation_with_name_to_name_to_verb():
@@ -911,7 +887,7 @@ def test_word_evaluation_with_name_to_name_to_verb():
         Noun(data_type=DataType.Integer, data=[7]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 9
+    assert result.implementation == 9
 
 
 def test_word_evaluation_with_names_as_verb_and_adverb():
@@ -925,7 +901,7 @@ def test_word_evaluation_with_names_as_verb_and_adverb():
         Noun(data_type=DataType.Integer, data=[3, 5, 7]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 15
+    assert result.implementation == 15
 
 
 def test_word_evaluation_with_name_assigned_to_itself():
@@ -934,7 +910,7 @@ def test_word_evaluation_with_name_assigned_to_itself():
     words = [Name(spelling="a"), PRIMITIVE_MAP["EQDOT"], Name(spelling="a")]
     result = evaluate_words_numpy(words, variables=variables)
     assert variables["a"] == Name(spelling="a")
-    assert result[1] == Name(spelling="a")
+    assert result == Name(spelling="a")
 
 
 def test_word_evaluation_with_name_assigned_to_name_to_verb():
@@ -953,7 +929,7 @@ def test_word_evaluation_with_name_assigned_to_name_to_verb():
         Noun(data_type=DataType.Integer, data=[11]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 18
+    assert result.implementation == 18
 
 
 def test_word_evaluation_with_name_assigned_in_expression():
@@ -969,7 +945,7 @@ def test_word_evaluation_with_name_assigned_in_expression():
         Noun(data_type=DataType.Integer, data=[13]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 21
+    assert result.implementation == 21
     assert variables["a"] == PRIMITIVE_MAP["PLUS"]
 
 
@@ -984,4 +960,4 @@ def test_word_evaluation_with_name_part_of_conjunction():
         Noun(data_type=DataType.Integer, data=[3]),
     ]
     result = evaluate_words_numpy(words, variables=variables)
-    assert result[1].implementation == 3
+    assert result.implementation == 3

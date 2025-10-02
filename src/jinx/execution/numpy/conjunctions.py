@@ -12,7 +12,9 @@ from jinx.execution.numpy.application import (
     get_rank,
     split_into_cells,
 )
+from jinx.execution.numpy.conversion import box_dtype, ndarray_or_scalar_to_noun
 from jinx.execution.numpy.helpers import (
+    is_box,
     maybe_pad_with_fill_value,
     maybe_parenthesise_verb_spelling,
 )
@@ -400,6 +402,29 @@ def hatco_conjunction(
     )
 
 
+def grave_conjunction(
+    left: Verb[np.ndarray] | Noun[np.ndarray],
+    right: Verb[np.ndarray] | Noun[np.ndarray],
+) -> Noun[np.ndarray]:
+    """` conjunction: tie."""
+    if isinstance(left, Verb):
+        left_boxed = np.array([(left,)], dtype=box_dtype)
+    elif isinstance(left, Noun) and not is_box(left.implementation):
+        raise DomainError("executing conj ` (left argument not boxed or verb)")
+    else:
+        left_boxed = np.atleast_1d(left.implementation)
+
+    if isinstance(right, Verb):
+        right_boxed = np.array([(right,)], dtype=box_dtype)
+    elif isinstance(right, Noun) and not is_box(right.implementation):
+        raise DomainError("executing conj ` (right argument not boxed or verb)")
+    else:
+        right_boxed = np.atleast_1d(right.implementation)
+
+    array = np.concatenate([left_boxed, right_boxed], axis=0, dtype=box_dtype)
+    return ndarray_or_scalar_to_noun(array)
+
+
 CONJUNCTION_MAP = {
     "RANK": rank_conjunction,
     "AT": at_conjunction,
@@ -408,4 +433,5 @@ CONJUNCTION_MAP = {
     "AMPDOT": ampdot_conjunction,
     "AMPDOTCO": ampdotco_conjunction,
     "HATCO": hatco_conjunction,
+    "GRAVE": grave_conjunction,
 }

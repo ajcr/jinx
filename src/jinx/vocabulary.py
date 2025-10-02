@@ -110,6 +110,12 @@ class Verb[T]:
     obverse: Verb[T] | str | None = None
     """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
 
+    def __str__(self):
+        return self.spelling
+
+    def __repr__(self):
+        return self.spelling
+
 
 @dataclass
 class Adverb[T]:

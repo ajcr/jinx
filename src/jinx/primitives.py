@@ -483,6 +483,7 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         ),
         obverse="""}:@;@(,&' '&.>"1)""",
     ),
+    Conjunction("`", "GRAVE"),
 ]
 
 

@@ -409,17 +409,17 @@ def grave_conjunction(
     """` conjunction: tie."""
     if isinstance(left, Verb):
         left_boxed = np.array([(left,)], dtype=box_dtype)
-    elif isinstance(left, Noun) and not is_box(left.implementation):
-        raise DomainError("executing conj ` (left argument not boxed or verb)")
-    else:
+    elif isinstance(left, Noun) and is_box(left.implementation):
         left_boxed = np.atleast_1d(left.implementation)
+    else:
+        raise DomainError("executing conj ` (left argument not boxed or verb)")
 
     if isinstance(right, Verb):
         right_boxed = np.array([(right,)], dtype=box_dtype)
-    elif isinstance(right, Noun) and not is_box(right.implementation):
-        raise DomainError("executing conj ` (right argument not boxed or verb)")
-    else:
+    elif isinstance(right, Noun) and is_box(right.implementation):
         right_boxed = np.atleast_1d(right.implementation)
+    else:
+        raise DomainError("executing conj ` (right argument not boxed or verb)")
 
     array = np.concatenate([left_boxed, right_boxed], axis=0, dtype=box_dtype)
     return ndarray_or_scalar_to_noun(array)

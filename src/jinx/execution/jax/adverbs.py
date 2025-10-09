@@ -5,7 +5,7 @@ from typing import Callable
 
 import jax
 import jax.numpy as jnp
-from jinx.errors import ValenceError
+from jinx.errors import JinxNotImplementedError, ValenceError
 from jinx.execution.jax.application import _apply_dyad
 from jinx.execution.numpy.helpers import (
     maybe_parenthesise_verb_spelling,
@@ -59,6 +59,33 @@ def slash_adverb(verb: Verb[jax.Array]) -> Verb[jax.Array]:
     )
 
 
+def bslash_adverb(verb: Verb[jax.Array]) -> Verb[jax.Array]:
+    # Common cases that have a straightforward optimisation.
+    SPECIAL_MONAD = {
+        "+/": jnp.cumulative_sum,
+        "*/": jnp.cumulative_prod,
+    }
+
+    if verb.spelling in SPECIAL_MONAD:
+        monad_ = SPECIAL_MONAD[verb.spelling]
+
+    else:
+        raise JinxNotImplementedError(
+            f"Adverb \\ applied to verb {verb.spelling} is not yet implemented."
+        )
+
+    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
+    spelling = f"{spelling}\\"
+
+    return Verb(
+        name=spelling,
+        spelling=spelling,
+        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
+        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=None),  # type: ignore[arg-type]
+    )
+
+
 ADVERB_MAP: dict[str, Callable[[Verb[jax.Array]], Verb[jax.Array]]] = {
     "SLASH": slash_adverb,
+    "BSLASH": bslash_adverb,
 }

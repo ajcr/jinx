@@ -6,9 +6,6 @@ import jax.numpy as jnp
 from jinx.errors import JinxNotImplementedError, ValenceError
 from jinx.vocabulary import Adverb, DataType, Dyad, Monad, Noun, RankT, Verb
 
-jax.config.update("jax_dynamic_shapes", True)
-
-
 DATATYPE_TO_NP_MAP = {
     # JAX requires support for int64 to be set via config.
     DataType.Integer: jnp.int32,
@@ -113,9 +110,14 @@ def _apply_monad(verb: Verb[jax.Array], arr: jax.Array) -> jax.Array:
         return function(arr)
 
     array_cells = split_into_cells(arr, rank)
-    cells = jax.vmap(function)(array_cells.cells)
+
+    if array_cells.cells.ndim == 1:
+        cells = function(array_cells.cells)
+    else:
+        cells = jnp.apply_along_axis(function, axis=-1, arr=array_cells.cells)
+
     # No filling/padding for now...
-    return jnp.asarray(cells).reshape(array_cells.frame_shape)
+    return jnp.asarray(cells).reshape(array_cells.frame_shape + cells[0].shape)
 
 
 def apply_dyad(
@@ -154,7 +156,7 @@ def _apply_dyad(
             function(left_cell, right_cell)
             for left_cell, right_cell in zip(left.cells, right.cells, strict=True)
         ]
-        return jnp.asarray(cells).reshape(left.frame_shape)
+        return jnp.asarray(cells).reshape(left.frame_shape + cells[0].shape)
 
     raise JinxNotImplementedError(
         "Dyadic verbs with non-zero rank and different frame shape are not yet implemented."

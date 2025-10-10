@@ -240,7 +240,10 @@ def _evaluate_words(
             parts_to_left = get_parts_to_left(
                 executor, word, words, level, variables=variables
             )
-            word = build_verb_noun_phrase(executor, parts_to_left)  # type: ignore[assignment]
+            # parts_to_left may be empty if the conjunction is the target of an assignment
+            # or enclosed in parentheses.
+            if parts_to_left:
+                word = build_verb_noun_phrase(executor, parts_to_left)  # type: ignore[assignment]
 
         fragment = [word, *fragment]
 

@@ -258,7 +258,6 @@ def test_word_evaluation_adverb_application(words, expected):
             ],
             '+/"2',
             id='+/(")2',
-            marks=pytest.mark.xfail,
         ),
     ],
 )
@@ -930,6 +929,19 @@ def test_word_evaluation_with_name_assigned_to_name_to_verb():
     ]
     result = evaluate_words_numpy(words, variables=variables)
     assert result.implementation == 18
+
+
+def test_word_evaluation_with_name_assigned_to_conjunction():
+    # a =: @
+    variables = {}
+    words = [
+        Name(spelling="a"),
+        PRIMITIVE_MAP["EQDOT"],
+        PRIMITIVE_MAP["AT"],
+    ]
+    result = evaluate_words_numpy(words, variables=variables)
+    assert result == Name(spelling="a")
+    assert variables["a"] == PRIMITIVE_MAP["AT"]
 
 
 def test_word_evaluation_with_name_assigned_in_expression():

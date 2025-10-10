@@ -114,7 +114,8 @@ def _apply_monad(verb: Verb[jax.Array], arr: jax.Array) -> jax.Array:
     if array_cells.cells.ndim == 1:
         cells = function(array_cells.cells)
     else:
-        cells = jnp.apply_along_axis(function, axis=-1, arr=array_cells.cells)
+        # TODO: Use jax.vmap instead
+        cells = jnp.asarray([function(cell) for cell in array_cells.cells])
 
     # No filling/padding for now...
     return jnp.asarray(cells).reshape(array_cells.frame_shape + cells[0].shape)
@@ -180,7 +181,6 @@ def build_fork(
     Note that f can be a noun, in which case there is one fewer function calls.
     """
 
-    @jax.jit
     def _monad(y: jax.Array) -> jax.Array:
         if isinstance(f, Verb) and f.spelling == "[:":
             hy = _apply_monad(h, y)
@@ -193,7 +193,6 @@ def build_fork(
         b = _apply_monad(h, y)
         return _apply_dyad(g, a, b)
 
-    @jax.jit
     def _dyad(x: jax.Array, y: jax.Array) -> jax.Array:
         if isinstance(f, Verb) and f.spelling == "[:":
             hy = _apply_dyad(h, x, y)

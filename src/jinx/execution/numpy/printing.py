@@ -31,15 +31,15 @@ def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     else:
         append_ellipsis = False
 
-    if np.issubdtype(arr.dtype, np.floating):
+    if arr.size == 0:
+        return [""]
+
+    elif np.issubdtype(arr.dtype, np.floating):
         rounded = [format_float(n) for n in arr.ravel().tolist()]
         arr = np.asarray(rounded).reshape(arr.shape)
 
     elif np.issubdtype(arr.dtype, np.bool_):
         arr = arr.view(np.int8)
-
-    elif arr.size == 0:
-        return [""]
 
     elif (
         np.issubdtype(arr.dtype, np.str_) and arr.dtype.itemsize == arr.dtype.alignment

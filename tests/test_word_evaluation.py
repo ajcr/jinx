@@ -729,6 +729,24 @@ def test_word_evaluation_computes_correct_noun(words, expected):
     [
         pytest.param(
             [
+                PRIMITIVE_MAP["LT"],
+                Noun(data_type=DataType.Byte, data=[""]),
+            ],
+            np.array(("",), dtype=box_dtype),
+            id="<''",
+        ),
+    ],
+)
+def test_size_zero_nouns(words, expected):
+    result = evaluate_words_numpy(words)
+    assert np.array_equal(result.implementation, expected)
+
+
+@pytest.mark.parametrize(
+    "words, expected",
+    [
+        pytest.param(
+            [
                 LPAREN,
                 PRIMITIVE_MAP["LT"],
                 PRIMITIVE_MAP["AT"],

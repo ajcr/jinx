@@ -34,6 +34,9 @@ def get_rank(verb_rank: RankT, noun_rank: int) -> int:
 def fill_and_assemble(
     cells: list[np.ndarray], frame_shape: tuple[int, ...]
 ) -> np.ndarray:
+    if not cells:
+        return np.asarray(cells).reshape(frame_shape)
+
     cells = maybe_pad_with_fill_value(cells)
     return np.asarray(cells).reshape(frame_shape + cells[0].shape)
 
@@ -59,6 +62,9 @@ def split_into_cells(arr: np.ndarray, rank: int) -> ArrayCells:
     If rank=0, the frame shape is the same as the shape and the monad
     applies to each atom of the array.
     """
+    if arr.size == 0:
+        return ArrayCells(cell_shape=(), frame_shape=arr.shape, cells=arr)
+
     if rank == 0:
         return ArrayCells(cell_shape=(), frame_shape=arr.shape, cells=arr.ravel())
 
@@ -86,6 +92,9 @@ def _apply_monad(verb: Verb[np.ndarray], arr: np.ndarray) -> np.ndarray:
         function = functools.partial(_apply_monad, verb.monad.function)
     else:
         function = verb.monad.function  # type: ignore[assignment]
+
+    if arr.size == 0:
+        return function(arr)
 
     rank = get_rank(verb.monad.rank, arr.ndim)
 
@@ -121,6 +130,9 @@ def _apply_dyad(
         function = functools.partial(_apply_dyad, verb.dyad.function)
     else:
         function = verb.dyad.function  # type: ignore[assignment]
+
+    if left_arr.size == 0 or right_arr.size == 0:
+        return function(left_arr, right_arr)
 
     left_rank = get_rank(verb.dyad.left_rank, left_arr.ndim)
     right_rank = get_rank(verb.dyad.right_rank, right_arr.ndim)

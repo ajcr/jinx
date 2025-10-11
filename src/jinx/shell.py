@@ -49,7 +49,7 @@ def main():
     parser.add_argument(
         "--executor",
         type=str,
-        choices=["numpy"],
+        choices=["numpy", "jax"],
         default="numpy",
         help="Executor to use.",
     )

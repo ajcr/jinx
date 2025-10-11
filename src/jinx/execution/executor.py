@@ -48,8 +48,13 @@ class Executor[T]:
 
 def load_executor(name: str) -> Executor:
     if name == "numpy":
-        from jinx.execution.numpy import executor
+        from jinx.execution.numpy import executor as numpy_executor
 
-        return executor
+        return numpy_executor
+
+    if name == "jax":
+        from jinx.execution.jax import executor as jax_executor
+
+        return jax_executor
 
     raise ValueError(f"Unknown executor: {name}")

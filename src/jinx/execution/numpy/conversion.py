@@ -14,7 +14,7 @@ from jinx.vocabulary import DataType, Noun
 # (e.g. np.concatenate), so we would need to patch the metadata back in.
 #
 # Secondly, np.object presents issues when detecting array sizes and concatenating
-# boxed arrays. E.g. with the comma_dyad implemetation that works correct for non-boxed
+# boxed arrays. E.g. with the comma_dyad implementation that works correct for non-boxed
 # arrays, '(<1),(<2 3),(<4)' created a 2D array not a 1D array.
 #
 # Using a structured dtype allows us to side-step these issues at the small expense

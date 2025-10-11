@@ -1,29 +1,30 @@
 # Jinx
 
-A work-in-progress interpreter for the J programming language, built on top of NumPy.
+An experimental interpreter for the J programming language, built on top of [NumPy](https://numpy.org/).
 
-Supports many features that are central to J, including:
-- Multidimensional arrays of integers and floats.
-- Many primitive verbs (e.g. `+`, `%:`, `,`, ...), adverbs (`/`, `~`, ...) and conjunctions (`"`, `@:`, ...).
-- Correct monadic and dyadic application of verbs of different ranks.
-- Obverses.
-- Trains (hooks and forks).
+Implements many of J's primitives and tacit programming capabilities, and can be extended to support execution via other frameworks too.
 
-## Examples
+## Executing J
 
-Start the interactive shell with `jinx`. The shell prompt is four spaces, so commands appear indented.
+Start the interactive shell:
+```sh
+jinx
+```
+The shell prompt is four spaces, so commands appear indented. Internally, all multidimensional arrays are NumPy arrays. Verbs, conjunctions and adverbs are a mixture of Python and NumPy methods.
 
-- The "trapping rainwater" problem (solution from [here](https://mmapped.blog/posts/04-square-joy-trapped-rain-water)):
+Here are some examples what Jinx can do so far:
+
+- Solve the "trapping rainwater" problem (solution taken from [here](https://mmapped.blog/posts/04-square-joy-trapped-rain-water)):
 ```j
     +/@((>./\ <. >./\.)-]) 0 1 0 2 1 0 1 3 2 1 2 1
 6
 ```
-- The correlation between two arrays of numbers (taken from [here](https://stackoverflow.com/a/44845495/3923281)):
+- Compute the correlation between two arrays of numbers (taken from [here](https://stackoverflow.com/a/44845495/3923281)). This is a complex combination of different verbs, adverbs, conjunctions and trains:
 ```j
     2 1 1 7 9 (+/@:* % *&(+/)&.:*:)&(- +/%#) 6 3 1 5 7
 0.721332
 ```
-- Many ways to create identity matrices (see [this essay](https://code.jsoftware.com/wiki/Essays/Identity_Matrix)):
+- Create identity matrices in inventive ways (see [this essay](https://code.jsoftware.com/wiki/Essays/Identity_Matrix)):
 ```j
     |.@~:\ @ ($&0) 3
 1 0 0
@@ -40,7 +41,7 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 0 1 0
 0 0 1
 ```
-- The Josephus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)). Calculate the survivor's number for a circle of people of size N:
+- Solve the Josephus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)). Calculate the survivor's number for a circle of people of size N. Note the use of verb obverses and the rank conjunction:
 ```j
     (1&|.&.#:)"0 >: i. 5 10    NB. N ranges from 1 to 50 here (arranged as a table)
  1  1  3  1  3  5  7  1  3  5
@@ -49,7 +50,7 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 31  1  3  5  7  9 11 13 15 17
 19 21 23 25 27 29 31 33 35 37
 ```
-- Building and printing nested boxes containing heterogenous datatypes:
+- Build nested boxes containing heterogenous datatypes and print the contents:
 ```j
     (<<'abc'),(<(<'de',.'fg'),(<<i. 5 2)),(<(<"0 ] % i. 2 2 3))
 ┌─────┬──────────┬────────────────────────────┐
@@ -67,11 +68,34 @@ Start the interactive shell with `jinx`. The shell prompt is four spaces, so com
 └─────┴──────────┴────────────────────────────┘
 ```
 
+## It's "Hackable"
+
+Everything is in Python. Adding new primitives is easy.
+
+Upate the `primitives.py` file with your new part of speech (e.g. a new verb like `+::`). Write your implementation of this new part of speech in the relevant module (e.g. `verbs.py`) and then update the name-to-method mapping at the foot of that module. That's it!
+
+## Alternative Executors
+
+Execution of sentences is backed by NumPy by default.
+
+However Jinx is designed so that it's possible to implement the primitives using alternative frameworks too. Python many Machine Learning and Scientific Programming libraries that could be used to execution J code.
+
+To prove this concept, there's _highly experimental and incomplete_ support for [JAX](https://docs.jax.dev/en/latest/index.html):
+```sh
+jinx --executor jax
+```
+Primitive verbs are JIT compiled and execute on JAX arrays:
+```j
+    mean =: +/ % #
+    mean 33 55 77 100 101
+73.2
+```
+
 ## Warning
 
 This project is experimental. There will be bugs, missing features and performance quirks.
 
-Some key parts of J are not currently implemented in Jinx (but might be in future). These include:
+Many key parts of J are not currently implemented (but might be in future). These include:
 - Differences in how names are interpreted and resolved at execution time.
 - Locales.
 - Definitions and direct definitions (using `{{ ... }}`).

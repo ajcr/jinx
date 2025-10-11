@@ -1,5 +1,7 @@
 # Jinx
 
+![ci](https://github.com/ajcr/jinx/actions/workflows/ci.yaml/badge.svg?branch=main)
+
 An experimental interpreter for the J programming language, built on top of [NumPy](https://numpy.org/).
 
 Implements many of J's primitives and tacit programming capabilities, and can be extended to support execution via other frameworks too.

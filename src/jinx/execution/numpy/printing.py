@@ -22,6 +22,9 @@ def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     """Convert an array to a list of strings for printing."""
     arr = np.atleast_1d(arr)
 
+    if arr.size == 0:
+        return [""]
+
     if is_box(arr):
         return box_to_rows(arr)
 
@@ -31,10 +34,7 @@ def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:
     else:
         append_ellipsis = False
 
-    if arr.size == 0:
-        return [""]
-
-    elif np.issubdtype(arr.dtype, np.floating):
+    if np.issubdtype(arr.dtype, np.floating):
         rounded = [format_float(n) for n in arr.ravel().tolist()]
         arr = np.asarray(rounded).reshape(arr.shape)
 

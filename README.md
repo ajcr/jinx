@@ -2,11 +2,16 @@
 
 ![ci](https://github.com/ajcr/jinx/actions/workflows/ci.yaml/badge.svg?branch=main)
 
-An experimental interpreter for the J programming language, built on top of [NumPy](https://numpy.org/).
+An experimental interpreter for the [J programming language](https://www.jsoftware.com/#/), built on top of [NumPy](https://numpy.org/).
 
-Implements many of J's primitives and tacit programming capabilities, and can be extended to support execution via other frameworks too.
+Implements many of J's primitives and tacit programming capabilities, and can be extended to execute via other backends too.
 
-## Executing J
+Can be installed via PyPI:
+```sh
+pip install jjinx  # note the double 'j'
+```
+
+## The J Shell
 
 Start the interactive shell:
 ```sh
@@ -21,7 +26,7 @@ Here are some examples what Jinx can do so far:
     +/@((>./\ <. >./\.)-]) 0 1 0 2 1 0 1 3 2 1 2 1
 6
 ```
-- Compute the correlation between two arrays of numbers (taken from [here](https://stackoverflow.com/a/44845495/3923281)). This is a complex combination of different verbs, adverbs, conjunctions and trains:
+- Compute the correlation between two arrays of numbers (taken from [here](https://stackoverflow.com/a/44845495/3923281)). This is a interesting combination of different trains of verbs, adverbs and conjunctions:
 ```j
     2 1 1 7 9 (+/@:* % *&(+/)&.:*:)&(- +/%#) 6 3 1 5 7
 0.721332
@@ -43,7 +48,7 @@ Here are some examples what Jinx can do so far:
 0 1 0
 0 0 1
 ```
-- Solve the Josephus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)). Calculate the survivor's number for a circle of people of size N. Note the use of verb obverse and the rank conjunction:
+- Solve the Josephus problem (see [this essay](https://code.jsoftware.com/wiki/Essays/Josephus_Problem)). Calculate the survivor's number for a circle of people of size N. Note the use of the verb obverse and the rank conjunction:
 ```j
     (1&|.&.#:)"0 >: i. 5 10    NB. N ranges from 1 to 50 here (arranged as a table)
  1  1  3  1  3  5  7  1  3  5
@@ -72,7 +77,7 @@ Here are some examples what Jinx can do so far:
 
 ## Easily Customisable
 
-Everything is in Python. Adding new primitives is easy.
+Jinx is written in reasonably-readable Python, so should be easy to navigate. Adding new primitives is easy.
 
 Update the `primitives.py` file with your new part of speech (e.g. a new verb such as `+::`). Write your implementation of this new part of speech in the relevant executor module (e.g. `verbs.py`) and then update the name-to-method mapping at the foot of that module. That's all that's needed.
 
@@ -80,13 +85,13 @@ Update the `primitives.py` file with your new part of speech (e.g. a new verb su
 
 Execution of sentences is backed by NumPy by default.
 
-However Jinx is designed so that it's possible to implement the primitives using alternative frameworks too. Python many Machine Learning and Scientific Programming libraries that could be used to execution J code.
+However, Jinx is designed so that it is possible to execute sentences using alternative frameworks too. Python has many Machine Learning and Scientific Programming libraries that could be used to execute J code, albeit with different sets of tradeoffs.
 
-To prove this concept, there's _highly experimental and incomplete_ support for [JAX](https://docs.jax.dev/en/latest/index.html):
+To prove this concept, Jinx currently has _highly experimental and incomplete_ support for [JAX](https://docs.jax.dev/en/latest/index.html):
 ```sh
 jinx --executor jax
 ```
-Primitive verbs are JIT compiled and execute on JAX arrays:
+Primitive verbs are JIT compiled and nouns are backed by JAX arrays:
 ```j
     mean =: +/ % #
     mean 33 55 77 100 101
@@ -95,9 +100,9 @@ Primitive verbs are JIT compiled and execute on JAX arrays:
 
 ## Warning
 
-This project is experimental. There will be bugs, missing features and performance quirks.
+This project is experimental and began as a project to learn J in more depth. There will be bugs, missing features and performance quirks.
 
-Many key parts of J are not currently implemented (but might be in future). These include:
+You will notice that many key parts of J are not currently implemented (but might be in future). These include:
 - Differences in how names are interpreted and resolved at execution time.
 - Locales.
 - Definitions and direct definitions (using `{{ ... }}`).

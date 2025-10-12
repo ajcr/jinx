@@ -18,7 +18,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
 ]
-keywords = ["J", "interpreter"]
+keywords = ["J", "interpreter", "numpy", "array", "tacit-programming"]
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.3.3",

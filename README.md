@@ -75,9 +75,37 @@ Here are some examples what Jinx can do so far:
 └─────┴──────────┴────────────────────────────┘
 ```
 
-## Easily Customisable
+## Toggle Between Python and J interpreters
 
-Jinx is written in reasonably-readable Python, so should be easy to navigate. Adding new primitives is easy.
+In Jinx all J arrays are Python objects internally.
+
+The `py:` verb (with no arguments) will switch to a Python interpreter. Array variables created in J can now be operated on in Python:
+```
+    a =: i. 3 3
+0 1 2
+3 4 5
+6 7 8
+    py:
+Switching to Python interpreter mode. Use 'ctrl-D' to return to Jinx.
+>>> a
+array([[0, 1, 2],
+       [3, 4, 5],
+       [6, 7, 8]])
+```
+If new array variables are created in Python, these variables will be available on returning to Jinx:
+```
+>>> b = a.sum(axis=0)
+>>> b
+array([ 9, 12, 15])
+>>> ^D
+Returning to Jinx shell.
+    b
+9 12 15
+```
+
+## Easy To Customise
+
+Jinx is written in reasonably-readable Python and a adding new primitives is easy.
 
 Update the `primitives.py` file with your new part of speech (e.g. a new verb such as `+::`). Write your implementation of this new part of speech in the relevant executor module (e.g. `verbs.py`) and then update the name-to-method mapping at the foot of that module. That's all that's needed.
 

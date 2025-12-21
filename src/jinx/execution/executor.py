@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable
+from typing import Any, Callable
 
 from jinx.vocabulary import Adverb, Conjunction, Noun, Verb
 
@@ -44,6 +44,9 @@ class Executor[T]:
 
     noun_to_string: Callable[[Noun[T]], str]
     """Convert a noun to a string representation for printing."""
+
+    python_object_to_noun: Callable[[Any], Noun[T] | None]
+    """Convert a Python object to a Noun."""
 
 
 def load_executor(name: str) -> Executor:

@@ -1,10 +1,11 @@
 import argparse
 import cmd
+import code
 import sys
 
 from jinx.errors import BaseJError, SpellingError
 from jinx.execution.executor import Executor, load_executor
-from jinx.vocabulary import PartOfSpeechT
+from jinx.vocabulary import Noun, PartOfSpeechT
 from jinx.word_evaluation import evaluate_words, print_words
 from jinx.word_formation import form_words
 from jinx.word_spelling import spell_words
@@ -23,6 +24,25 @@ class Shell(cmd.Cmd):
 
     def default(self, line):
         words = form_words(line)
+        if len(words) == 1 and words[0].value == "py:":
+            banner = (
+                "Switching to Python interpreter mode. Use 'ctrl-D' to return to Jinx."
+            )
+            exitmsg = "Returning to Jinx shell."
+            local = {
+                k: v.implementation
+                for k, v in self.variables.items()
+                if isinstance(v, Noun)
+            }
+            console = code.InteractiveConsole(local)
+            console.interact(banner=banner, exitmsg=exitmsg)
+            py_vars = {
+                k: noun
+                for k, v in local.items()
+                if (noun := self.executor.python_object_to_noun(v)) is not None
+            }
+            self.variables.update(py_vars)
+            return
         try:
             words = spell_words(words)
         except SpellingError as e:

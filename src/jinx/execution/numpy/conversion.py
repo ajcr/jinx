@@ -1,5 +1,7 @@
 """Methods for converting between J Nouns and NumPy arrays."""
 
+from typing import Any
+
 import numpy as np
 from jinx.vocabulary import DataType, Noun
 
@@ -60,3 +62,21 @@ def infer_data_type(data: np.ndarray) -> DataType:
 def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun[np.ndarray]:
     data_type = infer_data_type(data)
     return Noun[np.ndarray](data_type=data_type, implementation=data)
+
+
+def convert_python_object_to_noun(obj: Any) -> Noun[np.ndarray] | None:
+    if isinstance(obj, np.ndarray):
+        return ndarray_or_scalar_to_noun(obj)
+    if isinstance(obj, (int, float, str)):
+        # Wrap Python scalars in a 0-dim NumPy array.
+        np_type = DATATYPE_TO_NP_MAP[
+            DataType.Integer
+            if isinstance(obj, int)
+            else DataType.Float
+            if isinstance(obj, float)
+            else DataType.Byte
+        ]
+        array = np.asarray(obj, dtype=np_type)  # type: ignore[call-overload]
+        return ndarray_or_scalar_to_noun(array)
+
+    return None

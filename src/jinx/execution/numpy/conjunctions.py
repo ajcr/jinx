@@ -80,10 +80,14 @@ def _modify_rank(
 
 
 def rank_conjunction(
-    verb: Verb[np.ndarray], noun: Noun[np.ndarray]
+    left: Verb[np.ndarray], right: Noun[np.ndarray]
 ) -> Verb[np.ndarray]:
-    rank = np.atleast_1d(noun.implementation).tolist()
-    return _modify_rank(verb, rank)
+    if isinstance(left, Verb) and isinstance(right, Noun):
+        rank = np.atleast_1d(right.implementation).tolist()
+        return _modify_rank(left, rank)
+    raise JinxNotImplementedError(
+        "Rank conjunction with non-verb left or non-noun right is not yet implemented"
+    )
 
 
 def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:

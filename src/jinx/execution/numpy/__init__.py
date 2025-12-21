@@ -10,7 +10,10 @@ from jinx.execution.numpy.application import (
     build_hook,
 )
 from jinx.execution.numpy.conjunctions import CONJUNCTION_MAP
-from jinx.execution.numpy.conversion import ensure_noun_implementation
+from jinx.execution.numpy.conversion import (
+    convert_python_object_to_noun,
+    ensure_noun_implementation,
+)
 from jinx.execution.numpy.printing import noun_to_string
 from jinx.execution.numpy.verbs import VERB_MAP
 
@@ -26,4 +29,5 @@ executor = Executor[np.ndarray](
     primitive_adverb_map=ADVERB_MAP,
     primitive_conjuction_map=CONJUNCTION_MAP,  # type: ignore[arg-type]
     noun_to_string=noun_to_string,
+    python_object_to_noun=convert_python_object_to_noun,
 )

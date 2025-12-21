@@ -484,6 +484,13 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
         obverse="""}:@;@(,&' '&.>"1)""",
     ),
     Conjunction("`", "GRAVE"),
+    # Primitive for toggling between Jinx and Python interpreter mode
+    Verb(
+        "py:",
+        "PYCO",
+        monad=None,
+        dyad=None,
+    ),
 ]
 
 

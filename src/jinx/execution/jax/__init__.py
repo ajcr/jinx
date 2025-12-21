@@ -4,17 +4,12 @@ from jinx.execution.executor import Executor
 from jinx.execution.jax.adverbs import ADVERB_MAP
 from jinx.execution.jax.application import (
     apply_adverb,
-    #     apply_conjunction,
     apply_dyad,
     apply_monad,
     build_fork,
-    #     build_hook,
     ensure_noun_implementation,
 )
 from jinx.execution.jax.verbs import VERB_MAP
-
-# from jinx.execution.numpy.conjunctions import CONJUNCTION_MAP
-# from jinx.execution.numpy.conversion import ensure_noun_implementation
 from jinx.execution.numpy.printing import noun_to_string
 
 jax.config.update("jax_dynamic_shapes", True)
@@ -42,4 +37,5 @@ executor = Executor[jax.Array](
     primitive_conjuction_map={},
     # Just use the NumPy implementation of printing.
     noun_to_string=noun_to_string,  # type: ignore[arg-type]
+    python_object_to_noun=NotImplemented,
 )

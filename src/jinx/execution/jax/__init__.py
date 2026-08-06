@@ -6,9 +6,9 @@ from jinx.execution.jax.application import (
     apply_adverb,
     apply_dyad,
     apply_monad,
-    build_fork,
     ensure_noun_implementation,
 )
+from jinx.execution.jax.trains import build_fork
 from jinx.execution.jax.verbs import VERB_MAP
 from jinx.execution.numpy.printing import noun_to_string
 

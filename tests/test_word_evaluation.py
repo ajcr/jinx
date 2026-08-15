@@ -165,9 +165,7 @@ def test_word_evaluation_basic_arithmetic(words, expected):
 )
 def test_word_evaluation_adverb_creation(words, expected):
     result = evaluate_words_numpy(words)
-    # assert len(result) == 2
-    # assert isinstance(result[1], Verb)
-    assert result.spelling == expected
+    assert str(result) == expected
 
 
 @pytest.mark.parametrize(
@@ -265,7 +263,7 @@ def test_word_evaluation_verb_conjunction_noun_application(
     words, expected_verb_spelling
 ):
     result = evaluate_words_numpy(words)
-    assert result.spelling == expected_verb_spelling
+    assert str(result) == expected_verb_spelling
 
 
 @pytest.mark.parametrize(
@@ -814,7 +812,7 @@ def test_word_evaluation_computes_correct_boxed_array(words, expected):
 )
 def test_word_evaluation_build_verb(words, expected):
     result = evaluate_words_numpy(words)
-    assert result.spelling == expected
+    assert str(result) == expected
 
 
 @pytest.mark.parametrize(

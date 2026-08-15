@@ -13,18 +13,24 @@ from jinx.execution.numpy.application import (
     split_into_cells,
 )
 from jinx.execution.numpy.conversion import box_dtype, ndarray_or_scalar_to_noun
-from jinx.execution.numpy.helpers import (
-    is_box,
-    maybe_pad_with_fill_value,
-    maybe_parenthesise_verb_spelling,
+from jinx.execution.numpy.helpers import is_box, maybe_pad_with_fill_value
+from jinx.primitives import PRIMITIVE_MAP
+from jinx.vocabulary import (
+    Conjunction,
+    Dyad,
+    EntityExecutedConjunction,
+    Monad,
+    Noun,
+    Verb,
 )
-from jinx.vocabulary import Dyad, Monad, Noun, Verb
 
 INFINITY = float("inf")
 
 
 def _modify_rank(
-    verb: Verb[np.ndarray], rank: np.ndarray | int | float
+    verb: Verb[np.ndarray],
+    rank: np.ndarray | int | float,
+    conjunction: Conjunction,
 ) -> Verb[np.ndarray]:
     rank = np.atleast_1d(rank)
     if np.issubdtype(rank.dtype, np.floating):
@@ -40,20 +46,16 @@ def _modify_rank(
         )
 
     rank_list = [int(r) if not np.isinf(r) else INFINITY for r in rank.tolist()]
-    verb_spelling = spelling = maybe_parenthesise_verb_spelling(verb.spelling)
 
     if len(rank_list) == 1:
         monad_rank = left_rank = right_rank = rank_list[0]
-        spelling = f'{verb_spelling}"{rank_list[0]}'
 
     elif len(rank_list) == 2:
         left_rank, right_rank = rank_list
         monad_rank = right_rank
-        spelling = f'{verb_spelling}"{left_rank} {right_rank}'
 
     else:
         monad_rank, left_rank, right_rank = rank_list
-        spelling = f'{verb_spelling}"{monad_rank} {left_rank} {right_rank}'
 
     if verb.monad:
         monad = dataclasses.replace(verb.monad, rank=monad_rank, function=verb)
@@ -72,10 +74,9 @@ def _modify_rank(
 
     return dataclasses.replace(
         verb,
-        spelling=spelling,
-        name=spelling,
         monad=monad,
         dyad=dyad,
+        entity_type=EntityExecutedConjunction(verb, conjunction, rank),
     )
 
 
@@ -84,7 +85,7 @@ def rank_conjunction(
 ) -> Verb[np.ndarray]:
     if isinstance(left, Verb) and isinstance(right, Noun):
         rank = np.atleast_1d(right.implementation).tolist()
-        return _modify_rank(left, rank)
+        return _modify_rank(left, rank, PRIMITIVE_MAP["RANK"])
     raise JinxNotImplementedError(
         "Rank conjunction with non-verb left or non-noun right is not yet implemented"
     )
@@ -125,28 +126,22 @@ def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]
         padded_cells = maybe_pad_with_fill_value(u_cells)
         return fill_and_assemble(padded_cells, v_cell_right_array.frame_shape)
 
-    u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
-    v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
-
     if v.dyad is None:
         dyad = None
     else:
         dyad = Dyad(
-            name=f"{u_spelling}@{v_spelling}",
             left_rank=v.dyad.left_rank,
             right_rank=v.dyad.right_rank,
             function=_dyad,
         )
 
     return Verb[np.ndarray](
-        name=f"{u_spelling}@{v_spelling}",
-        spelling=f"{u_spelling}@{v_spelling}",
         monad=Monad(
-            name=f"{u_spelling}@{v_spelling}",
             rank=v.monad.rank,  # type: ignore[union-attr]
             function=_monad,
         ),
         dyad=dyad,
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["AT"], v),
     )
 
 
@@ -163,23 +158,10 @@ def atco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarra
         b = _apply_monad(u, a)
         return b
 
-    u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
-    v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
-
     return Verb[np.ndarray](
-        name=f"{u_spelling}@:{v_spelling}",
-        spelling=f"{u_spelling}@:{v_spelling}",
-        monad=Monad(
-            name=f"{u_spelling}@:{v_spelling}",
-            rank=INFINITY,
-            function=monad,
-        ),
-        dyad=Dyad(
-            name=f"{u_spelling}@:{v_spelling}",
-            left_rank=INFINITY,
-            right_rank=INFINITY,
-            function=dyad,
-        ),
+        monad=Monad(rank=INFINITY, function=monad),
+        dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=dyad),
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["ATCO"], v),
     )
 
 
@@ -194,9 +176,7 @@ def ampm_conjunction(
             function = functools.partial(_apply_dyad, right, left.implementation)
         else:
             function = functools.partial(right.dyad.function, left.implementation)  # type: ignore[union-attr]
-        verb_spelling = maybe_parenthesise_verb_spelling(right.spelling)
-        spelling = f"{left.implementation}&{verb_spelling}"
-        monad = Monad(name=spelling, rank=INFINITY, function=function)
+        monad = Monad(rank=INFINITY, function=function)
         dyad = None
 
     elif isinstance(left, Verb) and isinstance(right, Noun):
@@ -206,9 +186,7 @@ def ampm_conjunction(
             return _apply_dyad(left, x, y)
 
         function = functools.partial(_wrapper, y=right.implementation)
-        verb_spelling = maybe_parenthesise_verb_spelling(left.spelling)
-        spelling = f"{verb_spelling}&{right.implementation}"
-        monad = Monad(name=spelling, rank=INFINITY, function=function)
+        monad = Monad(rank=INFINITY, function=function)
         dyad = None
 
     elif isinstance(left, Verb) and isinstance(right, Verb):
@@ -223,19 +201,18 @@ def ampm_conjunction(
             rx = _apply_monad(right, x)
             return _apply_dyad(left, rx, ry)
 
-        left_spelling = maybe_parenthesise_verb_spelling(left.spelling)
-        right_spelling = maybe_parenthesise_verb_spelling(right.spelling)
-        spelling = f"{left_spelling}&{right_spelling}"
-
-        monad = Monad(name=spelling, rank=right.monad.rank, function=monad_)  # type: ignore[union-attr]
+        monad = Monad(rank=right.monad.rank, function=monad_)  # type: ignore[union-attr]
         dyad = Dyad(
-            name=spelling,
             left_rank=right.monad.rank,  # type: ignore[union-attr]
             right_rank=right.monad.rank,  # type: ignore[union-attr]
             function=dyad_,
         )
 
-    return Verb(name=spelling, spelling=spelling, monad=monad, dyad=dyad)
+    return Verb(
+        monad=monad,
+        dyad=dyad,
+        entity_type=EntityExecutedConjunction(left, PRIMITIVE_MAP["AMPM"], right),
+    )
 
 
 def ampdotco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]:
@@ -256,23 +233,10 @@ def ampdotco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.nd
         uvy = _apply_dyad(u, vx, vy)
         return _apply_monad(v.obverse, uvy)  # type: ignore[arg-type]
 
-    v_spelling = maybe_parenthesise_verb_spelling(v.spelling)
-    u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
-
     return Verb[np.ndarray](
-        name=f"{u_spelling}&.:{v_spelling}",
-        spelling=f"{u_spelling}&.:{v_spelling}",
-        monad=Monad(
-            name=f"{u_spelling}&.:{v_spelling}",
-            rank=INFINITY,
-            function=_monad,
-        ),
-        dyad=Dyad(
-            name=f"{u_spelling}&.:{v_spelling}",
-            left_rank=INFINITY,
-            right_rank=INFINITY,
-            function=_dyad,
-        ),
+        monad=Monad(rank=INFINITY, function=_monad),
+        dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=_dyad),
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["AMPDOTCO"], v),
     )
 
 
@@ -281,7 +245,7 @@ def ampdot_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndar
     if v.monad is None:
         raise ValenceError(f"{v.spelling} has no monadic form")
     verb = ampdotco_conjunction(u, v)
-    return _modify_rank(verb, v.monad.rank)
+    return _modify_rank(verb, v.monad.rank, PRIMITIVE_MAP["AMPDOT"])
 
 
 def hatco_conjunction(
@@ -387,22 +351,17 @@ def hatco_conjunction(
         array = np.asarray(result)
         return array.reshape(exponent.implementation.shape + result[0].shape)
 
-    u_spelling = maybe_parenthesise_verb_spelling(u.spelling)
-
     return Verb(
-        name=f"{u_spelling}^:{exponent.implementation}",
-        spelling=f"{u_spelling}^:{exponent.implementation}",
         monad=Monad(
-            name=f"{u_spelling}^:{exponent.implementation}",
             rank=INFINITY,
             function=monad,
         ),
         dyad=Dyad(
-            name=f"{u_spelling}^:{exponent.implementation}",
             left_rank=INFINITY,
             right_rank=INFINITY,
             function=dyad,
         ),
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["HATCO"], noun_or_verb),
     )
 
 

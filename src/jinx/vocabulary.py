@@ -63,11 +63,11 @@ class Noun[T]:
 
 @dataclass
 class Monad[T]:
-    name: str
-    """Name of the monadic verb."""
-
     rank: RankT
     """Rank of monadic valence of the verb."""
+
+    name: str | None = None
+    """Name of the monadic verb."""
 
     function: Callable[[T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb object. Initially
@@ -76,14 +76,14 @@ class Monad[T]:
 
 @dataclass
 class Dyad[T]:
-    name: str
-    """Name of the dyadic verb."""
-
     left_rank: RankT
     """Left rank of the dyadic verb."""
 
     right_rank: RankT
     """Right rank of the dyadic verb."""
+
+    name: str | None = None
+    """Name of the dyadic verb."""
 
     function: Callable[[T, T], T] | Verb[T] = None  # type: ignore[assignment]
     """Function to execute the monadic verb, or another Verb object. Initially
@@ -93,28 +93,16 @@ class Dyad[T]:
     """Whether the dyadic verb is commutative."""
 
 
-@dataclass
-class Verb[T]:
-    spelling: str
-    """The symbolic spelling of the verb, e.g. `+`."""
-
-    name: str
-    """The name of the verb, e.g. `PLUS`, or its spelling if not a primitive J verb."""
-
-    monad: Monad[T] | None = None
-    """The monadic form of the verb, if it exists."""
-
-    dyad: Dyad[T] | None = None
-    """The dyadic form of the verb, if it exists."""
-
-    obverse: Verb[T] | str | None = None
-    """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
-
-    def __str__(self):
-        return self.spelling
-
-    def __repr__(self):
-        return self.spelling
+def maybe_parenthesise(part_of_speech: PartOfSpeechT) -> str:
+    part_of_speech_str = str(part_of_speech)
+    return (
+        part_of_speech_str
+        if isinstance(
+            part_of_speech.entity_type,
+            (EntityPrimitive, EntityExecutedAdverb, EntityExecutedConjunction),
+        )
+        else f"({part_of_speech_str})"
+    )
 
 
 @dataclass
@@ -122,7 +110,7 @@ class Adverb[T]:
     spelling: str
     """The symbolic spelling of the adverb, e.g. `/`."""
 
-    name: str
+    name: str | None
     """The name of the adverb, e.g. `SLASH`."""
 
     monad: Monad[T] | None = None
@@ -175,6 +163,125 @@ class Comment:
 class Name:
     spelling: str
     """The string value of the name."""
+
+
+class EntityType:
+    """Base class for entity type."""
+
+    pass
+
+
+@dataclass
+class EntityPrimitive(EntityType):
+    """Primitive type (defined as part of J)."""
+
+    pass
+
+
+@dataclass
+class EntityReferenceToNamedEntity(EntityType):
+    pass
+
+
+@dataclass
+class EntityExecutedConjunction(EntityType):
+    """Executed conjunction."""
+
+    v0: Verb | Noun
+    c1: Conjunction
+    v2: Verb | Noun
+
+    def get_spelling(self) -> str:
+        if is_hook(self.v0) or is_fork(self.v0):
+            v0_str = f"({self.v0})"
+        else:
+            v0_str = str(self.v0)
+        v2_str = str(self.v2) if is_primitive(self.v2) else f"({self.v2})"
+        return f"{v0_str}{self.c1.spelling}{v2_str}"
+
+
+@dataclass
+class EntityExecutedAdverb(EntityType):
+    """Executed adverb."""
+
+    v0: Verb
+    a1: Adverb
+
+    def get_spelling(self) -> str:
+        if is_hook(self.v0) or is_fork(self.v0):
+            v0_str = f"({self.v0})"
+        else:
+            v0_str = str(self.v0)
+        return f"{v0_str}{self.a1.spelling}"
+
+
+@dataclass
+class EntityHook(EntityType):
+    """Hook."""
+
+    v0: Verb
+    v1: Verb
+
+    def get_spelling(self) -> str:
+        v0_str = maybe_parenthesise(self.v0)
+        v1_str = maybe_parenthesise(self.v1)
+        return f"{v0_str} {v1_str}"
+
+
+@dataclass
+class EntityFork(EntityType):
+    """Fork."""
+
+    v0: Verb | Noun
+    v1: Verb
+    v2: Verb
+
+    def get_spelling(self) -> str:
+        v0_str = maybe_parenthesise(self.v0)
+        v1_str = maybe_parenthesise(self.v1)
+        v2_str = maybe_parenthesise(self.v2)
+        return f"{v0_str} {v1_str} {v2_str}"
+
+
+def is_primitive(part_of_speech: PartOfSpeechT) -> bool:
+    return isinstance(part_of_speech.entity_type, EntityPrimitive)
+
+
+def is_hook(part_of_speech: PartOfSpeechT) -> bool:
+    return isinstance(part_of_speech.entity_type, EntityHook)
+
+
+def is_fork(part_of_speech: PartOfSpeechT) -> bool:
+    return isinstance(part_of_speech.entity_type, EntityFork)
+
+
+@dataclass
+class Verb[T]:
+    spelling: str | None = None
+    """The symbolic spelling of the verb, e.g. `+`."""
+
+    name: str | None = None
+    """The name of the verb, e.g. `PLUS`, or its spelling if not a primitive J verb."""
+
+    monad: Monad[T] | None = None
+    """The monadic form of the verb, if it exists."""
+
+    dyad: Dyad[T] | None = None
+    """The dyadic form of the verb, if it exists."""
+
+    obverse: Verb[T] | str | None = None
+    """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
+
+    entity_type: EntityType = field(default_factory=EntityPrimitive)
+    """The entity type. How the verb was constructed if not primitive."""
+
+    def __str__(self) -> str:
+        if is_primitive(self):
+            return self.spelling
+        return self.entity_type.get_spelling()
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 PunctuationT = Punctuation | Comment

@@ -39,7 +39,7 @@ def str_(executor: Executor, word: PartOfSpeechT | str) -> str:
     if isinstance(word, Noun):
         return executor.noun_to_string(word)
     elif isinstance(word, Verb | Adverb | Conjunction):
-        return word.spelling
+        return str(word)
     elif isinstance(word, Name):
         return word.spelling
     elif isinstance(word, Punctuation | Copula):

@@ -93,18 +93,6 @@ class Dyad[T]:
     """Whether the dyadic verb is commutative."""
 
 
-def maybe_parenthesise(part_of_speech: PartOfSpeechT) -> str:
-    part_of_speech_str = str(part_of_speech)
-    return (
-        part_of_speech_str
-        if isinstance(
-            part_of_speech.entity_type,
-            (EntityPrimitive, EntityExecutedAdverb, EntityExecutedConjunction),
-        )
-        else f"({part_of_speech_str})"
-    )
-
-
 @dataclass
 class Adverb[T]:
     spelling: str
@@ -192,11 +180,12 @@ class EntityExecutedConjunction(EntityType):
     v2: Verb | Noun
 
     def get_spelling(self) -> str:
+        # Need to print nouns nicely
         if is_hook(self.v0) or is_fork(self.v0):
             v0_str = f"({self.v0})"
         else:
             v0_str = str(self.v0)
-        v2_str = str(self.v2) if is_primitive(self.v2) else f"({self.v2})"
+        v2_str = str(self.v2) if is_primitive_verb(self.v2) else f"({self.v2})"
         return f"{v0_str}{self.c1.spelling}{v2_str}"
 
 
@@ -223,8 +212,11 @@ class EntityHook(EntityType):
     v1: Verb
 
     def get_spelling(self) -> str:
-        v0_str = maybe_parenthesise(self.v0)
-        v1_str = maybe_parenthesise(self.v1)
+        v0_str = maybe_parenthesise_for_train(self.v0)
+        if isinstance(self.v1.entity_type, EntityFork):
+            v1_str = f"({self.v1})"
+        else:
+            v1_str = maybe_parenthesise_for_train(self.v1)
         return f"{v0_str} {v1_str}"
 
 
@@ -237,14 +229,31 @@ class EntityFork(EntityType):
     v2: Verb
 
     def get_spelling(self) -> str:
-        v0_str = maybe_parenthesise(self.v0)
-        v1_str = maybe_parenthesise(self.v1)
-        v2_str = maybe_parenthesise(self.v2)
+        v0_str = maybe_parenthesise_for_train(self.v0)
+        v1_str = maybe_parenthesise_for_train(self.v1)
+        if isinstance(self.v2.entity_type, EntityFork):
+            v2_str = str(self.v2)
+        else:
+            v2_str = maybe_parenthesise_for_train(self.v2)
         return f"{v0_str} {v1_str} {v2_str}"
 
 
-def is_primitive(part_of_speech: PartOfSpeechT) -> bool:
-    return isinstance(part_of_speech.entity_type, EntityPrimitive)
+def maybe_parenthesise_for_train(verb: Verb) -> str:
+    verb_str = str(verb)
+    return (
+        verb_str
+        if isinstance(
+            verb.entity_type,
+            (EntityPrimitive, EntityExecutedAdverb, EntityExecutedConjunction),
+        )
+        else f"({verb_str})"
+    )
+
+
+def is_primitive_verb(part_of_speech: PartOfSpeechT) -> bool:
+    return isinstance(part_of_speech, Verb) and isinstance(
+        part_of_speech.entity_type, EntityPrimitive
+    )
 
 
 def is_hook(part_of_speech: PartOfSpeechT) -> bool:
@@ -276,7 +285,7 @@ class Verb[T]:
     """The entity type. How the verb was constructed if not primitive."""
 
     def __str__(self) -> str:
-        if is_primitive(self):
+        if is_primitive_verb(self):
             return self.spelling
         return self.entity_type.get_spelling()
 

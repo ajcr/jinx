@@ -5,27 +5,28 @@ from jinx.vocabulary import (
     EntityExecutedAdverb,
     EntityExecutedConjunction,
     EntityHook,
+    EntityFork,
     Verb,
 )
 
 # +/
-VERB_PLUS_SLASH = Verb(
+V_PLUS_SLASH = Verb(
     entity_type=EntityExecutedAdverb(
         v0=PRIMITIVE_MAP["PLUS"], a1=PRIMITIVE_MAP["SLASH"]
     ),
 )
 
 # *&(+/)
-VERB_STAR_AMPM_VERB_PLUS_SLASH = Verb(
+V_STAR_AMPM_V_PLUS_SLASH = Verb(
     entity_type=EntityExecutedConjunction(
-        v0=PRIMITIVE_MAP["STAR"], c1=PRIMITIVE_MAP["AMPM"], v2=VERB_PLUS_SLASH
+        v0=PRIMITIVE_MAP["STAR"], c1=PRIMITIVE_MAP["AMPM"], v2=V_PLUS_SLASH
     ),
 )
 
 # +/@(*&,)
-VERB_PLUS_SLASH_AT_VERB_STAR_AMPM_COMMA = Verb(
+V_PLUS_SLASH_AT_V_STAR_AMPM_COMMA = Verb(
     entity_type=EntityExecutedConjunction(
-        v0=VERB_PLUS_SLASH,
+        v0=V_PLUS_SLASH,
         c1=PRIMITIVE_MAP["AT"],
         v2=Verb(
             entity_type=EntityExecutedConjunction(
@@ -38,17 +39,17 @@ VERB_PLUS_SLASH_AT_VERB_STAR_AMPM_COMMA = Verb(
 )
 
 # (* +)
-VERB_STAR_VERB_PLUS = Verb(
+V_STAR_V_PLUS = Verb(
     entity_type=EntityHook(v0=PRIMITIVE_MAP["STAR"], v1=PRIMITIVE_MAP["PLUS"])
 )
 
 # (+/ *)
-VERB_PLUS_SLASH_VERB_STAR = Verb(
-    entity_type=EntityHook(v0=VERB_PLUS_SLASH, v1=PRIMITIVE_MAP["STAR"])
+V_PLUS_SLASH_V_STAR = Verb(
+    entity_type=EntityHook(v0=V_PLUS_SLASH, v1=PRIMITIVE_MAP["STAR"])
 )
 
 # * +@-/
-VERB_STAR_VERB_PLUS_AT_PLUS_SLASH = Verb(
+V_STAR_V_PLUS_AT_PLUS_SLASH = Verb(
     entity_type=EntityHook(
         v0=PRIMITIVE_MAP["STAR"],
         v1=Verb(
@@ -66,18 +67,47 @@ VERB_STAR_VERB_PLUS_AT_PLUS_SLASH = Verb(
     ),
 )
 
+# Fork (V V V)
+V_PLUS_V_PLUS_V_PLUS = Verb(
+    entity_type=EntityFork(
+        v0=PRIMITIVE_MAP["PLUS"], v1=PRIMITIVE_MAP["PLUS"], v2=PRIMITIVE_MAP["PLUS"]
+    ),
+)
+
+# Train of 4 verbs, hook (V F)
+V_PLUS_V_PLUS_V_PLUS_V_PLUS = Verb(
+    entity_type=EntityHook(v0=PRIMITIVE_MAP["PLUS"], v1=V_PLUS_V_PLUS_V_PLUS)
+)
+
+# Hook (F V)
+V_PLUS_FORK_V_PLUS_V_PLUS_V_PLUS = Verb(
+    entity_type=EntityHook(v0=V_PLUS_V_PLUS_V_PLUS, v1=PRIMITIVE_MAP["PLUS"])
+)
+
+# Fork (V V F)
+VVF = Verb(
+    entity_type=EntityFork(
+        v0=PRIMITIVE_MAP["PLUS"],
+        v1=PRIMITIVE_MAP["PLUS"],
+        v2=V_PLUS_V_PLUS_V_PLUS,
+    )
+)
+
 
 @pytest.mark.parametrize(
     "verb, expected_spelling",
     [
-        pytest.param(VERB_PLUS_SLASH, "+/", id="+/"),
-        pytest.param(VERB_STAR_AMPM_VERB_PLUS_SLASH, "*&(+/)", id="*&(+/)"),
-        pytest.param(
-            VERB_PLUS_SLASH_AT_VERB_STAR_AMPM_COMMA, "+/@(*&,)", id="+/@(*&,)"
-        ),
-        pytest.param(VERB_STAR_VERB_PLUS, "* +", id="* +"),
-        pytest.param(VERB_PLUS_SLASH_VERB_STAR, "+/ *", id="+/ *"),
-        pytest.param(VERB_STAR_VERB_PLUS_AT_PLUS_SLASH, "* +@-/", id="* +@-/"),
+        pytest.param(V_PLUS_SLASH, "+/", id="+/"),
+        pytest.param(V_STAR_AMPM_V_PLUS_SLASH, "*&(+/)", id="*&(+/)"),
+        pytest.param(V_PLUS_SLASH_AT_V_STAR_AMPM_COMMA, "+/@(*&,)", id="+/@(*&,)"),
+        pytest.param(V_STAR_V_PLUS, "* +", id="* +"),
+        pytest.param(V_PLUS_SLASH_V_STAR, "+/ *", id="+/ *"),
+        pytest.param(V_STAR_V_PLUS_AT_PLUS_SLASH, "* +@-/", id="* +@-/"),
+        pytest.param(V_STAR_V_PLUS_AT_PLUS_SLASH, "* +@-/", id="* +@-/"),
+        pytest.param(V_PLUS_V_PLUS_V_PLUS, "+ + +", id="+ + +"),
+        pytest.param(V_PLUS_V_PLUS_V_PLUS_V_PLUS, "+ (+ + +)", id="+ + + +"),
+        pytest.param(V_PLUS_FORK_V_PLUS_V_PLUS_V_PLUS, "(+ + +) +", id="(+ + +) +"),
+        pytest.param(VVF, "+ + + + +", id="+ + + + +"),
     ],
 )
 def test_verb_spelling(verb, expected_spelling):

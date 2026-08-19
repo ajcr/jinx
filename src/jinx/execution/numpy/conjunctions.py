@@ -14,7 +14,7 @@ from jinx.execution.numpy.application import (
 )
 from jinx.execution.numpy.conversion import box_dtype, ndarray_or_scalar_to_noun
 from jinx.execution.numpy.helpers import is_box, maybe_pad_with_fill_value
-from jinx.primitives import PRIMITIVE_MAP
+from jinx.primitives import PRIMITIVE_CONJUNCTION_MAP
 from jinx.vocabulary import (
     Conjunction,
     Dyad,
@@ -30,7 +30,7 @@ INFINITY = float("inf")
 def _modify_rank(
     verb: Verb[np.ndarray],
     rank: np.ndarray | int | float,
-    conjunction: Conjunction,
+    conjunction: Conjunction[np.ndarray],
 ) -> Verb[np.ndarray]:
     rank = np.atleast_1d(rank)
     if np.issubdtype(rank.dtype, np.floating):
@@ -76,7 +76,9 @@ def _modify_rank(
         verb,
         monad=monad,
         dyad=dyad,
-        entity_type=EntityExecutedConjunction(verb, conjunction, rank),
+        entity_type=EntityExecutedConjunction(
+            verb, conjunction, ndarray_or_scalar_to_noun(rank)
+        ),
     )
 
 
@@ -85,7 +87,7 @@ def rank_conjunction(
 ) -> Verb[np.ndarray]:
     if isinstance(left, Verb) and isinstance(right, Noun):
         rank = np.atleast_1d(right.implementation).tolist()
-        return _modify_rank(left, rank, PRIMITIVE_MAP["RANK"])
+        return _modify_rank(left, rank, PRIMITIVE_CONJUNCTION_MAP["RANK"])
     raise JinxNotImplementedError(
         "Rank conjunction with non-verb left or non-noun right is not yet implemented"
     )
@@ -141,7 +143,7 @@ def at_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarray]
             function=_monad,
         ),
         dyad=dyad,
-        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["AT"], v),
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_CONJUNCTION_MAP["AT"], v),
     )
 
 
@@ -161,7 +163,7 @@ def atco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndarra
     return Verb[np.ndarray](
         monad=Monad(rank=INFINITY, function=monad),
         dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=dyad),
-        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["ATCO"], v),
+        entity_type=EntityExecutedConjunction(u, PRIMITIVE_CONJUNCTION_MAP["ATCO"], v),
     )
 
 
@@ -211,7 +213,9 @@ def ampm_conjunction(
     return Verb(
         monad=monad,
         dyad=dyad,
-        entity_type=EntityExecutedConjunction(left, PRIMITIVE_MAP["AMPM"], right),
+        entity_type=EntityExecutedConjunction(
+            left, PRIMITIVE_CONJUNCTION_MAP["AMPM"], right
+        ),
     )
 
 
@@ -236,7 +240,9 @@ def ampdotco_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.nd
     return Verb[np.ndarray](
         monad=Monad(rank=INFINITY, function=_monad),
         dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=_dyad),
-        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["AMPDOTCO"], v),
+        entity_type=EntityExecutedConjunction(
+            u, PRIMITIVE_CONJUNCTION_MAP["AMPDOTCO"], v
+        ),
     )
 
 
@@ -245,7 +251,7 @@ def ampdot_conjunction(u: Verb[np.ndarray], v: Verb[np.ndarray]) -> Verb[np.ndar
     if v.monad is None:
         raise ValenceError(f"{v.spelling} has no monadic form")
     verb = ampdotco_conjunction(u, v)
-    return _modify_rank(verb, v.monad.rank, PRIMITIVE_MAP["AMPDOT"])
+    return _modify_rank(verb, v.monad.rank, PRIMITIVE_CONJUNCTION_MAP["AMPDOT"])
 
 
 def hatco_conjunction(
@@ -361,7 +367,9 @@ def hatco_conjunction(
             right_rank=INFINITY,
             function=dyad,
         ),
-        entity_type=EntityExecutedConjunction(u, PRIMITIVE_MAP["HATCO"], noun_or_verb),
+        entity_type=EntityExecutedConjunction(
+            u, PRIMITIVE_CONJUNCTION_MAP["HATCO"], noun_or_verb
+        ),
     )
 
 

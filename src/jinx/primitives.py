@@ -495,3 +495,13 @@ PRIMITIVES: list[Verb | Adverb | Conjunction | Copula] = [
 
 
 PRIMITIVE_MAP = {primitive.name: primitive for primitive in PRIMITIVES}
+PRIMITIVE_CONJUNCTION_MAP = {
+    primitive.name: primitive
+    for primitive in PRIMITIVES
+    if isinstance(primitive, Conjunction)
+}
+PRIMITIVE_ADVERB_MAP = {
+    primitive.name: primitive
+    for primitive in PRIMITIVES
+    if isinstance(primitive, Adverb)
+}

@@ -13,7 +13,7 @@ from jinx.execution.numpy.helpers import (
     is_ufunc,
     maybe_pad_with_fill_value,
 )
-from jinx.primitives import PRIMITIVE_MAP
+from jinx.primitives import PRIMITIVE_ADVERB_MAP, PRIMITIVE_CONJUNCTION_MAP
 from jinx.vocabulary import Dyad, EntityExecutedAdverb, Monad, Verb
 
 INFINITY = float("inf")
@@ -49,10 +49,12 @@ def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
             return functools.reduce(_dyad_arg_swap, y)
 
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            # We have already checked that verb.dyad is not None, so this is safe.
+            assert verb.dyad is not None
             verb_slash = _modify_rank(
-                verb, np.array([verb.dyad.left_rank, INFINITY]), PRIMITIVE_MAP["SLASH"]
-            )  # type: ignore[union-attr]
+                verb,
+                np.array([verb.dyad.left_rank, INFINITY]),
+                PRIMITIVE_CONJUNCTION_MAP["RANK"],
+            )
             return _apply_dyad(verb_slash, x, y)
 
         monad = _reduce
@@ -61,7 +63,7 @@ def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
     return Verb[np.ndarray](
         monad=Monad(name=None, rank=INFINITY, function=monad),
         dyad=Dyad(name=None, left_rank=INFINITY, right_rank=INFINITY, function=dyad),
-        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_MAP["SLASH"]),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["SLASH"]),
     )
 
 
@@ -111,7 +113,7 @@ def bslash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
     return Verb(
         monad=Monad(rank=INFINITY, function=monad_),
         dyad=Dyad(left_rank=0, right_rank=INFINITY, function=dyad_),
-        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_MAP["BSLASH"]),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["BSLASH"]),
     )
 
 
@@ -163,7 +165,7 @@ def bslashdot_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
     return Verb(
         monad=Monad(rank=INFINITY, function=monad_),
         dyad=Dyad(left_rank=0, right_rank=INFINITY, function=dyad_),
-        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_MAP["BSLASHDOT"]),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["BSLASHDOT"]),
     )
 
 
@@ -189,7 +191,7 @@ def tilde_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
             right_rank=verb.dyad.left_rank,
             function=dyad,
         ),
-        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_MAP["TILDE"]),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["TILDE"]),
     )
 
 
@@ -241,7 +243,7 @@ def slashdot_adverb(verb: Verb) -> Verb:
     return Verb(
         monad=Monad(rank=INFINITY, function=monad),
         dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=dyad),
-        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_MAP["SLASHDOT"]),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["SLASHDOT"]),
     )
 
 

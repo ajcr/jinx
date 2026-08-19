@@ -95,12 +95,6 @@ def maybe_pad_by_duplicating_atoms(
     return padded_arrays
 
 
-def maybe_parenthesise_verb_spelling(spelling: str) -> str:
-    if spelling.startswith("(") and spelling.endswith(")"):
-        return spelling
-    return f"({spelling})" if " " in spelling else spelling
-
-
 def increase_ndim(y: np.ndarray, ndim: int) -> np.ndarray:
     idx = (np.newaxis,) * (ndim - y.ndim) + (slice(None),)
     return y[idx]

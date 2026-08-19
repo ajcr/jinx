@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Callable, NamedTuple, Sequence
+from typing import Any, Callable, NamedTuple, Sequence
 
 # Rank can be an integer or infinite (a float). It can't be any other float value
 # but the type system does not make this easy to express.
@@ -156,7 +156,8 @@ class Name:
 class EntityType:
     """Base class for entity type."""
 
-    pass
+    def get_spelling(self):
+        raise NotImplementedError
 
 
 @dataclass
@@ -175,18 +176,22 @@ class EntityReferenceToNamedEntity(EntityType):
 class EntityExecutedConjunction(EntityType):
     """Executed conjunction."""
 
-    v0: Verb | Noun
+    x0: Verb | Noun
     c1: Conjunction
-    v2: Verb | Noun
+    x2: Verb | Noun
 
     def get_spelling(self) -> str:
-        # Need to print nouns nicely
-        if is_hook(self.v0) or is_fork(self.v0):
-            v0_str = f"({self.v0})"
+        if is_hook(self.x0) or is_fork(self.x0):
+            x0_str = f"({self.x0})"
         else:
-            v0_str = str(self.v0)
-        v2_str = str(self.v2) if is_primitive_verb(self.v2) else f"({self.v2})"
-        return f"{v0_str}{self.c1.spelling}{v2_str}"
+            x0_str = str(self.x0)
+        if isinstance(self.x2, Noun):
+            x2_str = str(self.x2.implementation)  # TODO
+        elif is_primitive_verb(self.x2):
+            x2_str = str(self.x2)
+        else:
+            x2_str = f"({self.x2})"
+        return f"{x0_str}{self.c1.spelling}{x2_str}"
 
 
 @dataclass
@@ -224,44 +229,41 @@ class EntityHook(EntityType):
 class EntityFork(EntityType):
     """Fork."""
 
-    v0: Verb | Noun
+    x0: Verb | Noun
     v1: Verb
     v2: Verb
 
     def get_spelling(self) -> str:
-        v0_str = maybe_parenthesise_for_train(self.v0)
+        x0_str = maybe_parenthesise_for_train(self.x0)
         v1_str = maybe_parenthesise_for_train(self.v1)
         if isinstance(self.v2.entity_type, EntityFork):
             v2_str = str(self.v2)
         else:
             v2_str = maybe_parenthesise_for_train(self.v2)
-        return f"{v0_str} {v1_str} {v2_str}"
+        return f"{x0_str} {v1_str} {v2_str}"
 
 
-def maybe_parenthesise_for_train(verb: Verb) -> str:
-    verb_str = str(verb)
-    return (
-        verb_str
-        if isinstance(
-            verb.entity_type,
-            (EntityPrimitive, EntityExecutedAdverb, EntityExecutedConjunction),
-        )
-        else f"({verb_str})"
-    )
+def maybe_parenthesise_for_train(x: Verb | Noun) -> str:
+    if (
+        is_primitive_verb(x)
+        or isinstance(x, Verb)
+        and isinstance(x.entity_type, (EntityExecutedAdverb, EntityExecutedConjunction))
+    ):
+        return str(x)
+
+    return f"({x})"
 
 
-def is_primitive_verb(part_of_speech: PartOfSpeechT) -> bool:
-    return isinstance(part_of_speech, Verb) and isinstance(
-        part_of_speech.entity_type, EntityPrimitive
-    )
+def is_primitive_verb(x: Any) -> bool:
+    return isinstance(x, Verb) and isinstance(x.entity_type, EntityPrimitive)
 
 
-def is_hook(part_of_speech: PartOfSpeechT) -> bool:
-    return isinstance(part_of_speech.entity_type, EntityHook)
+def is_hook(x: PartOfSpeechT) -> bool:
+    return isinstance(x, Verb) and isinstance(x.entity_type, EntityHook)
 
 
-def is_fork(part_of_speech: PartOfSpeechT) -> bool:
-    return isinstance(part_of_speech.entity_type, EntityFork)
+def is_fork(x: PartOfSpeechT) -> bool:
+    return isinstance(x, Verb) and isinstance(x.entity_type, EntityFork)
 
 
 @dataclass
@@ -286,6 +288,7 @@ class Verb[T]:
 
     def __str__(self) -> str:
         if is_primitive_verb(self):
+            assert self.spelling is not None
             return self.spelling
         return self.entity_type.get_spelling()
 

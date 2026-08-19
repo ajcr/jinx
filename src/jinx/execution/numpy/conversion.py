@@ -61,7 +61,7 @@ def infer_data_type(data: np.ndarray) -> DataType:
 
 def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun[np.ndarray]:
     data_type = infer_data_type(data)
-    return Noun[np.ndarray](data_type=data_type, implementation=data)
+    return Noun[np.ndarray](data_type=data_type, implementation=np.asarray(data))
 
 
 def convert_python_object_to_noun(obj: Any) -> Noun[np.ndarray] | None:

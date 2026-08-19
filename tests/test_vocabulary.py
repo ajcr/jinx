@@ -4,8 +4,8 @@ from jinx.primitives import PRIMITIVE_MAP
 from jinx.vocabulary import (
     EntityExecutedAdverb,
     EntityExecutedConjunction,
-    EntityHook,
     EntityFork,
+    EntityHook,
     Verb,
 )
 
@@ -19,20 +19,20 @@ V_PLUS_SLASH = Verb(
 # *&(+/)
 V_STAR_AMPM_V_PLUS_SLASH = Verb(
     entity_type=EntityExecutedConjunction(
-        v0=PRIMITIVE_MAP["STAR"], c1=PRIMITIVE_MAP["AMPM"], v2=V_PLUS_SLASH
-    ),
+        x0=PRIMITIVE_MAP["STAR"], c1=PRIMITIVE_MAP["AMPM"], x2=V_PLUS_SLASH
+    )
 )
 
 # +/@(*&,)
 V_PLUS_SLASH_AT_V_STAR_AMPM_COMMA = Verb(
     entity_type=EntityExecutedConjunction(
-        v0=V_PLUS_SLASH,
+        x0=V_PLUS_SLASH,
         c1=PRIMITIVE_MAP["AT"],
-        v2=Verb(
+        x2=Verb(
             entity_type=EntityExecutedConjunction(
-                v0=PRIMITIVE_MAP["STAR"],
+                x0=PRIMITIVE_MAP["STAR"],
                 c1=PRIMITIVE_MAP["AMPM"],
-                v2=PRIMITIVE_MAP["COMMA"],
+                x2=PRIMITIVE_MAP["COMMA"],
             ),
         ),
     ),
@@ -56,9 +56,9 @@ V_STAR_V_PLUS_AT_PLUS_SLASH = Verb(
             entity_type=EntityExecutedAdverb(
                 v0=Verb(
                     entity_type=EntityExecutedConjunction(
-                        v0=PRIMITIVE_MAP["PLUS"],
+                        x0=PRIMITIVE_MAP["PLUS"],
                         c1=PRIMITIVE_MAP["AT"],
-                        v2=PRIMITIVE_MAP["MINUS"],
+                        x2=PRIMITIVE_MAP["MINUS"],
                     ),
                 ),
                 a1=PRIMITIVE_MAP["SLASH"],
@@ -70,7 +70,7 @@ V_STAR_V_PLUS_AT_PLUS_SLASH = Verb(
 # Fork (V V V)
 V_PLUS_V_PLUS_V_PLUS = Verb(
     entity_type=EntityFork(
-        v0=PRIMITIVE_MAP["PLUS"], v1=PRIMITIVE_MAP["PLUS"], v2=PRIMITIVE_MAP["PLUS"]
+        x0=PRIMITIVE_MAP["PLUS"], v1=PRIMITIVE_MAP["PLUS"], v2=PRIMITIVE_MAP["PLUS"]
     ),
 )
 
@@ -87,7 +87,7 @@ V_PLUS_FORK_V_PLUS_V_PLUS_V_PLUS = Verb(
 # Fork (V V F)
 VVF = Verb(
     entity_type=EntityFork(
-        v0=PRIMITIVE_MAP["PLUS"],
+        x0=PRIMITIVE_MAP["PLUS"],
         v1=PRIMITIVE_MAP["PLUS"],
         v2=V_PLUS_V_PLUS_V_PLUS,
     )

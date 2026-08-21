@@ -2,7 +2,7 @@
 
 import jax
 from jinx.execution.jax.application import _apply_dyad, _apply_monad
-from jinx.vocabulary import Dyad, Monad, Noun, Verb
+from jinx.vocabulary import Dyad, EntityFork, Monad, Noun, Verb
 
 INFINITY = float("inf")
 
@@ -47,4 +47,5 @@ def build_fork(
     return Verb[jax.Array](
         monad=Monad(rank=INFINITY, function=_monad),
         dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=_dyad),
+        entity_type=EntityFork(f, g, h),
     )

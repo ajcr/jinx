@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from functools import singledispatch
 from typing import Any, Callable, NamedTuple, Sequence
 
 # Rank can be an integer or infinite (a float). It can't be any other float value
@@ -47,6 +48,19 @@ class DataType(Enum):
     Float = auto()
     Byte = auto()
     Box = auto()
+
+
+@singledispatch
+def get_spelling_for_noun_as_part_of_verb(value: Any) -> str:
+    """Spell the noun as it should appear as part of an entity representation.
+
+    For example, the 2D array (1 2,.3 5) would be spelled as (2 2$1 3 2 5) in the
+    verb (1 2,.3 5)&+ .
+
+    The Noun type is generic over T, so register a Callable[[T], str] for a concrete
+    type at run time.
+    """
+    raise TypeError(f"No spelling implementation for {type(value)}")
 
 
 @dataclass
@@ -181,12 +195,14 @@ class EntityExecutedConjunction[T](EntityType):
     x2: Verb[T] | Noun[T]
 
     def get_spelling(self) -> str:
-        if is_hook(self.x0) or is_fork(self.x0):
+        if isinstance(self.x0, Noun):
+            x0_str = get_spelling_for_noun_as_part_of_verb(self.x0.implementation)
+        elif is_hook(self.x0) or is_fork(self.x0):
             x0_str = f"({self.x0})"
         else:
             x0_str = str(self.x0)
         if isinstance(self.x2, Noun):
-            x2_str = str(self.x2.implementation)  # TODO
+            x2_str = get_spelling_for_noun_as_part_of_verb(self.x2.implementation)
         elif is_primitive_verb(self.x2):
             x2_str = str(self.x2)
         else:

@@ -12,8 +12,9 @@ from jinx.execution.numpy.application import (
     get_rank,
     split_into_cells,
 )
-from jinx.execution.numpy.conversion import box_dtype, ndarray_or_scalar_to_noun
-from jinx.execution.numpy.helpers import is_box, maybe_pad_with_fill_value
+from jinx.execution.numpy.boxes import BOX_DTYPE, is_box
+from jinx.execution.numpy.conversion import ndarray_or_scalar_to_noun
+from jinx.execution.numpy.helpers import maybe_pad_with_fill_value
 from jinx.primitives import PRIMITIVE_CONJUNCTION_MAP
 from jinx.vocabulary import (
     Conjunction,
@@ -379,20 +380,20 @@ def grave_conjunction(
 ) -> Noun[np.ndarray]:
     """` conjunction: tie."""
     if isinstance(left, Verb):
-        left_boxed = np.array([(left,)], dtype=box_dtype)
+        left_boxed = np.array([(left,)], dtype=BOX_DTYPE)
     elif isinstance(left, Noun) and is_box(left.implementation):
         left_boxed = np.atleast_1d(left.implementation)
     else:
         raise DomainError("executing conj ` (left argument not boxed or verb)")
 
     if isinstance(right, Verb):
-        right_boxed = np.array([(right,)], dtype=box_dtype)
+        right_boxed = np.array([(right,)], dtype=BOX_DTYPE)
     elif isinstance(right, Noun) and is_box(right.implementation):
         right_boxed = np.atleast_1d(right.implementation)
     else:
         raise DomainError("executing conj ` (right argument not boxed or verb)")
 
-    array = np.concatenate([left_boxed, right_boxed], axis=0, dtype=box_dtype)
+    array = np.concatenate([left_boxed, right_boxed], axis=0, dtype=BOX_DTYPE)
     return ndarray_or_scalar_to_noun(array)
 
 

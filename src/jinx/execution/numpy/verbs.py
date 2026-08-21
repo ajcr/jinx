@@ -25,12 +25,10 @@ from jinx.errors import (
     LengthError,
     ValenceError,
 )
-from jinx.execution.numpy.conversion import box_dtype
+from jinx.execution.numpy.boxes import BOX_DTYPE, hash_box, is_box
 from jinx.execution.numpy.helpers import (
     get_fill_value,
-    hash_box,
     increase_ndim,
-    is_box,
     is_same_array,
     mark_ufunc_based,
     maybe_pad_by_duplicating_atoms,
@@ -124,7 +122,7 @@ def hatdot_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 def lt_monad(y: np.ndarray) -> np.ndarray:
     """< monad: box a noun."""
-    return np.array([(y,)], dtype=box_dtype).squeeze()
+    return np.array([(y,)], dtype=BOX_DTYPE).squeeze()
 
 
 def gt_monad(y: np.ndarray) -> np.ndarray:
@@ -291,7 +289,7 @@ def tildedot_monad(y: np.ndarray) -> np.ndarray:
             if h not in seen:
                 result.append(item if is_box(item) else (item[0],))
             seen.add(h)
-        return np.array(result, dtype=box_dtype).squeeze()
+        return np.array(result, dtype=BOX_DTYPE).squeeze()
 
     uniq, idx = np.unique(y, return_index=True, axis=0)
     return uniq[np.argsort(idx)]
@@ -333,7 +331,7 @@ def dollar_dyad(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     if np.isscalar(y) or y.shape == ():
         if is_box(y):
-            result = np.array([y] * np.prod(x_shape), dtype=box_dtype).reshape(x_shape)
+            result = np.array([y] * np.prod(x_shape), dtype=BOX_DTYPE).reshape(x_shape)
         else:
             result = np.empty(x_shape, dtype=y.dtype)
             result[:] = y
@@ -743,7 +741,7 @@ def semico_monad(y: np.ndarray) -> np.ndarray:
         raise DomainError(";: monad: y must be a string")
     string = "".join(y)
     words = [word.value for word in form_words(string)]
-    return np.array(words, dtype=box_dtype)
+    return np.array(words, dtype=BOX_DTYPE)
 
 
 def query_monad(y: np.ndarray) -> np.ndarray:

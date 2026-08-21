@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from jinx.execution.numpy import executor as numpy_executor
-from jinx.execution.numpy.conversion import box_dtype
+from jinx.execution.numpy.boxes import BOX_DTYPE
 from jinx.primitives import PRIMITIVE_MAP
 from jinx.vocabulary import DataType, Name, Noun, Verb
 from jinx.word_evaluation import evaluate_words
@@ -200,7 +200,10 @@ def test_word_evaluation_adverb_creation(words, expected):
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[8, 3, 5]),
             ],
-            Noun(data_type=DataType.Integer, implementation=np.int64(16)),
+            Noun(
+                data_type=DataType.Integer,
+                implementation=np.int64(16),
+            ),
             id="(+/) 8 3 5",
         ),
     ],
@@ -214,7 +217,14 @@ def test_word_evaluation_adverb_application(words, expected):
     "words, expected_verb_spelling",
     [
         pytest.param(
-            [PLUS, RANK, Noun(data_type=DataType.Integer, data=[0])],
+            [
+                PLUS,
+                RANK,
+                Noun(
+                    data_type=DataType.Integer,
+                    data=[0],
+                ),
+            ],
             '+"0',
             id='+"0',
         ),
@@ -224,12 +234,23 @@ def test_word_evaluation_adverb_application(words, expected):
             id='+"1',
         ),
         pytest.param(
-            [LPAREN, PLUS, RPAREN, RANK, Noun(data_type=DataType.Integer, data=[1])],
+            [
+                LPAREN,
+                PLUS,
+                RPAREN,
+                RANK,
+                Noun(data_type=DataType.Integer, data=[1]),
+            ],
             '+"1',
             id='(+)"1',
         ),
         pytest.param(
-            [PLUS, SLASH, RANK, Noun(data_type=DataType.Integer, data=[2])],
+            [
+                PLUS,
+                SLASH,
+                RANK,
+                Noun(data_type=DataType.Integer, data=[2]),
+            ],
             '+/"2',
             id='+/"2',
         ),
@@ -730,7 +751,7 @@ def test_word_evaluation_computes_correct_noun(words, expected):
                 PRIMITIVE_MAP["LT"],
                 Noun(data_type=DataType.Byte, data=[""]),
             ],
-            np.array(("",), dtype=box_dtype),
+            np.array(("",), dtype=BOX_DTYPE),
             id="<''",
         ),
     ],
@@ -756,7 +777,7 @@ def test_size_zero_nouns(words, expected):
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[4, 2]),
             ],
-            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=box_dtype),
+            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=BOX_DTYPE),
             id='(<@(i."0)) 4 2',
         ),
         pytest.param(
@@ -770,7 +791,7 @@ def test_size_zero_nouns(words, expected):
                 RPAREN,
                 Noun(data_type=DataType.Integer, data=[4, 2]),
             ],
-            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=box_dtype),
+            np.array([(np.array([0, 1, 2, 3]),), (np.array([0, 1]),)], dtype=BOX_DTYPE),
             id='(<@i."0) 4 2',
         ),
     ],
@@ -824,7 +845,11 @@ def test_word_evaluation_build_verb(words, expected):
                 PRIMITIVE_MAP["EQDOT"],
                 Noun(data_type=DataType.Integer, data=[3]),
             ],
-            Noun(data_type=DataType.Integer, data=[3], implementation=np.int64(3)),
+            Noun(
+                data_type=DataType.Integer,
+                data=[3],
+                implementation=np.int64(3),
+            ),
             Name(spelling="a"),
             id="a =: 3",
         ),

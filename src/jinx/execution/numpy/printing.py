@@ -5,17 +5,21 @@ import os
 from typing import Sequence
 
 import numpy as np
-from jinx.execution.numpy.helpers import is_box
+from jinx.execution.numpy.boxes import is_box
 from jinx.vocabulary import Noun
 
 MAX_COLS = 100
 
 
+def array_to_string(arr: np.ndarray, max_cols: int = MAX_COLS):
+    rows = array_to_rows(arr, max_cols=max_cols)
+    return os.linesep.join(rows)
+
+
 def noun_to_string(noun: Noun[np.ndarray], max_cols: int = MAX_COLS) -> str:
     """Convert a noun to a string representation."""
     arr = noun.implementation
-    rows = array_to_rows(arr, max_cols=max_cols)
-    return os.linesep.join(rows)
+    return array_to_string(arr, max_cols=max_cols)
 
 
 def array_to_rows(arr: np.ndarray, max_cols: int = MAX_COLS) -> list[str]:

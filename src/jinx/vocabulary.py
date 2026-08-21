@@ -153,7 +153,7 @@ class Name:
     """The string value of the name."""
 
 
-class EntityType:
+class EntityType[T]:
     """Base class for entity type."""
 
     def get_spelling(self):
@@ -161,24 +161,24 @@ class EntityType:
 
 
 @dataclass
-class EntityPrimitive(EntityType):
+class EntityPrimitive[T](EntityType):
     """Primitive type (defined as part of J)."""
 
     pass
 
 
 @dataclass
-class EntityReferenceToNamedEntity(EntityType):
+class EntityReferenceToNamedEntity[T](EntityType):
     pass
 
 
 @dataclass
-class EntityExecutedConjunction(EntityType):
+class EntityExecutedConjunction[T](EntityType):
     """Executed conjunction."""
 
-    x0: Verb | Noun
-    c1: Conjunction
-    x2: Verb | Noun
+    x0: Verb[T] | Noun[T]
+    c1: Conjunction[T]
+    x2: Verb[T] | Noun[T]
 
     def get_spelling(self) -> str:
         if is_hook(self.x0) or is_fork(self.x0):
@@ -195,11 +195,11 @@ class EntityExecutedConjunction(EntityType):
 
 
 @dataclass
-class EntityExecutedAdverb(EntityType):
+class EntityExecutedAdverb[T](EntityType):
     """Executed adverb."""
 
-    v0: Verb
-    a1: Adverb
+    v0: Verb[T]
+    a1: Adverb[T]
 
     def get_spelling(self) -> str:
         if is_hook(self.v0) or is_fork(self.v0):
@@ -210,11 +210,11 @@ class EntityExecutedAdverb(EntityType):
 
 
 @dataclass
-class EntityHook(EntityType):
+class EntityHook[T](EntityType):
     """Hook."""
 
-    v0: Verb
-    v1: Verb
+    v0: Verb[T]
+    v1: Verb[T]
 
     def get_spelling(self) -> str:
         v0_str = maybe_parenthesise_for_train(self.v0)
@@ -226,12 +226,12 @@ class EntityHook(EntityType):
 
 
 @dataclass
-class EntityFork(EntityType):
+class EntityFork[T](EntityType):
     """Fork."""
 
-    x0: Verb | Noun
-    v1: Verb
-    v2: Verb
+    x0: Verb[T] | Noun[T]
+    v1: Verb[T]
+    v2: Verb[T]
 
     def get_spelling(self) -> str:
         x0_str = maybe_parenthesise_for_train(self.x0)
@@ -269,7 +269,7 @@ def is_fork(x: PartOfSpeechT) -> bool:
 @dataclass
 class Verb[T]:
     spelling: str | None = None
-    """The symbolic spelling of the verb, e.g. `+`."""
+    """The symbolic spelling of the verb, e.g. `+`. Only used for primitives."""
 
     name: str | None = None
     """The name of the verb, e.g. `PLUS`, or its spelling if not a primitive J verb."""
@@ -283,7 +283,7 @@ class Verb[T]:
     obverse: Verb[T] | str | None = None
     """The obverse of the verb, if it exists. This is typically the inverse of the verb."""
 
-    entity_type: EntityType = field(default_factory=EntityPrimitive)
+    entity_type: EntityType[T] = field(default_factory=EntityPrimitive)
     """The entity type. How the verb was constructed if not primitive."""
 
     def __str__(self) -> str:

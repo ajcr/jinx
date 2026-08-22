@@ -1,20 +1,20 @@
 """Methods implementing J adverbs."""
 
-import dataclasses
 import functools
 from typing import Callable
 
 import numpy as np
 from jinx.errors import DomainError, JinxNotImplementedError, LengthError, ValenceError
 from jinx.execution.numpy.application import _apply_dyad, _apply_monad
+from jinx.execution.numpy.conjunctions import _modify_rank
 from jinx.execution.numpy.helpers import (
     get_fill_value,
     is_box,
     is_ufunc,
     maybe_pad_with_fill_value,
-    maybe_parenthesise_verb_spelling,
 )
-from jinx.vocabulary import Dyad, Monad, Verb
+from jinx.primitives import PRIMITIVE_ADVERB_MAP, PRIMITIVE_CONJUNCTION_MAP
+from jinx.vocabulary import Dyad, EntityExecutedAdverb, Monad, Verb
 
 INFINITY = float("inf")
 
@@ -49,23 +49,21 @@ def slash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
             return functools.reduce(_dyad_arg_swap, y)
 
         def _outer(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-            # We have already checked that verb.dyad is not None, so this is safe.
-            verb_slash = _modify_rank(verb, np.array([verb.dyad.left_rank, INFINITY]))  # type: ignore[union-attr]
+            assert verb.dyad is not None
+            verb_slash = _modify_rank(
+                verb,
+                np.array([verb.dyad.left_rank, INFINITY]),
+                PRIMITIVE_CONJUNCTION_MAP["RANK"],
+            )
             return _apply_dyad(verb_slash, x, y)
 
         monad = _reduce
         dyad = _outer
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{verb.spelling}/"
-
     return Verb[np.ndarray](
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad),
-        dyad=Dyad(
-            name=spelling, left_rank=INFINITY, right_rank=INFINITY, function=dyad
-        ),
+        monad=Monad(name=None, rank=INFINITY, function=monad),
+        dyad=Dyad(name=None, left_rank=INFINITY, right_rank=INFINITY, function=dyad),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["SLASH"]),
     )
 
 
@@ -112,14 +110,10 @@ def bslash_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
         result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{spelling}\\"
-
     return Verb(
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
-        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=dyad_),
+        monad=Monad(rank=INFINITY, function=monad_),
+        dyad=Dyad(left_rank=0, right_rank=INFINITY, function=dyad_),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["BSLASH"]),
     )
 
 
@@ -168,14 +162,10 @@ def bslashdot_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
         result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{verb.spelling}\\."
-
     return Verb(
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
-        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=dyad_),
+        monad=Monad(rank=INFINITY, function=monad_),
+        dyad=Dyad(left_rank=0, right_rank=INFINITY, function=dyad_),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["BSLASHDOT"]),
     )
 
 
@@ -194,73 +184,14 @@ def tilde_adverb(verb: Verb[np.ndarray]) -> Verb[np.ndarray]:
         # swap the arguments and apply verb dyadically
         return _apply_dyad(verb, y, x)
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{verb.spelling}~"
-
     return Verb[np.ndarray](
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad),
+        monad=Monad(rank=INFINITY, function=monad),
         dyad=Dyad(
-            name=spelling,
             left_rank=verb.dyad.right_rank,
             right_rank=verb.dyad.left_rank,
             function=dyad,
         ),
-    )
-
-
-def _modify_rank(verb: Verb, rank: np.ndarray | int | float) -> Verb:
-    rank = np.atleast_1d(rank)
-    if np.issubdtype(rank.dtype, np.floating):
-        if not np.isinf(rank).any():
-            raise DomainError(f"Rank must be an integer or infinity, got {rank.dtype}")
-
-    elif not np.issubdtype(rank.dtype, np.integer):
-        raise DomainError(f"Rank must be an integer or infinity, got {rank.dtype}")
-
-    if rank.size > 3 or rank.ndim > 1:
-        raise DomainError(
-            f"Rank must be a scalar or 1D array of length <= 3, got {rank.ndim}D array with shape {rank.shape}"
-        )
-
-    rank_list = [int(r) if not np.isinf(r) else INFINITY for r in rank.tolist()]
-    verb_spelling = spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-
-    if len(rank_list) == 1:
-        monad_rank = left_rank = right_rank = rank_list[0]
-        spelling = f'{verb_spelling}"{rank_list[0]}'
-
-    elif len(rank_list) == 2:
-        left_rank, right_rank = rank_list
-        monad_rank = right_rank
-        spelling = f'{verb_spelling}"{left_rank} {right_rank}'
-
-    else:
-        monad_rank, left_rank, right_rank = rank_list
-        spelling = f'{verb_spelling}"{monad_rank} {left_rank} {right_rank}'
-
-    if verb.monad:
-        monad = dataclasses.replace(verb.monad, rank=monad_rank, function=verb)
-    else:
-        monad = None
-
-    if verb.dyad:
-        dyad = dataclasses.replace(
-            verb.dyad,
-            left_rank=left_rank,
-            right_rank=right_rank,
-            function=verb,
-        )
-    else:
-        dyad = None
-
-    return dataclasses.replace(
-        verb,
-        spelling=spelling,
-        name=spelling,
-        monad=monad,
-        dyad=dyad,
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["TILDE"]),
     )
 
 
@@ -309,19 +240,10 @@ def slashdot_adverb(verb: Verb) -> Verb:
         result = maybe_pad_with_fill_value(result, fill_value=get_fill_value(y))
         return np.asarray(result)
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{verb.spelling}/."
-
     return Verb(
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad),
-        dyad=Dyad(
-            name=spelling,
-            left_rank=INFINITY,
-            right_rank=INFINITY,
-            function=dyad,
-        ),
+        monad=Monad(rank=INFINITY, function=monad),
+        dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=dyad),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["SLASHDOT"]),
     )
 
 

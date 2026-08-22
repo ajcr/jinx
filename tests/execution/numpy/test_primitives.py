@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
 
-from jinx.execution.numpy.conversion import box_dtype
-from jinx.execution.numpy.helpers import is_box
+from jinx.execution.numpy.boxes import BOX_DTYPE, is_box
 from jinx.execution.numpy.verbs import (
     bslashco_monad,
     comma_dyad,
@@ -230,8 +229,8 @@ def test_bslashco_monad(y, expected):
     np.testing.assert_array_equal(result, expected, strict=True)
 
 
-BOX_1 = np.array([(1,)], dtype=box_dtype).squeeze()
-BOX_2 = np.array([(np.array([1, 2, 3]),)], dtype=box_dtype).squeeze()
+BOX_1 = np.array([(1,)], dtype=BOX_DTYPE).squeeze()
+BOX_2 = np.array([(np.array([1, 2, 3]),)], dtype=BOX_DTYPE).squeeze()
 
 
 @pytest.mark.parametrize(
@@ -250,7 +249,7 @@ def test_lt_monad_box_containing_integer_array(y, expected):
 def test_lt_monad_box_containing_box():
     result = lt_monad(BOX_1)
     assert result.shape == ()
-    assert result.dtype == box_dtype
+    assert result.dtype == BOX_DTYPE
     np.testing.assert_array_equal(result.item()[0], BOX_1, strict=True)
 
 
@@ -278,7 +277,7 @@ def test_gt_monad_boxed_array_list():
             (np.array([2, 3]),),
             (np.array([4, 5, 6]),),
         ],
-        dtype=box_dtype,
+        dtype=BOX_DTYPE,
     )
 
     result = gt_monad(boxed_list)
@@ -289,9 +288,9 @@ def test_gt_monad_boxed_array_list():
 
 def test_comma_dyad_joins_boxes():
     result = comma_dyad(BOX_1, BOX_2)
-    expected = np.array([(BOX_1.item()[0],), (BOX_2.item()[0],)], dtype=box_dtype)
+    expected = np.array([(BOX_1.item()[0],), (BOX_2.item()[0],)], dtype=BOX_DTYPE)
     assert result.shape == expected.shape == (2,)
-    assert result.dtype == box_dtype
+    assert result.dtype == BOX_DTYPE
     assert result[0][0] is expected[0].item()[0]
     assert result[1][0] is expected[1].item()[0]
 
@@ -413,15 +412,15 @@ def test_tildedot_monad(y, expected):
     "y, expected",
     [
         pytest.param(
-            np.array([(1,), (2,), (1,), (3,), (2,), (1,)], dtype=box_dtype),
-            np.array([(1,), (2,), (3,)], dtype=box_dtype),
+            np.array([(1,), (2,), (1,), (3,), (2,), (1,)], dtype=BOX_DTYPE),
+            np.array([(1,), (2,), (3,)], dtype=BOX_DTYPE),
             id='~. <"0 ] 1 2 1 3 2 1',
         ),
         pytest.param(
             np.array(
-                [(np.array([0, 1]),), (np.array([0, 1]),)], dtype=box_dtype
+                [(np.array([0, 1]),), (np.array([0, 1]),)], dtype=BOX_DTYPE
             ).squeeze(),
-            np.array([(np.array([0, 1]),)], dtype=box_dtype).squeeze(),
+            np.array([(np.array([0, 1]),)], dtype=BOX_DTYPE).squeeze(),
             id="~. (0 1);(0 1)",
         ),
         pytest.param(
@@ -431,20 +430,20 @@ def test_tildedot_monad(y, expected):
                     [(3,), (4,), (5,)],
                     [(0,), (1,), (2,)],
                 ],
-                dtype=box_dtype,
+                dtype=BOX_DTYPE,
             ),
             np.array(
                 [
                     [(0,), (1,), (2,)],
                     [(3,), (4,), (5,)],
                 ],
-                dtype=box_dtype,
+                dtype=BOX_DTYPE,
             ),
             id='~. 3 3 $ <"0 i. 6',
         ),
         pytest.param(
-            np.array([(np.array([(1,)], dtype=box_dtype),), (1,)], dtype=box_dtype),
-            np.array([(np.array([(1,)], dtype=box_dtype),), (1,)], dtype=box_dtype),
+            np.array([(np.array([(1,)], dtype=BOX_DTYPE),), (1,)], dtype=BOX_DTYPE),
+            np.array([(np.array([(1,)], dtype=BOX_DTYPE),), (1,)], dtype=BOX_DTYPE),
             id="~. (<<1),(<1)",
         ),
     ],

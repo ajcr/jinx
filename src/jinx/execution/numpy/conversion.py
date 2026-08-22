@@ -3,32 +3,15 @@
 from typing import Any
 
 import numpy as np
+from jinx.execution.numpy.boxes import BOX_DTYPE
+from jinx.execution.numpy.printing import array_to_string
 from jinx.vocabulary import DataType, Noun
-
-# Define a structured dtype for boxes, which can hold any object.
-#
-# The alternative of using np.object directly (the 'O' dtype) is problematic for a
-# couple of reasons.
-#
-# Firstly we need to add metadata to the dtype to indicate that it is a box
-# because we may also want to use np.object for other purposes (e.g. a rational
-# number dtype). Not all NumPy operations preserve the dtype metadata however
-# (e.g. np.concatenate), so we would need to patch the metadata back in.
-#
-# Secondly, np.object presents issues when detecting array sizes and concatenating
-# boxed arrays. E.g. with the comma_dyad implementation that works correct for non-boxed
-# arrays, '(<1),(<2 3),(<4)' created a 2D array not a 1D array.
-#
-# Using a structured dtype allows us to side-step these issues at the small expense
-# of making it more difficult to insert and extract data from the box.
-box_dtype = np.dtype([("content", "O")])
-
 
 DATATYPE_TO_NP_MAP = {
     DataType.Integer: np.int64,
     DataType.Float: np.float64,
     DataType.Byte: np.str_,
-    DataType.Box: box_dtype,
+    DataType.Box: BOX_DTYPE,
 }
 
 
@@ -53,15 +36,25 @@ def infer_data_type(data: np.ndarray) -> DataType:
         return DataType.Float
     if np.issubdtype(dtype, np.character):
         return DataType.Byte
-    if dtype == box_dtype:
+    if dtype == BOX_DTYPE:
         return DataType.Box
 
     raise NotImplementedError(f"Cannot handle NumPy dtype: {dtype}")
 
 
+def to_verb_str(data: np.ndarray) -> str:
+    """String representation for the array if used in a verb, for example left
+    or right side of a conjunction."""
+    if data.ndim <= 1:
+        return array_to_string(data)
+
+    shape = array_to_string(np.array(data.shape))
+    return f"({shape}${array_to_string(data.ravel())})"
+
+
 def ndarray_or_scalar_to_noun(data: np.ndarray) -> Noun[np.ndarray]:
     data_type = infer_data_type(data)
-    return Noun[np.ndarray](data_type=data_type, implementation=data)
+    return Noun[np.ndarray](data_type=data_type, implementation=np.asarray(data))
 
 
 def convert_python_object_to_noun(obj: Any) -> Noun[np.ndarray] | None:

@@ -7,10 +7,8 @@ import jax
 import jax.numpy as jnp
 from jinx.errors import JinxNotImplementedError, ValenceError
 from jinx.execution.jax.application import _apply_dyad
-from jinx.execution.numpy.helpers import (
-    maybe_parenthesise_verb_spelling,
-)
-from jinx.vocabulary import Dyad, Monad, Verb
+from jinx.primitives import PRIMITIVE_ADVERB_MAP
+from jinx.vocabulary import Dyad, EntityExecutedAdverb, Monad, Verb
 
 INFINITY = float("inf")
 
@@ -46,16 +44,10 @@ def slash_adverb(verb: Verb[jax.Array]) -> Verb[jax.Array]:
         monad = _reduce  # type: ignore[assignment]
         dyad = NotImplemented
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{verb.spelling}/"
-
     return Verb[jax.Array](
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad),
-        dyad=Dyad(
-            name=spelling, left_rank=INFINITY, right_rank=INFINITY, function=dyad
-        ),
+        monad=Monad(rank=INFINITY, function=monad),
+        dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=dyad),
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["SLASH"]),
     )
 
 
@@ -74,14 +66,10 @@ def bslash_adverb(verb: Verb[jax.Array]) -> Verb[jax.Array]:
             f"Adverb \\ applied to verb {verb.spelling} is not yet implemented."
         )
 
-    spelling = maybe_parenthesise_verb_spelling(verb.spelling)
-    spelling = f"{spelling}\\"
-
     return Verb(
-        name=spelling,
-        spelling=spelling,
-        monad=Monad(name=spelling, rank=INFINITY, function=monad_),
-        dyad=Dyad(name=spelling, left_rank=0, right_rank=INFINITY, function=None),  # type: ignore[arg-type]
+        monad=Monad(rank=INFINITY, function=monad_),
+        dyad=Dyad(left_rank=0, right_rank=INFINITY, function=None),  # type: ignore[arg-type]
+        entity_type=EntityExecutedAdverb(verb, PRIMITIVE_ADVERB_MAP["BSLASH"]),
     )
 
 

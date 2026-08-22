@@ -2,7 +2,7 @@
 
 import jax
 from jinx.execution.jax.application import _apply_dyad, _apply_monad
-from jinx.vocabulary import Dyad, Monad, Noun, Verb
+from jinx.vocabulary import Dyad, EntityFork, Monad, Noun, Verb
 
 INFINITY = float("inf")
 
@@ -44,27 +44,8 @@ def build_fork(
         b = _apply_dyad(h, x, y)
         return _apply_dyad(g, a, b)
 
-    if isinstance(f, Verb):
-        f_spelling = f"({f.spelling})" if " " in f.spelling else f.spelling
-    else:
-        f_spelling = str(f.implementation)
-
-    g_spelling = f"({g.spelling})" if " " in g.spelling else g.spelling
-    h_spelling = f"({h.spelling})" if " " in h.spelling else h.spelling
-    spelling = f"{f_spelling} {g_spelling} {h_spelling}"
-
     return Verb[jax.Array](
-        spelling=spelling,
-        name=spelling,
-        monad=Monad(
-            name=spelling,
-            rank=INFINITY,
-            function=_monad,
-        ),
-        dyad=Dyad(
-            name=spelling,
-            left_rank=INFINITY,
-            right_rank=INFINITY,
-            function=_dyad,
-        ),
+        monad=Monad(rank=INFINITY, function=_monad),
+        dyad=Dyad(left_rank=INFINITY, right_rank=INFINITY, function=_dyad),
+        entity_type=EntityFork(f, g, h),
     )

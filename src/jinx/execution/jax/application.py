@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
 from jinx.errors import JinxNotImplementedError, ValenceError
-from jinx.vocabulary import Adverb, DataType, Dyad, Monad, Noun, RankT, Verb
+from jinx.vocabulary import Adverb, DataType, Noun, RankT, Verb
 
 DATATYPE_TO_NP_MAP = {
     # JAX requires support for int64 to be set via config.
